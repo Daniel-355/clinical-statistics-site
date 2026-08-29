@@ -34,8 +34,7 @@ Here, $d_i$ is the number of events and $n_i$ is the risk set immediately before
 
 ## Fit the curve in R
 
-```{r}
-#| eval: false
+```r
 library(survival)
 dat <- read.csv("files/km-data.csv")
 fit <- survfit(Surv(time, status) ~ arm, data = dat)
