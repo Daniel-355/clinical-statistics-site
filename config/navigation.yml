@@ -1,0 +1,85 @@
+navigation:
+  - title: Home
+    href: index.qmd
+  - title: Clinical Trial Process & Design
+    slug: clinical-trial-process-design
+    children:
+      - title: Drug Development & Trial Phases
+      - title: Trial Objectives & Endpoints
+      - title: Trial Designs
+      - title: Treatment Arms & Controls
+      - title: Randomization & Blinding
+      - title: Study Population & Eligibility
+      - title: Visit Schedule & Follow-up
+      - title: Protocol Development
+      - title: Recruitment & Enrollment
+      - title: Treatment Compliance & Protocol Deviations
+      - title: Safety Monitoring
+      - title: DSMB / DMC
+      - title: Trial Conduct & Monitoring
+      - title: Protocol Amendments
+      - title: Database Lock
+      - title: Regulatory Submission
+  - title: Data Management & Programming
+    slug: data-management-programming
+    children:
+      - title: CRF / eCRF & EDC
+      - title: Clinical Data Management
+      - title: Data Cleaning & Quality Control
+      - title: Medical Coding
+      - title: Data Reconciliation
+      - title: CDISC Standards
+      - title: Analysis Dataset Development
+      - title: SAS & R Programming
+      - title: Tables, Listings & Figures
+      - title: Programming Standards & Validation
+      - title: Data Traceability
+      - title: Submission Standards & Packages
+  - title: Biostatistics
+    slug: biostatistics
+    children:
+      - title: Statistical Principles & Estimands
+      - title: Sample Size & Power
+      - title: Analysis Populations
+      - title: Descriptive Analysis
+      - title: Statistical Models
+      - title: Longitudinal & Repeated Measures
+      - title: Time-to-Event Analysis
+      - title: Missing Data & Sensitivity Analysis
+      - title: Multiplicity & Type I Error
+      - title: Interim Analysis & Stopping Rules
+      - title: Non-Inferiority & Equivalence
+      - title: Subgroup & Interaction Analysis
+      - title: Safety Analysis
+      - title: Adaptive & Bayesian Methods
+      - title: Statistical Interpretation
+      - title: Machine Learning
+  - title: Resources
+    slug: resources
+    children:
+      - title: SAP & Protocol Resources
+      - title: Regulatory Resources
+      - title: Clinical & Therapeutic Area Resources
+      - title: Documentation & Reporting
+      - title: Project & Collaboration Resources
+      - title: Templates & Downloads
+      - title: Reference Resources
+  - title: Epidemiology & Real-World Evidence
+    slug: epidemiology-rwe
+    children:
+      - title: Epidemiologic Study Designs
+      - title: Real-World Data & Evidence
+      - title: Causal Inference
+      - title: Bias & Confounding
+      - title: Exposure, Outcome & Covariate Assessment
+      - title: Effect Measures & Effect Modification
+      - title: Causal Methods
+      - title: Target Trial Emulation
+      - title: Measurement Error & Sensitivity Analysis
+  - title: About
+    slug: about
+    children:
+      - title: About
+      - title: Scope
+      - title: Founder
+      - title: Disclaimer

@@ -1,0 +1,98 @@
+---
+title: "Biostatistics"
+description: "Notes and resources for Biostatistics"
+toc: false
+---
+
+<div class="section-layout">
+<nav class="section-nav" aria-label="Categories">
+<p class="nav-title">In this section</p>
+<a href="#statistical-principles-estimands">Statistical Principles & Estimands</a>
+<a href="#sample-size-power">Sample Size & Power</a>
+<a href="#analysis-populations">Analysis Populations</a>
+<a href="#descriptive-analysis">Descriptive Analysis</a>
+<a href="#statistical-models">Statistical Models</a>
+<a href="#longitudinal-repeated-measures">Longitudinal & Repeated Measures</a>
+<a href="#time-to-event-analysis">Time-to-Event Analysis</a>
+<a href="#missing-data-sensitivity-analysis">Missing Data & Sensitivity Analysis</a>
+<a href="#multiplicity-type-i-error">Multiplicity & Type I Error</a>
+<a href="#interim-analysis-stopping-rules">Interim Analysis & Stopping Rules</a>
+<a href="#non-inferiority-equivalence">Non-Inferiority & Equivalence</a>
+<a href="#subgroup-interaction-analysis">Subgroup & Interaction Analysis</a>
+<a href="#safety-analysis">Safety Analysis</a>
+<a href="#adaptive-bayesian-methods">Adaptive & Bayesian Methods</a>
+<a href="#statistical-interpretation">Statistical Interpretation</a>
+<a href="#machine-learning">Machine Learning</a>
+</nav>
+<main>
+<section class="category-block" id="statistical-principles-estimands">
+<h2>Statistical Principles & Estimands</h2>
+<p class="text-muted">No published notes yet.</p>
+</section>
+<section class="category-block" id="sample-size-power">
+<h2>Sample Size & Power</h2>
+<p class="text-muted">No published notes yet.</p>
+</section>
+<section class="category-block" id="analysis-populations">
+<h2>Analysis Populations</h2>
+<p class="text-muted">No published notes yet.</p>
+</section>
+<section class="category-block" id="descriptive-analysis">
+<h2>Descriptive Analysis</h2>
+<p class="text-muted">No published notes yet.</p>
+</section>
+<section class="category-block" id="statistical-models">
+<h2>Statistical Models</h2>
+<p class="text-muted">No published notes yet.</p>
+</section>
+<section class="category-block" id="longitudinal-repeated-measures">
+<h2>Longitudinal & Repeated Measures</h2>
+<p class="text-muted">No published notes yet.</p>
+</section>
+<section class="category-block" id="time-to-event-analysis">
+<h2>Time-to-Event Analysis</h2>
+<div class="topic-group">
+<h3>Kaplan-Meier</h3>
+<ul>
+<li><a href="../../posts/kaplan-meier-r/index.qmd">Kaplan-Meier Survival Analysis in R</a></li>
+</ul>
+</div>
+</section>
+<section class="category-block" id="missing-data-sensitivity-analysis">
+<h2>Missing Data & Sensitivity Analysis</h2>
+<p class="text-muted">No published notes yet.</p>
+</section>
+<section class="category-block" id="multiplicity-type-i-error">
+<h2>Multiplicity & Type I Error</h2>
+<p class="text-muted">No published notes yet.</p>
+</section>
+<section class="category-block" id="interim-analysis-stopping-rules">
+<h2>Interim Analysis & Stopping Rules</h2>
+<p class="text-muted">No published notes yet.</p>
+</section>
+<section class="category-block" id="non-inferiority-equivalence">
+<h2>Non-Inferiority & Equivalence</h2>
+<p class="text-muted">No published notes yet.</p>
+</section>
+<section class="category-block" id="subgroup-interaction-analysis">
+<h2>Subgroup & Interaction Analysis</h2>
+<p class="text-muted">No published notes yet.</p>
+</section>
+<section class="category-block" id="safety-analysis">
+<h2>Safety Analysis</h2>
+<p class="text-muted">No published notes yet.</p>
+</section>
+<section class="category-block" id="adaptive-bayesian-methods">
+<h2>Adaptive & Bayesian Methods</h2>
+<p class="text-muted">No published notes yet.</p>
+</section>
+<section class="category-block" id="statistical-interpretation">
+<h2>Statistical Interpretation</h2>
+<p class="text-muted">No published notes yet.</p>
+</section>
+<section class="category-block" id="machine-learning">
+<h2>Machine Learning</h2>
+<p class="text-muted">No published notes yet.</p>
+</section>
+</main>
+</div>

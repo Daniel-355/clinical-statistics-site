@@ -1,0 +1,12 @@
+STATISTICAL ANALYSIS PLAN OUTLINE
+
+1. Purpose and scope
+2. Study objectives and estimands
+3. Analysis populations
+4. General statistical conventions
+5. Subject disposition and protocol deviations
+6. Efficacy analyses
+7. Safety analyses
+8. Missing data and sensitivity analyses
+9. Interim analyses and multiplicity
+10. Tables, listings, and figures

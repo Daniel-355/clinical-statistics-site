@@ -1,0 +1,17 @@
+---
+title: "Draft Note on Missing Data"
+description: "An unpublished example used to verify draft exclusion."
+date: 2026-08-28
+section: "Biostatistics"
+category: "Missing Data & Sensitivity Analysis"
+topic: "Missing Data Foundations"
+type: article
+tags: [Missing Data]
+status: draft
+featured: false
+youtube: []
+pdf: []
+downloads: []
+---
+
+This draft is available for direct local preview but is excluded from production rendering and all generated listings.

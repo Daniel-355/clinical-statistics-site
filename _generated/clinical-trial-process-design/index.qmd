@@ -1,0 +1,98 @@
+---
+title: "Clinical Trial Process & Design"
+description: "Notes and resources for Clinical Trial Process & Design"
+toc: false
+---
+
+<div class="section-layout">
+<nav class="section-nav" aria-label="Categories">
+<p class="nav-title">In this section</p>
+<a href="#drug-development-trial-phases">Drug Development & Trial Phases</a>
+<a href="#trial-objectives-endpoints">Trial Objectives & Endpoints</a>
+<a href="#trial-designs">Trial Designs</a>
+<a href="#treatment-arms-controls">Treatment Arms & Controls</a>
+<a href="#randomization-blinding">Randomization & Blinding</a>
+<a href="#study-population-eligibility">Study Population & Eligibility</a>
+<a href="#visit-schedule-follow-up">Visit Schedule & Follow-up</a>
+<a href="#protocol-development">Protocol Development</a>
+<a href="#recruitment-enrollment">Recruitment & Enrollment</a>
+<a href="#treatment-compliance-protocol-deviations">Treatment Compliance & Protocol Deviations</a>
+<a href="#safety-monitoring">Safety Monitoring</a>
+<a href="#dsmb-dmc">DSMB / DMC</a>
+<a href="#trial-conduct-monitoring">Trial Conduct & Monitoring</a>
+<a href="#protocol-amendments">Protocol Amendments</a>
+<a href="#database-lock">Database Lock</a>
+<a href="#regulatory-submission">Regulatory Submission</a>
+</nav>
+<main>
+<section class="category-block" id="drug-development-trial-phases">
+<h2>Drug Development & Trial Phases</h2>
+<p class="text-muted">No published notes yet.</p>
+</section>
+<section class="category-block" id="trial-objectives-endpoints">
+<h2>Trial Objectives & Endpoints</h2>
+<p class="text-muted">No published notes yet.</p>
+</section>
+<section class="category-block" id="trial-designs">
+<h2>Trial Designs</h2>
+<div class="topic-group">
+<h3>Parallel Group Design</h3>
+<ul>
+<li><a href="../../posts/parallel-group-trials/index.qmd">Introduction to Parallel Group Trials</a></li>
+</ul>
+</div>
+</section>
+<section class="category-block" id="treatment-arms-controls">
+<h2>Treatment Arms & Controls</h2>
+<p class="text-muted">No published notes yet.</p>
+</section>
+<section class="category-block" id="randomization-blinding">
+<h2>Randomization & Blinding</h2>
+<p class="text-muted">No published notes yet.</p>
+</section>
+<section class="category-block" id="study-population-eligibility">
+<h2>Study Population & Eligibility</h2>
+<p class="text-muted">No published notes yet.</p>
+</section>
+<section class="category-block" id="visit-schedule-follow-up">
+<h2>Visit Schedule & Follow-up</h2>
+<p class="text-muted">No published notes yet.</p>
+</section>
+<section class="category-block" id="protocol-development">
+<h2>Protocol Development</h2>
+<p class="text-muted">No published notes yet.</p>
+</section>
+<section class="category-block" id="recruitment-enrollment">
+<h2>Recruitment & Enrollment</h2>
+<p class="text-muted">No published notes yet.</p>
+</section>
+<section class="category-block" id="treatment-compliance-protocol-deviations">
+<h2>Treatment Compliance & Protocol Deviations</h2>
+<p class="text-muted">No published notes yet.</p>
+</section>
+<section class="category-block" id="safety-monitoring">
+<h2>Safety Monitoring</h2>
+<p class="text-muted">No published notes yet.</p>
+</section>
+<section class="category-block" id="dsmb-dmc">
+<h2>DSMB / DMC</h2>
+<p class="text-muted">No published notes yet.</p>
+</section>
+<section class="category-block" id="trial-conduct-monitoring">
+<h2>Trial Conduct & Monitoring</h2>
+<p class="text-muted">No published notes yet.</p>
+</section>
+<section class="category-block" id="protocol-amendments">
+<h2>Protocol Amendments</h2>
+<p class="text-muted">No published notes yet.</p>
+</section>
+<section class="category-block" id="database-lock">
+<h2>Database Lock</h2>
+<p class="text-muted">No published notes yet.</p>
+</section>
+<section class="category-block" id="regulatory-submission">
+<h2>Regulatory Submission</h2>
+<p class="text-muted">No published notes yet.</p>
+</section>
+</main>
+</div>

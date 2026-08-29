@@ -1,0 +1,44 @@
+<header class="hero"><div class="hero-inner">
+<p class="eyebrow">Clinical research knowledge base</p>
+<h1>Evidence, methods,<br>and the work between.</h1>
+<p>Practical notes for designing studies, managing clinical data, and making statistical decisions that can be explained and reproduced.</p>
+</div></header>
+<div class="home-shell">
+<section class="home-section" id="topics"><h2>Main topics</h2><p>Browse the knowledge base by discipline.</p><div class="topic-grid">
+<a class="topic-card" href="_generated/clinical-trial-process-design/index.qmd">
+<strong>Clinical Trial Process & Design</strong>
+<span>16 subject areas</span>
+</a>
+<a class="topic-card" href="_generated/data-management-programming/index.qmd">
+<strong>Data Management & Programming</strong>
+<span>12 subject areas</span>
+</a>
+<a class="topic-card" href="_generated/biostatistics/index.qmd">
+<strong>Biostatistics</strong>
+<span>16 subject areas</span>
+</a>
+<a class="topic-card" href="_generated/resources/index.qmd">
+<strong>Resources</strong>
+<span>7 subject areas</span>
+</a>
+<a class="topic-card" href="_generated/epidemiology-rwe/index.qmd">
+<strong>Epidemiology & Real-World Evidence</strong>
+<span>9 subject areas</span>
+</a>
+</div></section>
+<section class="home-section" id="featured"><h2>Featured</h2><div class="post-list">
+<div class="post-row"><div><a href="posts/kaplan-meier-r/index.qmd">Kaplan-Meier Survival Analysis in R</a><div class="post-meta">Time-to-Event Analysis · Kaplan-Meier</div></div><time datetime="2026-08-28">2026-08-28</time></div>
+<div class="post-row"><div><a href="posts/clinical-trial-sap-template/index.qmd">Clinical Trial SAP Template</a><div class="post-meta">Templates & Downloads · SAP Templates</div></div><time datetime="2026-08-23">2026-08-23</time></div>
+</div></section>
+<section class="home-section" id="downloads"><h2>Downloads</h2><div class="download-list">
+<div class="download-row"><div><a href="posts/kaplan-meier-r/index.qmd">Kaplan-Meier Survival Analysis in R</a><div class="post-meta">R example</div></div><a href="posts/kaplan-meier-r/files/km-analysis.R" download>Download</a></div>
+<div class="download-row"><div><a href="posts/clinical-trial-sap-template/index.qmd">Clinical Trial SAP Template</a><div class="post-meta">SAP outline</div></div><a href="posts/clinical-trial-sap-template/files/sap-outline.txt" download>Download</a></div>
+</div></section>
+<section class="home-section" id="latest"><h2>Latest posts</h2><div class="post-list">
+<div class="post-row"><div><a href="posts/kaplan-meier-r/index.qmd">Kaplan-Meier Survival Analysis in R</a><div class="post-meta">Time-to-Event Analysis · Kaplan-Meier</div></div><time datetime="2026-08-28">2026-08-28</time></div>
+<div class="post-row"><div><a href="posts/clinical-trial-sap-template/index.qmd">Clinical Trial SAP Template</a><div class="post-meta">Templates & Downloads · SAP Templates</div></div><time datetime="2026-08-23">2026-08-23</time></div>
+<div class="post-row"><div><a href="posts/introduction-to-rwe/index.qmd">Introduction to Real-World Evidence</a><div class="post-meta">Real-World Data & Evidence · RWE Fundamentals</div></div><time datetime="2026-08-22">2026-08-22</time></div>
+<div class="post-row"><div><a href="posts/introduction-to-adam/index.qmd">Introduction to ADaM</a><div class="post-meta">CDISC Standards · ADaM</div></div><time datetime="2026-08-21">2026-08-21</time></div>
+<div class="post-row"><div><a href="posts/parallel-group-trials/index.qmd">Introduction to Parallel Group Trials</a><div class="post-meta">Trial Designs · Parallel Group Design</div></div><time datetime="2026-08-20">2026-08-20</time></div>
+</div></section>
+</div>

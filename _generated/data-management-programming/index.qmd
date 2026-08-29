@@ -1,0 +1,78 @@
+---
+title: "Data Management & Programming"
+description: "Notes and resources for Data Management & Programming"
+toc: false
+---
+
+<div class="section-layout">
+<nav class="section-nav" aria-label="Categories">
+<p class="nav-title">In this section</p>
+<a href="#crf-ecrf-edc">CRF / eCRF & EDC</a>
+<a href="#clinical-data-management">Clinical Data Management</a>
+<a href="#data-cleaning-quality-control">Data Cleaning & Quality Control</a>
+<a href="#medical-coding">Medical Coding</a>
+<a href="#data-reconciliation">Data Reconciliation</a>
+<a href="#cdisc-standards">CDISC Standards</a>
+<a href="#analysis-dataset-development">Analysis Dataset Development</a>
+<a href="#sas-r-programming">SAS & R Programming</a>
+<a href="#tables-listings-figures">Tables, Listings & Figures</a>
+<a href="#programming-standards-validation">Programming Standards & Validation</a>
+<a href="#data-traceability">Data Traceability</a>
+<a href="#submission-standards-packages">Submission Standards & Packages</a>
+</nav>
+<main>
+<section class="category-block" id="crf-ecrf-edc">
+<h2>CRF / eCRF & EDC</h2>
+<p class="text-muted">No published notes yet.</p>
+</section>
+<section class="category-block" id="clinical-data-management">
+<h2>Clinical Data Management</h2>
+<p class="text-muted">No published notes yet.</p>
+</section>
+<section class="category-block" id="data-cleaning-quality-control">
+<h2>Data Cleaning & Quality Control</h2>
+<p class="text-muted">No published notes yet.</p>
+</section>
+<section class="category-block" id="medical-coding">
+<h2>Medical Coding</h2>
+<p class="text-muted">No published notes yet.</p>
+</section>
+<section class="category-block" id="data-reconciliation">
+<h2>Data Reconciliation</h2>
+<p class="text-muted">No published notes yet.</p>
+</section>
+<section class="category-block" id="cdisc-standards">
+<h2>CDISC Standards</h2>
+<div class="topic-group">
+<h3>ADaM</h3>
+<ul>
+<li><a href="../../posts/introduction-to-adam/index.qmd">Introduction to ADaM</a></li>
+</ul>
+</div>
+</section>
+<section class="category-block" id="analysis-dataset-development">
+<h2>Analysis Dataset Development</h2>
+<p class="text-muted">No published notes yet.</p>
+</section>
+<section class="category-block" id="sas-r-programming">
+<h2>SAS & R Programming</h2>
+<p class="text-muted">No published notes yet.</p>
+</section>
+<section class="category-block" id="tables-listings-figures">
+<h2>Tables, Listings & Figures</h2>
+<p class="text-muted">No published notes yet.</p>
+</section>
+<section class="category-block" id="programming-standards-validation">
+<h2>Programming Standards & Validation</h2>
+<p class="text-muted">No published notes yet.</p>
+</section>
+<section class="category-block" id="data-traceability">
+<h2>Data Traceability</h2>
+<p class="text-muted">No published notes yet.</p>
+</section>
+<section class="category-block" id="submission-standards-packages">
+<h2>Submission Standards & Packages</h2>
+<p class="text-muted">No published notes yet.</p>
+</section>
+</main>
+</div>

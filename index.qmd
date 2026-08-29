@@ -1,0 +1,9 @@
+---
+title: false
+pagetitle: "Clinical Statistics Notes | Practical clinical research knowledge"
+description: "Clear, practical notes for clinical trials, data management, biostatistics, and real-world evidence."
+toc: false
+page-layout: full
+---
+
+{{< include _generated/home.qmd >}}

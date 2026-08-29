@@ -1,0 +1,63 @@
+---
+title: "Epidemiology & Real-World Evidence"
+description: "Notes and resources for Epidemiology & Real-World Evidence"
+toc: false
+---
+
+<div class="section-layout">
+<nav class="section-nav" aria-label="Categories">
+<p class="nav-title">In this section</p>
+<a href="#epidemiologic-study-designs">Epidemiologic Study Designs</a>
+<a href="#real-world-data-evidence">Real-World Data & Evidence</a>
+<a href="#causal-inference">Causal Inference</a>
+<a href="#bias-confounding">Bias & Confounding</a>
+<a href="#exposure-outcome-covariate-assessment">Exposure, Outcome & Covariate Assessment</a>
+<a href="#effect-measures-effect-modification">Effect Measures & Effect Modification</a>
+<a href="#causal-methods">Causal Methods</a>
+<a href="#target-trial-emulation">Target Trial Emulation</a>
+<a href="#measurement-error-sensitivity-analysis">Measurement Error & Sensitivity Analysis</a>
+</nav>
+<main>
+<section class="category-block" id="epidemiologic-study-designs">
+<h2>Epidemiologic Study Designs</h2>
+<p class="text-muted">No published notes yet.</p>
+</section>
+<section class="category-block" id="real-world-data-evidence">
+<h2>Real-World Data & Evidence</h2>
+<div class="topic-group">
+<h3>RWE Fundamentals</h3>
+<ul>
+<li><a href="../../posts/introduction-to-rwe/index.qmd">Introduction to Real-World Evidence</a></li>
+</ul>
+</div>
+</section>
+<section class="category-block" id="causal-inference">
+<h2>Causal Inference</h2>
+<p class="text-muted">No published notes yet.</p>
+</section>
+<section class="category-block" id="bias-confounding">
+<h2>Bias & Confounding</h2>
+<p class="text-muted">No published notes yet.</p>
+</section>
+<section class="category-block" id="exposure-outcome-covariate-assessment">
+<h2>Exposure, Outcome & Covariate Assessment</h2>
+<p class="text-muted">No published notes yet.</p>
+</section>
+<section class="category-block" id="effect-measures-effect-modification">
+<h2>Effect Measures & Effect Modification</h2>
+<p class="text-muted">No published notes yet.</p>
+</section>
+<section class="category-block" id="causal-methods">
+<h2>Causal Methods</h2>
+<p class="text-muted">No published notes yet.</p>
+</section>
+<section class="category-block" id="target-trial-emulation">
+<h2>Target Trial Emulation</h2>
+<p class="text-muted">No published notes yet.</p>
+</section>
+<section class="category-block" id="measurement-error-sensitivity-analysis">
+<h2>Measurement Error & Sensitivity Analysis</h2>
+<p class="text-muted">No published notes yet.</p>
+</section>
+</main>
+</div>

@@ -1,0 +1,53 @@
+---
+title: "Resources"
+description: "Notes and resources for Resources"
+toc: false
+---
+
+<div class="section-layout">
+<nav class="section-nav" aria-label="Categories">
+<p class="nav-title">In this section</p>
+<a href="#sap-protocol-resources">SAP & Protocol Resources</a>
+<a href="#regulatory-resources">Regulatory Resources</a>
+<a href="#clinical-therapeutic-area-resources">Clinical & Therapeutic Area Resources</a>
+<a href="#documentation-reporting">Documentation & Reporting</a>
+<a href="#project-collaboration-resources">Project & Collaboration Resources</a>
+<a href="#templates-downloads">Templates & Downloads</a>
+<a href="#reference-resources">Reference Resources</a>
+</nav>
+<main>
+<section class="category-block" id="sap-protocol-resources">
+<h2>SAP & Protocol Resources</h2>
+<p class="text-muted">No published notes yet.</p>
+</section>
+<section class="category-block" id="regulatory-resources">
+<h2>Regulatory Resources</h2>
+<p class="text-muted">No published notes yet.</p>
+</section>
+<section class="category-block" id="clinical-therapeutic-area-resources">
+<h2>Clinical & Therapeutic Area Resources</h2>
+<p class="text-muted">No published notes yet.</p>
+</section>
+<section class="category-block" id="documentation-reporting">
+<h2>Documentation & Reporting</h2>
+<p class="text-muted">No published notes yet.</p>
+</section>
+<section class="category-block" id="project-collaboration-resources">
+<h2>Project & Collaboration Resources</h2>
+<p class="text-muted">No published notes yet.</p>
+</section>
+<section class="category-block" id="templates-downloads">
+<h2>Templates & Downloads</h2>
+<div class="topic-group">
+<h3>SAP Templates</h3>
+<ul>
+<li><a href="../../posts/clinical-trial-sap-template/index.qmd">Clinical Trial SAP Template</a></li>
+</ul>
+</div>
+</section>
+<section class="category-block" id="reference-resources">
+<h2>Reference Resources</h2>
+<p class="text-muted">No published notes yet.</p>
+</section>
+</main>
+</div>

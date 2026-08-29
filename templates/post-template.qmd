@@ -1,0 +1,23 @@
+---
+title: "{{TITLE}}"
+description: "Add a concise description."
+date: {{DATE}}
+section: "{{SECTION}}"
+category: "{{CATEGORY}}"
+topic: "{{TOPIC}}"
+type: "{{TYPE}}"
+tags: []
+status: "{{STATUS}}"
+featured: false
+youtube: []
+pdf: []
+downloads: []
+---
+
+## Overview
+
+Write the article here.
+
+## Key points
+
+- Add the first key point.

@@ -1,0 +1,29 @@
+---
+title: "Introduction to Parallel Group Trials"
+description: "A concise overview of the most common randomized clinical trial design."
+date: 2026-08-20
+section: "Clinical Trial Process & Design"
+category: "Trial Designs"
+topic: "Parallel Group Design"
+type: article
+tags: [Trial Design, Randomization]
+status: published
+featured: false
+youtube: []
+pdf: []
+downloads: []
+---
+
+## What is a parallel group trial?
+
+In a parallel group trial, each participant is assigned to one study arm and remains in that arm for the planned comparison period. Outcomes are compared across groups.
+
+## When it works well
+
+This design is easy to explain and analyze, and it avoids carryover effects. It is often the default when treatments may have lasting effects or when the disease course changes over time.
+
+## Planning considerations
+
+- Define the treatment contrast before enrollment.
+- Choose randomization and allocation concealment methods.
+- Specify the analysis population and handling of missing outcomes.

@@ -1,0 +1,23 @@
+---
+title: "Introduction to Real-World Evidence"
+description: "A starting framework for connecting real-world data to clinical and policy questions."
+date: 2026-08-22
+section: "Epidemiology & Real-World Evidence"
+category: "Real-World Data & Evidence"
+topic: "RWE Fundamentals"
+type: article
+tags: [RWE, Epidemiology]
+status: published
+featured: false
+youtube: []
+pdf: []
+downloads: []
+---
+
+## Data are not evidence by themselves
+
+Real-world data may come from health records, claims, registries, devices, or other routine sources. They become evidence through a clearly stated question, defensible design, appropriate analysis, and transparent interpretation.
+
+## Start with the question
+
+Define the target population, treatment strategies, outcome, time zero, follow-up, and causal contrast before selecting a dataset. This reduces the risk that data availability quietly determines the scientific question.
