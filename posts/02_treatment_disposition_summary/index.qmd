@@ -1,0 +1,49 @@
+---
+title: "Treatment Disposition and Primary Reason for Discontinuation"
+description: "A treatment-level summary of end-of-treatment status and primary discontinuation reasons."
+date: 2026-09-01
+section: "Data Management & Programming"
+category: "Tables, Listings & Figures"
+topic: "Subject Disposition"
+type: article
+tags: ["ADSL", "Treatment Disposition", "Discontinuation", "Safety Analysis Set"]
+status: published
+featured: true
+youtube: []
+pdf:
+  - title: "02_treatment_disposition_summary.pdf"
+    file: "files/02_treatment_disposition_summary.pdf"
+downloads: []
+---
+
+## Overview
+
+This program summarizes treatment disposition and the primary reasons for treatment discontinuation by treatment group. It creates a simulated subject-level dataset with twice the original sample size and produces a clinical table for the Safety Analysis Set.
+
+## Analysis Steps
+
+1. Reconstruct the original 178-subject treatment disposition structure, including three treatment groups and mutually exclusive end-of-treatment statuses.
+2. Assign a primary discontinuation reason only to subjects whose treatment status is Discontinued.
+3. Resample complete subject records to create 356 simulated subjects while preserving the logical relationship between treatment status and discontinuation reason.
+4. Restrict the analysis to subjects with `SAFFL = "Y"` and calculate treatment-group denominators.
+5. Count subjects by treatment disposition status: Ongoing, Completed, and Discontinued.
+6. Among discontinued subjects, count each primary reason for discontinuation.
+7. Add predefined rows for all expected categories, calculate treatment-specific percentages, and transpose treatment groups into columns.
+8. Export the simulated ADSL data to Excel and generate the formatted RTF/PDF table.
+
+## ADaM Data and Main Variables
+
+The analysis uses the subject-level ADaM dataset **ADSL**.
+
+| Variable | Purpose |
+|---|---|
+| `USUBJID` | Unique subject identifier |
+| `TRT01AN` | Numeric actual treatment used for treatment summaries |
+| `RANDFL` | Randomized population flag retained in the simulated ADSL structure |
+| `SAFFL` | Safety Analysis Set flag used to define the analysis population |
+| `EOTSTTN` | Numeric end-of-treatment status |
+| `EOTSTT` | End-of-treatment status: Ongoing, Completed, or Discontinued |
+| `DCTREASN` | Numeric primary discontinuation reason |
+| `DCTREAS` | Character primary reason for treatment discontinuation |
+
+Percentages are based on the number of Safety Analysis Set subjects within each treatment group. Discontinuation-reason counts are limited to subjects with a Discontinued end-of-treatment status.

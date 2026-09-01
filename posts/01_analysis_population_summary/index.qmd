@@ -1,0 +1,46 @@
+---
+title: "Analysis Population Summary"
+description: "A summary of analysis-set membership by planned treatment group and overall."
+date: 2026-09-01
+section: "Data Management & Programming"
+category: "Tables, Listings & Figures"
+topic: "Subject Disposition"
+type: article
+tags: ["ADSL", "Analysis Populations", "Safety Analysis Set", "Intent-to-Treat"]
+status: published
+featured: true
+youtube: []
+pdf:
+  - title: "01_analysis_population_summary.pdf"
+    file: "files/01_analysis_population_summary.pdf"
+downloads: []
+---
+
+## Overview
+
+This program creates a treatment-level summary of analysis population membership. It uses simulated subject-level data with twice the original sample size and reports counts and percentages for the Intent-to-Treat, Safety, and Per-Protocol Analysis Sets.
+
+## Analysis Steps
+
+1. Construct the original five-subject source structure and duplicate complete subject records to create ten simulated subjects.
+2. Retain randomized subjects using `RANDFL = "Y"` and assign records to the planned treatment group.
+3. Add an overall Total record for each randomized subject.
+4. Create complete treatment and analysis-set combinations so that zero-count categories remain in the output.
+5. Count subjects in the Intent-to-Treat, Safety, and Per-Protocol Analysis Sets.
+6. Calculate percentages using the number of randomized subjects within each treatment group as the denominator.
+7. Transpose the results into treatment columns and generate the Excel and formatted RTF/PDF outputs.
+
+## ADaM Data and Main Variables
+
+The analysis uses the subject-level ADaM dataset **ADSL**.
+
+| Variable | Purpose |
+|---|---|
+| `USUBJID` | Unique subject identifier |
+| `TRT01PN` | Numeric planned treatment used to create treatment columns |
+| `RANDFL` | Randomized population flag and denominator definition |
+| `SAFFL` | Safety Analysis Set flag |
+| `FASFL` | Full Analysis Set flag retained in the simulated ADSL structure |
+| `PPROTFL` | Per-Protocol Analysis Set flag |
+
+The displayed Intent-to-Treat Analysis Set is derived from randomized subjects, while all percentages use randomized treatment-group totals as denominators.
