@@ -32,7 +32,6 @@
 <div class="post-row"><div><a href="posts/clinical-trial-sap-template/index.qmd">Clinical Trial SAP Template</a><div class="post-meta">Templates & Downloads · SAP Templates</div></div><time datetime="2026-08-23">2026-08-23</time></div>
 </div></section>
 <section class="home-section" id="downloads"><h2>Downloads</h2><div class="download-list">
-<div class="download-row"><div><a href="posts/01_demographics_baseline_summary/index.qmd">Demographics and Baseline Characteristics</a><div class="post-meta">R program</div></div><a href="posts/01_demographics_baseline_summary/files/01_demographics_baseline_summary.r" download>Download</a></div>
 <div class="download-row"><div><a href="posts/kaplan-meier-r/index.qmd">Kaplan-Meier Survival Analysis in R</a><div class="post-meta">R example</div></div><a href="posts/kaplan-meier-r/files/km-analysis.R" download>Download</a></div>
 <div class="download-row"><div><a href="posts/clinical-trial-sap-template/index.qmd">Clinical Trial SAP Template</a><div class="post-meta">SAP outline</div></div><a href="posts/clinical-trial-sap-template/files/sap-outline.txt" download>Download</a></div>
 </div></section>
