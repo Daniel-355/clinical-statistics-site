@@ -15,7 +15,6 @@ project:
     - "_generated/resources/index.qmd"
     - "_generated/epidemiology-rwe/index.qmd"
     - "_generated/about/index.qmd"
-    - "!posts/draft-missing-data-note/index.qmd"
   resources:
     - "posts/*/files/**"
     - "posts/*/images/**"

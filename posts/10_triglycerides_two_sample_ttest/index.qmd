@@ -1,0 +1,42 @@
+---
+title: "Two-Sample t-Test for Triglycerides"
+description: "A concise programming summary for two-sample t-test for triglycerides."
+date: 2026-09-01
+section: "Data Management & Programming"
+category: "Tables, Listings & Figures"
+topic: "Inferential Statistics"
+type: article
+tags: ["ADSL", "Inferential Statistics", "Two-Sample t-Test for Triglycerides"]
+status: published
+featured: true
+youtube: []
+pdf:
+  - title: "10_triglycerides_two_sample_ttest.pdf"
+    file: "files/10_triglycerides_two_sample_ttest.pdf"
+downloads: []
+---
+
+## Overview
+
+This standalone R program creates two-sample t-test for triglycerides from embedded source-logical data. It doubles the original sample or record count, writes the simulated analysis data to Excel, and produces clinical RTF and PDF deliverables.
+
+## Analysis Steps
+
+1. Reconstruct the source-like analysis records and replace subject identifiers with PILOT identifiers.
+2. Generate a reproducible simulated dataset with twice the original sample or record count while retaining the relevant treatment and analysis relationships.
+3. Apply the population, parameter, visit, and treatment conditions defined in the program.
+4. Select triglyceride results and compare treatment-group means using a two-sample t-test.
+5. Arrange the display data in the required clinical format and generate the Excel, RTF, and PDF outputs.
+
+## ADaM Data and Main Variables
+
+The program uses **ADSL and ADLB** for the analysis.
+
+| Variable | Purpose |
+|---|---|
+| `USUBJID` | Main analysis or reporting variable used by the program |
+| `TRTPN` | Main analysis or reporting variable used by the program |
+| `AVISIT` | Main analysis or reporting variable used by the program |
+| `AVAL` | Main analysis or reporting variable used by the program |
+
+The displayed results use the treatment groups, analysis population, denominators, and category definitions implemented in the accompanying R program.

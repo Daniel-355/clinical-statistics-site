@@ -1,0 +1,46 @@
+---
+title: "Shift from Baseline in ECG Interpretation by Treatment"
+description: "A concise programming summary for shift from baseline in ecg interpretation by treatment."
+date: 2026-09-01
+section: "Data Management & Programming"
+category: "Tables, Listings & Figures"
+topic: "Electrocardiograms"
+type: article
+tags: ["ADSL", "Electrocardiograms", "Shift from Baseline in ECG Interpretation by Treatment"]
+status: published
+featured: true
+youtube: []
+pdf:
+  - title: "08_ecg_shift_table_by_treatment.pdf"
+    file: "files/08_ecg_shift_table_by_treatment.pdf"
+downloads: []
+---
+
+## Overview
+
+This standalone R program creates shift from baseline in ecg interpretation by treatment from embedded source-logical data. It doubles the original sample or record count, writes the simulated analysis data to Excel, and produces clinical RTF and PDF deliverables.
+
+## Analysis Steps
+
+1. Reconstruct the source-like analysis records and replace subject identifiers with PILOT identifiers.
+2. Generate a reproducible simulated dataset with twice the original sample or record count while retaining the relevant treatment and analysis relationships.
+3. Apply the population, parameter, visit, and treatment conditions defined in the program.
+4. Cross-tabulate baseline and post-baseline ECG interpretation categories separately for each treatment.
+5. Arrange the display data in the required clinical format and generate the Excel, RTF, and PDF outputs.
+
+## ADaM Data and Main Variables
+
+The program uses **ADSL and ADEG-style ECG data** for the analysis.
+
+| Variable | Purpose |
+|---|---|
+| `USUBJID` | Main analysis or reporting variable used by the program |
+| `TRT01AN` | Main analysis or reporting variable used by the program |
+| `SAFFL` | Main analysis or reporting variable used by the program |
+| `PARAMCD` | Main analysis or reporting variable used by the program |
+| `AVISIT` | Main analysis or reporting variable used by the program |
+| `AVISITN` | Main analysis or reporting variable used by the program |
+| `AVALC` | Main analysis or reporting variable used by the program |
+| `BASEC` | Main analysis or reporting variable used by the program |
+
+The displayed results use the treatment groups, analysis population, denominators, and category definitions implemented in the accompanying R program.

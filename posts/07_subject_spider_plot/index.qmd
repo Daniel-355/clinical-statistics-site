@@ -1,0 +1,43 @@
+---
+title: "Individual Subject FEV1 Profiles"
+description: "A concise programming summary for individual subject fev1 profiles."
+date: 2026-09-01
+section: "Data Management & Programming"
+category: "Tables, Listings & Figures"
+topic: "Clinical Figures"
+type: article
+tags: ["ADPF pulmonary-function analysis data", "Clinical Figures", "Individual Subject FEV1 Profiles"]
+status: published
+featured: true
+youtube: []
+pdf:
+  - title: "07_subject_spider_plot.pdf"
+    file: "files/07_subject_spider_plot.pdf"
+downloads: []
+---
+
+## Overview
+
+This standalone R program creates individual subject fev1 profiles from embedded source-logical data. It doubles the original sample or record count, writes the simulated analysis data to Excel, and produces clinical RTF and PDF deliverables.
+
+## Analysis Steps
+
+1. Reconstruct the source-like analysis records and replace subject identifiers with PILOT identifiers.
+2. Generate a reproducible simulated dataset with twice the original sample or record count while retaining the relevant treatment and analysis relationships.
+3. Apply the population, parameter, visit, and treatment conditions defined in the program.
+4. Plot subject-level percent change in FEV1 across visits, grouped by treatment.
+5. Arrange the display data in the required clinical format and generate the Excel, RTF, and PDF outputs.
+
+## ADaM Data and Main Variables
+
+The program uses **ADPF-style pulmonary-function analysis data** for the analysis.
+
+| Variable | Purpose |
+|---|---|
+| `USUBJID` | Main analysis or reporting variable used by the program |
+| `TRTP` | Main analysis or reporting variable used by the program |
+| `PARAMCD` | Main analysis or reporting variable used by the program |
+| `AVISITN` | Main analysis or reporting variable used by the program |
+| `PCHG` | Main analysis or reporting variable used by the program |
+
+The displayed results use the treatment groups, analysis population, denominators, and category definitions implemented in the accompanying R program.

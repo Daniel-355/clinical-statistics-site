@@ -51,12 +51,7 @@ toc: false
 </section>
 <section class="category-block" id="time-to-event-analysis">
 <h2>Time-to-Event Analysis</h2>
-<div class="topic-group">
-<h3>Kaplan-Meier</h3>
-<ul>
-<li><a href="../../posts/kaplan-meier-r/index.qmd">Kaplan-Meier Survival Analysis in R</a></li>
-</ul>
-</div>
+<p class="text-muted">No published notes yet.</p>
 </section>
 <section class="category-block" id="missing-data-sensitivity-analysis">
 <h2>Missing Data & Sensitivity Analysis</h2>

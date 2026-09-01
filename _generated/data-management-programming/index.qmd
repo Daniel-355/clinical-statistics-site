@@ -43,12 +43,7 @@ toc: false
 </section>
 <section class="category-block" id="cdisc-standards">
 <h2>CDISC Standards</h2>
-<div class="topic-group">
-<h3>ADaM</h3>
-<ul>
-<li><a href="../../posts/introduction-to-adam/index.qmd">Introduction to ADaM</a></li>
-</ul>
-</div>
+<p class="text-muted">No published notes yet.</p>
 </section>
 <section class="category-block" id="analysis-dataset-development">
 <h2>Analysis Dataset Development</h2>
@@ -61,9 +56,143 @@ toc: false
 <section class="category-block" id="tables-listings-figures">
 <h2>Tables, Listings & Figures</h2>
 <div class="topic-group">
+<h3>Inferential Statistics</h3>
+<ul>
+<li><a href="../../posts/01_adverse_events_fisher_exact/index.qmd">Fisher Exact Test for Adverse Events</a></li>
+<li><a href="../../posts/02_demographics_chi_square/index.qmd">Chi-Square Tests for Demographic Characteristics</a></li>
+<li><a href="../../posts/03_baseline_continuous_anova/index.qmd">ANOVA for Baseline Continuous Characteristics</a></li>
+<li><a href="../../posts/06_ancova_lsmeans/index.qmd">ANCOVA and Least-Squares Means</a></li>
+<li><a href="../../posts/07_response_logistic_regression/index.qmd">Logistic Regression Analysis of Response</a></li>
+<li><a href="../../posts/08_repeated_measures_mixed_model/index.qmd">Repeated-Measures Mixed Model</a></li>
+<li><a href="../../posts/10_triglycerides_two_sample_ttest/index.qmd">Two-Sample t-Test for Triglycerides</a></li>
+</ul>
+</div>
+<div class="topic-group">
+<h3>Adverse Events</h3>
+<ul>
+<li><a href="../../posts/01_adverse_events_listing/index.qmd">Adverse Events Listing</a></li>
+<li><a href="../../posts/04_adverse_events_analysis/index.qmd">Adverse Events by System Organ Class and Preferred Term</a></li>
+</ul>
+</div>
+<div class="topic-group">
+<h3>Subject Disposition</h3>
+<ul>
+<li><a href="../../posts/01_analysis_population_summary/index.qmd">Analysis Population Summary</a></li>
+<li><a href="../../posts/01_screen_failures_listing/index.qmd">Screen Failures Listing</a></li>
+<li><a href="../../posts/02_analysis_sets_listing/index.qmd">Inclusion and Exclusion from Analysis Sets</a></li>
+<li><a href="../../posts/02_treatment_disposition_summary/index.qmd">Treatment Disposition and Primary Reason for Discontinuation</a></li>
+<li><a href="../../posts/03_treatment_disposition_listing/index.qmd">Treatment Discontinuation Listing</a></li>
+<li><a href="../../posts/04_dates_first_last_evaluations_listing/index.qmd">Dates of First and Last Evaluations</a></li>
+</ul>
+</div>
+<div class="topic-group">
+<h3>Concomitant Medications</h3>
+<ul>
+<li><a href="../../posts/01_concomitant_medications_analysis/index.qmd">Concomitant Medications by ATC Classification and Preferred Term</a></li>
+<li><a href="../../posts/02_concomitant_medications_analysis/index.qmd">Concomitant Medications by Preferred Term</a></li>
+</ul>
+</div>
+<div class="topic-group">
 <h3>Demographics & Baseline Characteristics</h3>
 <ul>
 <li><a href="../../posts/01_demographics_baseline_summary/index.qmd">Demographics and Baseline Characteristics</a></li>
+</ul>
+</div>
+<div class="topic-group">
+<h3>Demographics</h3>
+<ul>
+<li><a href="../../posts/01_demographics_listing/index.qmd">Demographics Listing</a></li>
+</ul>
+</div>
+<div class="topic-group">
+<h3>Electrocardiograms</h3>
+<ul>
+<li><a href="../../posts/01_ecg_interpretation_summary/index.qmd">Electrocardiogram Interpretation Summary</a></li>
+<li><a href="../../posts/01_ecg_listing/index.qmd">Electrocardiogram Measurements Listing</a></li>
+<li><a href="../../posts/02_ecg_numeric_summary/index.qmd">ECG Parameters and Change from Baseline</a></li>
+<li><a href="../../posts/04_qtc_category_summary/index.qmd">QTc Category Summary</a></li>
+<li><a href="../../posts/05_qtc_change_threshold_summary/index.qmd">QTc Change from Baseline Threshold Summary</a></li>
+<li><a href="../../posts/08_ecg_shift_table_by_treatment/index.qmd">Shift from Baseline in ECG Interpretation by Treatment</a></li>
+</ul>
+</div>
+<div class="topic-group">
+<h3>Treatment Exposure</h3>
+<ul>
+<li><a href="../../posts/01_exposure_summary/index.qmd">Treatment Exposure Summary</a></li>
+</ul>
+</div>
+<div class="topic-group">
+<h3>Clinical Figures</h3>
+<ul>
+<li><a href="../../posts/01_grouped_bar_seroconversion/index.qmd">Seroconversion by Visit and Treatment</a></li>
+<li><a href="../../posts/02_forest_subgroup_analysis/index.qmd">Forest Plot of Subgroup Response</a></li>
+<li><a href="../../posts/03_hemoglobin_mean_profile/index.qmd">Mean Hemoglobin Profile Over Time</a></li>
+<li><a href="../../posts/04_individual_pk_profiles/index.qmd">Individual Pharmacokinetic Concentration Profiles</a></li>
+<li><a href="../../posts/05_mean_pk_profile/index.qmd">Mean Pharmacokinetic Concentration Profile</a></li>
+<li><a href="../../posts/06_baseline_postbaseline_scatter/index.qmd">Baseline Versus Post-Baseline Hemoglobin</a></li>
+<li><a href="../../posts/07_subject_spider_plot/index.qmd">Individual Subject FEV1 Profiles</a></li>
+<li><a href="../../posts/08_waterfall_best_percent_change/index.qmd">Best Percent Change from Baseline</a></li>
+</ul>
+</div>
+<div class="topic-group">
+<h3>Time-to-Event Figures</h3>
+<ul>
+<li><a href="../../posts/01_kaplan_meier_event_free_probability/index.qmd">Kaplan–Meier Event-Free Probability</a></li>
+<li><a href="../../posts/02_cumulative_incidence_time_to_event/index.qmd">Cumulative Incidence of Time-to-Event Endpoint</a></li>
+</ul>
+</div>
+<div class="topic-group">
+<h3>Laboratory Safety</h3>
+<ul>
+<li><a href="../../posts/01_laboratory_normal_range_shift/index.qmd">Laboratory Normal-Range Shift Table</a></li>
+<li><a href="../../posts/02_laboratory_toxicity_grade_shift/index.qmd">Laboratory Toxicity-Grade Shift Table</a></li>
+</ul>
+</div>
+<div class="topic-group">
+<h3>Medical History</h3>
+<ul>
+<li><a href="../../posts/01_medical_history_listing/index.qmd">Medical History Listing</a></li>
+<li><a href="../../posts/01_medical_history_summary/index.qmd">Medical History Summary</a></li>
+</ul>
+</div>
+<div class="topic-group">
+<h3>Physical Examination</h3>
+<ul>
+<li><a href="../../posts/01_physical_examination_listing/index.qmd">Physical Examination Listing</a></li>
+<li><a href="../../posts/01_physical_examination_summary/index.qmd">Physical Examination Summary</a></li>
+</ul>
+</div>
+<div class="topic-group">
+<h3>Pharmacokinetics</h3>
+<ul>
+<li><a href="../../posts/01_pk_concentration_summary/index.qmd">Pharmacokinetic Concentration Summary</a></li>
+<li><a href="../../posts/01_pk_parameters_summary/index.qmd">Pharmacokinetic Parameter Summary</a></li>
+</ul>
+</div>
+<div class="topic-group">
+<h3>Protocol Deviations</h3>
+<ul>
+<li><a href="../../posts/01_protocol_deviations_listing/index.qmd">Protocol Deviations Listing</a></li>
+</ul>
+</div>
+<div class="topic-group">
+<h3>Tumor Response</h3>
+<ul>
+<li><a href="../../posts/01_response_concordance_analysis/index.qmd">Response Assessment Concordance Analysis</a></li>
+</ul>
+</div>
+<div class="topic-group">
+<h3>Vital Signs</h3>
+<ul>
+<li><a href="../../posts/01_vital_signs_analysis/index.qmd">Vital Signs and Change from Baseline</a></li>
+<li><a href="../../posts/02_vital_signs_analysis/index.qmd">Vital Signs by Analysis Category and Visit</a></li>
+<li><a href="../../posts/03_vital_signs_analysis/index.qmd">Potentially Clinically Significant Vital Signs</a></li>
+</ul>
+</div>
+<div class="topic-group">
+<h3>Time-to-Event Analysis</h3>
+<ul>
+<li><a href="../../posts/03_time_to_event_analysis/index.qmd">Kaplan–Meier Summary of Time-to-Event Endpoint</a></li>
 </ul>
 </div>
 </section>

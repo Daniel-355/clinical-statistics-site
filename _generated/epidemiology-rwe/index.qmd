@@ -24,12 +24,7 @@ toc: false
 </section>
 <section class="category-block" id="real-world-data-evidence">
 <h2>Real-World Data & Evidence</h2>
-<div class="topic-group">
-<h3>RWE Fundamentals</h3>
-<ul>
-<li><a href="../../posts/introduction-to-rwe/index.qmd">Introduction to Real-World Evidence</a></li>
-</ul>
-</div>
+<p class="text-muted">No published notes yet.</p>
 </section>
 <section class="category-block" id="causal-inference">
 <h2>Causal Inference</h2>

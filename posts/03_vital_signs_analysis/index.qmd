@@ -1,0 +1,54 @@
+---
+title: "Potentially Clinically Significant Vital Signs"
+description: "A concise programming summary for potentially clinically significant vital signs."
+date: 2026-09-01
+section: "Data Management & Programming"
+category: "Tables, Listings & Figures"
+topic: "Vital Signs"
+type: article
+tags: ["ADSL", "Vital Signs", "Potentially Clinically Significant Vital Signs"]
+status: published
+featured: true
+youtube: []
+pdf:
+  - title: "03_vital_signs_analysis.pdf"
+    file: "files/03_vital_signs_analysis.pdf"
+downloads: []
+---
+
+## Overview
+
+This standalone R program creates potentially clinically significant vital signs from embedded source-logical data. It doubles the original sample or record count, writes the simulated analysis data to Excel, and produces clinical RTF and PDF deliverables.
+
+## Analysis Steps
+
+1. Reconstruct the source-like analysis records and replace subject identifiers with PILOT identifiers.
+2. Generate a reproducible simulated dataset with twice the original sample or record count while retaining the relevant treatment and analysis relationships.
+3. Apply the population, parameter, visit, and treatment conditions defined in the program.
+4. Apply prespecified clinical-significance criteria and summarize the number and percentage of subjects meeting each criterion by treatment.
+5. Arrange the display data in the required clinical format and generate the Excel, RTF, and PDF outputs.
+
+## ADaM Data and Main Variables
+
+The program uses **ADSL and ADVS** for the analysis.
+
+| Variable | Purpose |
+|---|---|
+| `USUBJID` | Main analysis or reporting variable used by the program |
+| `TRT01AN` | Main analysis or reporting variable used by the program |
+| `SAFFL` | Main analysis or reporting variable used by the program |
+| `PARAMCD` | Main analysis or reporting variable used by the program |
+| `PARAM` | Main analysis or reporting variable used by the program |
+| `AVISIT` | Main analysis or reporting variable used by the program |
+| `AVISITN` | Main analysis or reporting variable used by the program |
+| `BASE` | Main analysis or reporting variable used by the program |
+| `AVAL` | Main analysis or reporting variable used by the program |
+| `CHG` | Main analysis or reporting variable used by the program |
+| `CRIT1` | Main analysis or reporting variable used by the program |
+| `CRIT1FL` | Main analysis or reporting variable used by the program |
+| `CRIT2` | Main analysis or reporting variable used by the program |
+| `CRIT2FL` | Main analysis or reporting variable used by the program |
+| `CRIT3` | Main analysis or reporting variable used by the program |
+| `CRIT3FL` | Main analysis or reporting variable used by the program |
+
+The displayed results use the treatment groups, analysis population, denominators, and category definitions implemented in the accompanying R program.

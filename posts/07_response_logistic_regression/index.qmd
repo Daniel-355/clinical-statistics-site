@@ -1,0 +1,41 @@
+---
+title: "Logistic Regression Analysis of Response"
+description: "A concise programming summary for logistic regression analysis of response."
+date: 2026-09-01
+section: "Data Management & Programming"
+category: "Tables, Listings & Figures"
+topic: "Inferential Statistics"
+type: article
+tags: ["ADRS", "Inferential Statistics", "Logistic Regression Analysis of Response"]
+status: published
+featured: true
+youtube: []
+pdf:
+  - title: "07_response_logistic_regression.pdf"
+    file: "files/07_response_logistic_regression.pdf"
+downloads: []
+---
+
+## Overview
+
+This standalone R program creates logistic regression analysis of response from embedded source-logical data. It doubles the original sample or record count, writes the simulated analysis data to Excel, and produces clinical RTF and PDF deliverables.
+
+## Analysis Steps
+
+1. Reconstruct the source-like analysis records and replace subject identifiers with PILOT identifiers.
+2. Generate a reproducible simulated dataset with twice the original sample or record count while retaining the relevant treatment and analysis relationships.
+3. Apply the population, parameter, visit, and treatment conditions defined in the program.
+4. Fit a logistic regression model for binary response by treatment and report odds ratios with confidence intervals.
+5. Arrange the display data in the required clinical format and generate the Excel, RTF, and PDF outputs.
+
+## ADaM Data and Main Variables
+
+The program uses **ADRS**.
+
+| Variable | Purpose |
+|---|---|
+| `USUBJID` | Main analysis or reporting variable used by the program |
+| `TRTP` | Main analysis or reporting variable used by the program |
+| `AVALC` | Main analysis or reporting variable used by the program |
+
+The displayed results use the treatment groups, analysis population, denominators, and category definitions implemented in the accompanying R program.

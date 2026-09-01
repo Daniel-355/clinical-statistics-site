@@ -38,12 +38,7 @@ toc: false
 </section>
 <section class="category-block" id="templates-downloads">
 <h2>Templates & Downloads</h2>
-<div class="topic-group">
-<h3>SAP Templates</h3>
-<ul>
-<li><a href="../../posts/clinical-trial-sap-template/index.qmd">Clinical Trial SAP Template</a></li>
-</ul>
-</div>
+<p class="text-muted">No published notes yet.</p>
 </section>
 <section class="category-block" id="reference-resources">
 <h2>Reference Resources</h2>

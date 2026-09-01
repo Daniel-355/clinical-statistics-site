@@ -27,19 +27,18 @@
 </a>
 </div></section>
 <section class="home-section" id="featured"><h2>Featured</h2><div class="post-list">
-<div class="post-row"><div><a href="posts/01_demographics_baseline_summary/index.qmd">Demographics and Baseline Characteristics</a><div class="post-meta">Tables, Listings & Figures · Demographics & Baseline Characteristics</div></div><time datetime="2026-08-31">2026-08-31</time></div>
-<div class="post-row"><div><a href="posts/kaplan-meier-r/index.qmd">Kaplan-Meier Survival Analysis in R</a><div class="post-meta">Time-to-Event Analysis · Kaplan-Meier</div></div><time datetime="2026-08-28">2026-08-28</time></div>
-<div class="post-row"><div><a href="posts/clinical-trial-sap-template/index.qmd">Clinical Trial SAP Template</a><div class="post-meta">Templates & Downloads · SAP Templates</div></div><time datetime="2026-08-23">2026-08-23</time></div>
+<div class="post-row"><div><a href="posts/01_adverse_events_fisher_exact/index.qmd">Fisher Exact Test for Adverse Events</a><div class="post-meta">Tables, Listings & Figures · Inferential Statistics</div></div><time datetime="2026-09-01">2026-09-01</time></div>
+<div class="post-row"><div><a href="posts/01_adverse_events_listing/index.qmd">Adverse Events Listing</a><div class="post-meta">Tables, Listings & Figures · Adverse Events</div></div><time datetime="2026-09-01">2026-09-01</time></div>
+<div class="post-row"><div><a href="posts/01_analysis_population_summary/index.qmd">Analysis Population Summary</a><div class="post-meta">Tables, Listings & Figures · Subject Disposition</div></div><time datetime="2026-09-01">2026-09-01</time></div>
 </div></section>
 <section class="home-section" id="downloads"><h2>Downloads</h2><div class="download-list">
-<div class="download-row"><div><a href="posts/kaplan-meier-r/index.qmd">Kaplan-Meier Survival Analysis in R</a><div class="post-meta">R example</div></div><a href="posts/kaplan-meier-r/files/km-analysis.R" download>Download</a></div>
-<div class="download-row"><div><a href="posts/clinical-trial-sap-template/index.qmd">Clinical Trial SAP Template</a><div class="post-meta">SAP outline</div></div><a href="posts/clinical-trial-sap-template/files/sap-outline.txt" download>Download</a></div>
+<p class="text-muted">No downloads yet.</p>
 </div></section>
 <section class="home-section" id="latest"><h2>Latest posts</h2><div class="post-list">
-<div class="post-row"><div><a href="posts/01_demographics_baseline_summary/index.qmd">Demographics and Baseline Characteristics</a><div class="post-meta">Tables, Listings & Figures · Demographics & Baseline Characteristics</div></div><time datetime="2026-08-31">2026-08-31</time></div>
-<div class="post-row"><div><a href="posts/kaplan-meier-r/index.qmd">Kaplan-Meier Survival Analysis in R</a><div class="post-meta">Time-to-Event Analysis · Kaplan-Meier</div></div><time datetime="2026-08-28">2026-08-28</time></div>
-<div class="post-row"><div><a href="posts/clinical-trial-sap-template/index.qmd">Clinical Trial SAP Template</a><div class="post-meta">Templates & Downloads · SAP Templates</div></div><time datetime="2026-08-23">2026-08-23</time></div>
-<div class="post-row"><div><a href="posts/introduction-to-rwe/index.qmd">Introduction to Real-World Evidence</a><div class="post-meta">Real-World Data & Evidence · RWE Fundamentals</div></div><time datetime="2026-08-22">2026-08-22</time></div>
-<div class="post-row"><div><a href="posts/introduction-to-adam/index.qmd">Introduction to ADaM</a><div class="post-meta">CDISC Standards · ADaM</div></div><time datetime="2026-08-21">2026-08-21</time></div>
+<div class="post-row"><div><a href="posts/01_adverse_events_fisher_exact/index.qmd">Fisher Exact Test for Adverse Events</a><div class="post-meta">Tables, Listings & Figures · Inferential Statistics</div></div><time datetime="2026-09-01">2026-09-01</time></div>
+<div class="post-row"><div><a href="posts/01_adverse_events_listing/index.qmd">Adverse Events Listing</a><div class="post-meta">Tables, Listings & Figures · Adverse Events</div></div><time datetime="2026-09-01">2026-09-01</time></div>
+<div class="post-row"><div><a href="posts/01_analysis_population_summary/index.qmd">Analysis Population Summary</a><div class="post-meta">Tables, Listings & Figures · Subject Disposition</div></div><time datetime="2026-09-01">2026-09-01</time></div>
+<div class="post-row"><div><a href="posts/01_concomitant_medications_analysis/index.qmd">Concomitant Medications by ATC Classification and Preferred Term</a><div class="post-meta">Tables, Listings & Figures · Concomitant Medications</div></div><time datetime="2026-09-01">2026-09-01</time></div>
+<div class="post-row"><div><a href="posts/01_demographics_listing/index.qmd">Demographics Listing</a><div class="post-meta">Tables, Listings & Figures · Demographics</div></div><time datetime="2026-09-01">2026-09-01</time></div>
 </div></section>
 </div>
