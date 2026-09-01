@@ -34,13 +34,13 @@ The program uses **ADTTE**.
 
 | Variable | Purpose |
 |---|---|
-| `USUBJID` | Main analysis or reporting variable used by the program |
-| `PARAMCD` | Main analysis or reporting variable used by the program |
-| `PARAMN` | Main analysis or reporting variable used by the program |
-| `PARAM` | Main analysis or reporting variable used by the program |
-| `TRTAN` | Main analysis or reporting variable used by the program |
-| `TRT` | Main analysis or reporting variable used by the program |
-| `AVAL` | Main analysis or reporting variable used by the program |
-| `CNSR` | Main analysis or reporting variable used by the program |
+| `USUBJID` | Unique subject identifier |
+| `PARAMCD` | Short code identifying the analysis parameter |
+| `PARAMN` | Numeric analysis parameter order |
+| `PARAM` | Analysis parameter description |
+| `TRTAN` | Numeric analysis treatment |
+| `TRT` | Treatment-group label |
+| `AVAL` | Numeric analysis value |
+| `CNSR` | Censoring indicator for time-to-event analysis |
 
 The displayed results use the treatment groups, analysis population, denominators, and category definitions implemented in the accompanying R program.

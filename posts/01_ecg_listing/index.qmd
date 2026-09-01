@@ -34,22 +34,22 @@ The program uses **ADSL and ADEG** for the analysis.
 
 | Variable | Purpose |
 |---|---|
-| `USUBJID` | Main analysis or reporting variable used by the program |
-| `TRT01A` | Main analysis or reporting variable used by the program |
-| `TRT01AN` | Main analysis or reporting variable used by the program |
-| `SITEID` | Main analysis or reporting variable used by the program |
-| `AGE` | Main analysis or reporting variable used by the program |
-| `SEX` | Main analysis or reporting variable used by the program |
-| `ARACE` | Main analysis or reporting variable used by the program |
-| `SAFFL` | Main analysis or reporting variable used by the program |
-| `PARAMCD` | Main analysis or reporting variable used by the program |
-| `PARAM` | Main analysis or reporting variable used by the program |
-| `AVISIT` | Main analysis or reporting variable used by the program |
-| `AVISITN` | Main analysis or reporting variable used by the program |
-| `ADT` | Main analysis or reporting variable used by the program |
-| `ADY` | Main analysis or reporting variable used by the program |
-| `BASE` | Main analysis or reporting variable used by the program |
-| `AVAL` | Main analysis or reporting variable used by the program |
-| `CHG` | Main analysis or reporting variable used by the program |
+| `USUBJID` | Unique subject identifier |
+| `TRT01A` | Actual treatment for treatment period 1 |
+| `TRT01AN` | Numeric actual treatment for treatment period 1 |
+| `SITEID` | Investigator site identifier |
+| `AGE` | Age of the subject |
+| `SEX` | Reported sex of the subject |
+| `ARACE` | Analysis race category |
+| `SAFFL` | Safety Analysis Set flag |
+| `PARAMCD` | Short code identifying the analysis parameter |
+| `PARAM` | Analysis parameter description |
+| `AVISIT` | Analysis visit label |
+| `AVISITN` | Numeric analysis visit order |
+| `ADT` | Analysis date |
+| `ADY` | Analysis relative day |
+| `BASE` | Baseline value for the analysis parameter |
+| `AVAL` | Numeric analysis value |
+| `CHG` | Change from baseline, calculated as AVAL minus BASE |
 
 The displayed results use the treatment groups, analysis population, denominators, and category definitions implemented in the accompanying R program.

@@ -4,7 +4,7 @@ return {
   ["Adverse Events Listing"] = {youtube={}, pdf={{title="01_adverse_events_listing.pdf",file="files/01_adverse_events_listing.pdf"}}, downloads={}},
   ["Analysis Population Summary"] = {youtube={}, pdf={{title="01_analysis_population_summary.pdf",file="files/01_analysis_population_summary.pdf"}}, downloads={}},
   ["Concomitant Medications by ATC Classification and Preferred Term"] = {youtube={}, pdf={{title="01_concomitant_medications_analysis.pdf",file="files/01_concomitant_medications_analysis.pdf"}}, downloads={}},
-  ["Demographics and Baseline Characteristics"] = {youtube={}, pdf={{title="Demographics and Baseline Characteristics Table",file="files/01_demographics_baseline_summary.pdf"}}, downloads={}},
+  ["Demographics and Baseline Characteristics"] = {youtube={}, pdf={{title="01_demographics_baseline_summary.pdf",file="files/01_demographics_baseline_summary.pdf"}}, downloads={}},
   ["Demographics Listing"] = {youtube={}, pdf={{title="01_demographics_listing.pdf",file="files/01_demographics_listing.pdf"}}, downloads={}},
   ["Electrocardiogram Interpretation Summary"] = {youtube={}, pdf={{title="01_ecg_interpretation_summary.pdf",file="files/01_ecg_interpretation_summary.pdf"}}, downloads={}},
   ["Electrocardiogram Measurements Listing"] = {youtube={}, pdf={{title="01_ecg_listing.pdf",file="files/01_ecg_listing.pdf"}}, downloads={}},

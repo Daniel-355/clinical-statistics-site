@@ -34,10 +34,10 @@ The program uses **ADPF-style pulmonary-function analysis data** for the analysi
 
 | Variable | Purpose |
 |---|---|
-| `USUBJID` | Main analysis or reporting variable used by the program |
-| `TRTP` | Main analysis or reporting variable used by the program |
-| `PARAMCD` | Main analysis or reporting variable used by the program |
-| `AVISITN` | Main analysis or reporting variable used by the program |
-| `PCHG` | Main analysis or reporting variable used by the program |
+| `USUBJID` | Unique subject identifier |
+| `TRTP` | Planned treatment label |
+| `PARAMCD` | Short code identifying the analysis parameter |
+| `AVISITN` | Numeric analysis visit order |
+| `PCHG` | Percent change from baseline |
 
 The displayed results use the treatment groups, analysis population, denominators, and category definitions implemented in the accompanying R program.

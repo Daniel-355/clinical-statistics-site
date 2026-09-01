@@ -34,14 +34,14 @@ The program uses **ADPC-style pharmacokinetic concentration data** for the analy
 
 | Variable | Purpose |
 |---|---|
-| `USUBJID` | Main analysis or reporting variable used by the program |
-| `TRTPN` | Main analysis or reporting variable used by the program |
-| `TRTP` | Main analysis or reporting variable used by the program |
-| `PARAMCD` | Main analysis or reporting variable used by the program |
-| `PARAM` | Main analysis or reporting variable used by the program |
-| `TIME` | Main analysis or reporting variable used by the program |
-| `CONC` | Main analysis or reporting variable used by the program |
-| `LCL` | Main analysis or reporting variable used by the program |
-| `UCL` | Main analysis or reporting variable used by the program |
+| `USUBJID` | Unique subject identifier |
+| `TRTPN` | Numeric planned treatment |
+| `TRTP` | Planned treatment label |
+| `PARAMCD` | Short code identifying the analysis parameter |
+| `PARAM` | Analysis parameter description |
+| `TIME` | Nominal time after dose |
+| `CONC` | Drug concentration measurement |
+| `LCL` | Lower confidence limit |
+| `UCL` | Upper confidence limit |
 
 The displayed results use the treatment groups, analysis population, denominators, and category definitions implemented in the accompanying R program.

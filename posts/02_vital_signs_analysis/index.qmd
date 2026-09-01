@@ -34,15 +34,15 @@ The program uses **ADSL and ADVS** for the analysis.
 
 | Variable | Purpose |
 |---|---|
-| `USUBJID` | Main analysis or reporting variable used by the program |
-| `TRT01AN` | Main analysis or reporting variable used by the program |
-| `SAFFL` | Main analysis or reporting variable used by the program |
-| `PARAMCD` | Main analysis or reporting variable used by the program |
-| `PARAM` | Main analysis or reporting variable used by the program |
-| `AVISIT` | Main analysis or reporting variable used by the program |
-| `AVISITN` | Main analysis or reporting variable used by the program |
-| `AVAL` | Main analysis or reporting variable used by the program |
-| `AVALCAT1` | Main analysis or reporting variable used by the program |
-| `AVALCA1N` | Main analysis or reporting variable used by the program |
+| `USUBJID` | Unique subject identifier |
+| `TRT01AN` | Numeric actual treatment for treatment period 1 |
+| `SAFFL` | Safety Analysis Set flag |
+| `PARAMCD` | Short code identifying the analysis parameter |
+| `PARAM` | Analysis parameter description |
+| `AVISIT` | Analysis visit label |
+| `AVISITN` | Numeric analysis visit order |
+| `AVAL` | Numeric analysis value |
+| `AVALCAT1` | Analysis-category label |
+| `AVALCA1N` | Numeric analysis-category code |
 
 The displayed results use the treatment groups, analysis population, denominators, and category definitions implemented in the accompanying R program.

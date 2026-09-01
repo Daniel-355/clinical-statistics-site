@@ -34,11 +34,11 @@ The program uses **ADSL and ADLB** for the analysis.
 
 | Variable | Purpose |
 |---|---|
-| `USUBJID` | Main analysis or reporting variable used by the program |
-| `TRT01PN` | Main analysis or reporting variable used by the program |
-| `FASFL` | Main analysis or reporting variable used by the program |
-| `AVISITN` | Main analysis or reporting variable used by the program |
-| `BLHBA1C` | Main analysis or reporting variable used by the program |
-| `CHG` | Main analysis or reporting variable used by the program |
+| `USUBJID` | Unique subject identifier |
+| `TRT01PN` | Numeric planned treatment for treatment period 1 |
+| `FASFL` | Full Analysis Set flag |
+| `AVISITN` | Numeric analysis visit order |
+| `BLHBA1C` | Baseline hemoglobin A1c value |
+| `CHG` | Change from baseline, calculated as AVAL minus BASE |
 
 The displayed results use the treatment groups, analysis population, denominators, and category definitions implemented in the accompanying R program.

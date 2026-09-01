@@ -34,19 +34,19 @@ The program uses **ADSL**.
 
 | Variable | Purpose |
 |---|---|
-| `USUBJID` | Main analysis or reporting variable used by the program |
-| `TRT01A` | Main analysis or reporting variable used by the program |
-| `TRT01AN` | Main analysis or reporting variable used by the program |
-| `TRTEDT` | Main analysis or reporting variable used by the program |
-| `TRTEDY` | Main analysis or reporting variable used by the program |
-| `SITEID` | Main analysis or reporting variable used by the program |
-| `SITENAM` | Main analysis or reporting variable used by the program |
-| `AGE` | Main analysis or reporting variable used by the program |
-| `SEX` | Main analysis or reporting variable used by the program |
-| `ARACE` | Main analysis or reporting variable used by the program |
-| `DSTFL` | Main analysis or reporting variable used by the program |
-| `DSTREAS` | Main analysis or reporting variable used by the program |
-| `DSTDT` | Main analysis or reporting variable used by the program |
-| `DSTDY` | Main analysis or reporting variable used by the program |
+| `USUBJID` | Unique subject identifier |
+| `TRT01A` | Actual treatment for treatment period 1 |
+| `TRT01AN` | Numeric actual treatment for treatment period 1 |
+| `TRTEDT` | Date or day of last treatment exposure |
+| `TRTEDY` | Study day of last treatment exposure |
+| `SITEID` | Investigator site identifier |
+| `SITENAM` | Investigator site name |
+| `AGE` | Age of the subject |
+| `SEX` | Reported sex of the subject |
+| `ARACE` | Analysis race category |
+| `DSTFL` | Treatment-discontinuation flag |
+| `DSTREAS` | Primary reason for treatment discontinuation |
+| `DSTDT` | Disposition event date |
+| `DSTDY` | Disposition event study day |
 
 The displayed results use the treatment groups, analysis population, denominators, and category definitions implemented in the accompanying R program.

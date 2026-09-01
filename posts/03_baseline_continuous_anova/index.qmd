@@ -34,10 +34,10 @@ The program uses **ADSL**.
 
 | Variable | Purpose |
 |---|---|
-| `USUBJID` | Main analysis or reporting variable used by the program |
-| `TRT01PN` | Main analysis or reporting variable used by the program |
-| `ITTFL` | Main analysis or reporting variable used by the program |
-| `AGE` | Main analysis or reporting variable used by the program |
-| `WEIGHTBL` | Main analysis or reporting variable used by the program |
+| `USUBJID` | Unique subject identifier |
+| `TRT01PN` | Numeric planned treatment for treatment period 1 |
+| `ITTFL` | Intent-to-Treat Analysis Set flag |
+| `AGE` | Age of the subject |
+| `WEIGHTBL` | Baseline weight in kilograms |
 
 The displayed results use the treatment groups, analysis population, denominators, and category definitions implemented in the accompanying R program.

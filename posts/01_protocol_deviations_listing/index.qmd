@@ -34,15 +34,15 @@ The program uses **ADDV**.
 
 | Variable | Purpose |
 |---|---|
-| `USUBJID` | Main analysis or reporting variable used by the program |
-| `TRT01P` | Main analysis or reporting variable used by the program |
-| `TRT01PN` | Main analysis or reporting variable used by the program |
-| `SITEID` | Main analysis or reporting variable used by the program |
-| `SITENAM` | Main analysis or reporting variable used by the program |
-| `RANDFL` | Main analysis or reporting variable used by the program |
-| `TRTEDY` | Main analysis or reporting variable used by the program |
-| `DVDECOD` | Main analysis or reporting variable used by the program |
-| `DVSUBCOD` | Main analysis or reporting variable used by the program |
-| `PARCAT1` | Main analysis or reporting variable used by the program |
+| `USUBJID` | Unique subject identifier |
+| `TRT01P` | Planned treatment for treatment period 1 |
+| `TRT01PN` | Numeric planned treatment for treatment period 1 |
+| `SITEID` | Investigator site identifier |
+| `SITENAM` | Investigator site name |
+| `RANDFL` | Randomized population flag |
+| `TRTEDY` | Study day of last treatment exposure |
+| `DVDECOD` | Standardized protocol-deviation category |
+| `DVSUBCOD` | Protocol-deviation subcategory |
+| `PARCAT1` | Analysis parameter category |
 
 The displayed results use the treatment groups, analysis population, denominators, and category definitions implemented in the accompanying R program.

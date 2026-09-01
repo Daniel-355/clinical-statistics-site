@@ -34,11 +34,11 @@ The program uses **ADSL and ADLB** for the analysis.
 
 | Variable | Purpose |
 |---|---|
-| `USUBJID` | Main analysis or reporting variable used by the program |
-| `TRT01AN` | Main analysis or reporting variable used by the program |
-| `SAFFL` | Main analysis or reporting variable used by the program |
-| `PARAM` | Main analysis or reporting variable used by the program |
-| `BTOXGRN` | Main analysis or reporting variable used by the program |
-| `ATOXGRN` | Main analysis or reporting variable used by the program |
+| `USUBJID` | Unique subject identifier |
+| `TRT01AN` | Numeric actual treatment for treatment period 1 |
+| `SAFFL` | Safety Analysis Set flag |
+| `PARAM` | Analysis parameter description |
+| `BTOXGRN` | Numeric baseline toxicity grade |
+| `ATOXGRN` | Numeric post-baseline toxicity grade |
 
 The displayed results use the treatment groups, analysis population, denominators, and category definitions implemented in the accompanying R program.

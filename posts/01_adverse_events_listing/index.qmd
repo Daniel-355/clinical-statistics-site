@@ -34,20 +34,20 @@ The program uses **ADSL and ADAE** for the analysis.
 
 | Variable | Purpose |
 |---|---|
-| `USUBJID` | Main analysis or reporting variable used by the program |
-| `TRT01A` | Main analysis or reporting variable used by the program |
-| `AGE` | Main analysis or reporting variable used by the program |
-| `SEX` | Main analysis or reporting variable used by the program |
-| `RACE` | Main analysis or reporting variable used by the program |
-| `AETERM` | Main analysis or reporting variable used by the program |
-| `AEDECOD` | Main analysis or reporting variable used by the program |
-| `AEBODSYS` | Main analysis or reporting variable used by the program |
-| `AESTDTC` | Main analysis or reporting variable used by the program |
-| `AEENDTC` | Main analysis or reporting variable used by the program |
-| `AESEV` | Main analysis or reporting variable used by the program |
-| `AESER` | Main analysis or reporting variable used by the program |
-| `AEREL` | Main analysis or reporting variable used by the program |
-| `AEACN` | Main analysis or reporting variable used by the program |
-| `AEOUT` | Main analysis or reporting variable used by the program |
+| `USUBJID` | Unique subject identifier |
+| `TRT01A` | Actual treatment for treatment period 1 |
+| `AGE` | Age of the subject |
+| `SEX` | Reported sex of the subject |
+| `RACE` | Reported race category |
+| `AETERM` | Reported adverse-event term |
+| `AEDECOD` | Standardized adverse-event preferred term |
+| `AEBODSYS` | Adverse-event system organ class |
+| `AESTDTC` | Adverse-event start date or datetime |
+| `AEENDTC` | Adverse-event end date or datetime |
+| `AESEV` | Adverse-event severity |
+| `AESER` | Serious adverse-event flag |
+| `AEREL` | Causality relationship to study treatment |
+| `AEACN` | Action taken with study treatment due to the adverse event |
+| `AEOUT` | Adverse-event outcome |
 
 The displayed results use the treatment groups, analysis population, denominators, and category definitions implemented in the accompanying R program.
