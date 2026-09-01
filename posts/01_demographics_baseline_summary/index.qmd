@@ -1,0 +1,56 @@
+---
+title: "Demographics and Baseline Characteristics"
+description: "A concise summary of the Safety Analysis Set demographics and baseline characteristics table."
+date: 2026-08-31
+section: "Data Management & Programming"
+category: "Tables, Listings & Figures"
+topic: "Demographics & Baseline Characteristics"
+type: article
+tags: ["ADSL", "Demographics", "Baseline Characteristics", "Safety Analysis Set"]
+status: published
+featured: true
+youtube: []
+pdf:
+  - title: "Demographics and Baseline Characteristics Table"
+    file: "files/01_demographics_baseline_summary.pdf"
+downloads:
+  - title: "R program"
+    file: "files/01_demographics_baseline_summary.r"
+  - title: "Simulated dataset"
+    file: "files/01_demographics_baseline_summary_simulated_data.xlsx"
+  - title: "RTF table"
+    file: "files/01_demographics_baseline_summary.rtf"
+  - title: "PDF table"
+    file: "files/01_demographics_baseline_summary.pdf"
+---
+
+## Overview
+
+This program produces a clinical summary table of demographics and baseline characteristics for the Safety Analysis Set. It is standalone: the source-like subject data are embedded in the R program, a new dataset with twice the original sample size is simulated, and the analysis outputs are generated without relying on another program.
+
+## Analysis Steps
+
+1. Create the original subject-level data structure for 41 subjects and retain subjects with `SAFFL = "Y"`.
+2. Generate 82 simulated subjects while preserving the source treatment, sex, and race structure. Apply controlled variation to age, height, and weight, then recalculate baseline BMI from weight and height.
+3. Create treatment-specific analysis records and an additional pooled Total group.
+4. Summarize age, baseline weight, baseline height, and baseline BMI using nonmissing count, missing count, mean, standard deviation, median, first and third quartiles, minimum, and maximum.
+5. Summarize sex and race using counts and percentages within each treatment group and overall.
+6. Export the simulated subject-level data to Excel and produce the formatted clinical table in RTF and PDF.
+
+## ADaM Data and Main Variables
+
+The analysis uses the subject-level ADaM dataset **ADSL**.
+
+| Variable | Purpose |
+|---|---|
+| `USUBJID` | Unique subject identifier |
+| `TRT01AN` | Planned treatment group used for treatment summaries |
+| `SAFFL` | Safety Analysis Set population flag |
+| `AGE` | Age in years |
+| `SEX`, `SEXN` | Sex and its numeric representation |
+| `ARACE`, `ARACEN` | Analysis race and its numeric representation |
+| `WEIGHTBL` | Baseline weight in kilograms |
+| `HEIGHTBL` | Baseline height in centimeters |
+| `BMIBL` | Baseline body mass index, recalculated as weight divided by height squared |
+
+The final table presents treatment-group and overall summaries for the Safety Analysis Set, with categorical percentages based on the corresponding treatment-group population.

@@ -60,7 +60,12 @@ toc: false
 </section>
 <section class="category-block" id="tables-listings-figures">
 <h2>Tables, Listings & Figures</h2>
-<p class="text-muted">No published notes yet.</p>
+<div class="topic-group">
+<h3>Demographics & Baseline Characteristics</h3>
+<ul>
+<li><a href="../../posts/01_demographics_baseline_summary/index.qmd">Demographics and Baseline Characteristics</a></li>
+</ul>
+</div>
 </section>
 <section class="category-block" id="programming-standards-validation">
 <h2>Programming Standards & Validation</h2>

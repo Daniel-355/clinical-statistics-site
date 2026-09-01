@@ -27,18 +27,20 @@
 </a>
 </div></section>
 <section class="home-section" id="featured"><h2>Featured</h2><div class="post-list">
+<div class="post-row"><div><a href="posts/01_demographics_baseline_summary/index.qmd">Demographics and Baseline Characteristics</a><div class="post-meta">Tables, Listings & Figures · Demographics & Baseline Characteristics</div></div><time datetime="2026-08-31">2026-08-31</time></div>
 <div class="post-row"><div><a href="posts/kaplan-meier-r/index.qmd">Kaplan-Meier Survival Analysis in R</a><div class="post-meta">Time-to-Event Analysis · Kaplan-Meier</div></div><time datetime="2026-08-28">2026-08-28</time></div>
 <div class="post-row"><div><a href="posts/clinical-trial-sap-template/index.qmd">Clinical Trial SAP Template</a><div class="post-meta">Templates & Downloads · SAP Templates</div></div><time datetime="2026-08-23">2026-08-23</time></div>
 </div></section>
 <section class="home-section" id="downloads"><h2>Downloads</h2><div class="download-list">
+<div class="download-row"><div><a href="posts/01_demographics_baseline_summary/index.qmd">Demographics and Baseline Characteristics</a><div class="post-meta">R program</div></div><a href="posts/01_demographics_baseline_summary/files/01_demographics_baseline_summary.r" download>Download</a></div>
 <div class="download-row"><div><a href="posts/kaplan-meier-r/index.qmd">Kaplan-Meier Survival Analysis in R</a><div class="post-meta">R example</div></div><a href="posts/kaplan-meier-r/files/km-analysis.R" download>Download</a></div>
 <div class="download-row"><div><a href="posts/clinical-trial-sap-template/index.qmd">Clinical Trial SAP Template</a><div class="post-meta">SAP outline</div></div><a href="posts/clinical-trial-sap-template/files/sap-outline.txt" download>Download</a></div>
 </div></section>
 <section class="home-section" id="latest"><h2>Latest posts</h2><div class="post-list">
+<div class="post-row"><div><a href="posts/01_demographics_baseline_summary/index.qmd">Demographics and Baseline Characteristics</a><div class="post-meta">Tables, Listings & Figures · Demographics & Baseline Characteristics</div></div><time datetime="2026-08-31">2026-08-31</time></div>
 <div class="post-row"><div><a href="posts/kaplan-meier-r/index.qmd">Kaplan-Meier Survival Analysis in R</a><div class="post-meta">Time-to-Event Analysis · Kaplan-Meier</div></div><time datetime="2026-08-28">2026-08-28</time></div>
 <div class="post-row"><div><a href="posts/clinical-trial-sap-template/index.qmd">Clinical Trial SAP Template</a><div class="post-meta">Templates & Downloads · SAP Templates</div></div><time datetime="2026-08-23">2026-08-23</time></div>
 <div class="post-row"><div><a href="posts/introduction-to-rwe/index.qmd">Introduction to Real-World Evidence</a><div class="post-meta">Real-World Data & Evidence · RWE Fundamentals</div></div><time datetime="2026-08-22">2026-08-22</time></div>
 <div class="post-row"><div><a href="posts/introduction-to-adam/index.qmd">Introduction to ADaM</a><div class="post-meta">CDISC Standards · ADaM</div></div><time datetime="2026-08-21">2026-08-21</time></div>
-<div class="post-row"><div><a href="posts/parallel-group-trials/index.qmd">Introduction to Parallel Group Trials</a><div class="post-meta">Trial Designs · Parallel Group Design</div></div><time datetime="2026-08-20">2026-08-20</time></div>
 </div></section>
 </div>
