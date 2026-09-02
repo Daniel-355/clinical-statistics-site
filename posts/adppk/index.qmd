@@ -1,0 +1,59 @@
+---
+title: "ADPPK Pharmacokinetic Parameters Dataset"
+description: "Summary of the source data, derivations, and principal variables used to create ADPPK."
+date: 2026-09-02
+section: "Data Management & Programming"
+category: "CDISC Standards"
+topic: "ADaM"
+type: article
+tags: ["ADPPK", "ADaM", "Pharmacokinetic Parameters"]
+status: published
+featured: true
+youtube: []
+pdf: []
+downloads:
+  - title: "adppk.xlsx"
+    file: "files/adppk.xlsx"
+---
+
+## Overview
+
+ADPPK provides analysis-ready pharmacokinetic parameters derived from concentration, dose, treatment, and laboratory information.
+
+## Analysis Steps
+
+1. Prepare PC concentration and EX dosing records with analysis date-time variables.
+2. Use VS information where needed for visit timing and LB data for baseline laboratory covariates.
+3. Merge subject-level treatment and population variables from ADSL.
+4. Order dosing and observation events and derive previous-dose and relative-time variables.
+5. Map source results to pharmacokinetic parameter codes, values, units, and descriptive qualifiers.
+6. Derive subject-level baseline covariates and transpose selected values for analysis use.
+7. Assign sequence numbers and apply metadata, labels, controlled terminology, and validation checks.
+
+## Source Data
+
+### SDTM datasets
+
+- **PC** — Pharmacokinetic concentration and parameter observations.
+- **EX** — Exposure and dosing information.
+- **VS** — Vital signs used for selected timing or covariate derivations.
+- **LB** — Laboratory tests used for selected baseline covariates.
+
+### ADaM datasets
+
+- **ADSL** — Subject-level treatment, population, and demographic variables.
+
+## Main Variables
+
+- **PARAMCD / PARAM** — Pharmacokinetic parameter code and description.
+- **AVAL / AVALU** — Numeric analysis value and unit.
+- **DV** — Dependent variable used as the parameter result.
+- **ADTM / ADT / ATM** — Analysis date-time, date, and time.
+- **NFRLT / AFRLT** — Nominal and actual relative time from dosing.
+- **DOSEA / DOSEU** — Actual dose and dose unit.
+- **ROUTE / FORM** — Administration route and dose form.
+- **LLOQ** — Lower limit of quantification.
+- **UDTC** — ISO 8601 analysis date-time character value.
+- **ASEQ** — Analysis sequence number.
+- **ABLFL** — Baseline record flag when applicable.
+

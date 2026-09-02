@@ -1,0 +1,57 @@
+---
+title: "ADRS Tumor Response Analysis Dataset"
+description: "Summary of the source data, derivations, and principal variables used to create ADRS."
+date: 2026-09-02
+section: "Data Management & Programming"
+category: "CDISC Standards"
+topic: "ADaM"
+type: article
+tags: ["ADRS", "ADaM", "Oncology Response"]
+status: published
+featured: true
+youtube: []
+pdf: []
+downloads:
+  - title: "adrs.xlsx"
+    file: "files/adrs.xlsx"
+---
+
+## Overview
+
+ADRS contains analysis-ready oncology response records, including overall response, progressive disease, death, and last-response summaries.
+
+## Analysis Steps
+
+1. Start with SDTM RS response assessments and merge tumor-location information from TU.
+2. Merge randomization, death, treatment, and population variables from ADSL.
+3. Derive analysis dates and analysis visits for response assessments.
+4. Convert character response results to ordered numeric analysis values.
+5. Select the worst response per subject and date for the primary analysis record.
+6. Derive first progressive-disease, death, and last-assessment summary records.
+7. Apply metadata, controlled terminology, labels, sort order, and validation checks.
+
+## Source Data
+
+### SDTM datasets
+
+- **RS** — Disease response assessments based on oncology response criteria.
+- **TU** — Tumor identification and location information.
+
+### ADaM datasets
+
+- **ADSL** — Subject-level treatment, randomization, death, and population variables.
+
+## Main Variables
+
+- **PARAMCD / PARAM** — Response parameter code and description.
+- **AVALC** — Character analysis response, such as CR, PR, SD, or PD.
+- **AVAL** — Numeric representation of the analysis response.
+- **ADT** — Analysis date.
+- **AVISIT / AVISITN** — Analysis visit and numeric visit.
+- **ANL01FL** — Primary response-analysis record flag.
+- **ASEQ** — Analysis sequence number.
+- **PARAMCD = OVR** — Overall response assessment.
+- **PARAMCD = PD** — Progressive-disease event record.
+- **PARAMCD = DEATH** — Death event record.
+- **PARAMCD = LSTA** — Last response assessment record.
+

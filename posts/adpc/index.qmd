@@ -1,0 +1,58 @@
+---
+title: "ADPC Pharmacokinetic Concentration Dataset"
+description: "Summary of the source data, derivations, and principal variables used to create ADPC."
+date: 2026-09-02
+section: "Data Management & Programming"
+category: "CDISC Standards"
+topic: "ADaM"
+type: article
+tags: ["ADPC", "ADaM", "Pharmacokinetics"]
+status: published
+featured: true
+youtube: []
+pdf: []
+downloads:
+  - title: "adpc.xlsx"
+    file: "files/adpc.xlsx"
+---
+
+## Overview
+
+ADPC combines pharmacokinetic concentration observations with dosing events and subject-level data to support concentration-time and exposure analyses.
+
+## Analysis Steps
+
+1. Prepare PC concentration records and EX dosing records with analysis date-time variables.
+2. Use VS dates when needed to support visit or event timing.
+3. Merge treatment and subject attributes from ADSL.
+4. Build a chronological sequence of concentration and dosing events.
+5. Identify previous and next doses and calculate nominal and actual relative times.
+6. Derive reference date-times, visits, parameters, values, units, below-quantification categories, and analysis flags.
+7. Derive baseline and change variables, assign sequence numbers, and apply metadata checks.
+
+## Source Data
+
+### SDTM datasets
+
+- **PC** — Pharmacokinetic concentrations; the primary observation source.
+- **EX** — Exposure; supplies dosing amount, route, frequency, and timing.
+- **VS** — Vital signs; supports selected visit-date derivations.
+
+### ADaM datasets
+
+- **ADSL** — Subject-level treatment, population, and reference-date variables.
+
+## Main Variables
+
+- **PARAMCD / PARAM / PARAMN** — Concentration or dose parameter code, description, and numeric code.
+- **AVAL / AVALU** — Numeric analysis value and unit.
+- **AVALCAT1** — Display category, including below-limit results.
+- **ADTM / ADT / ATM** — Analysis date-time, date, and time.
+- **ASTDTM / AENDTM** — Dose-interval start and end date-times.
+- **PCRFTDTM / PCRFTDT / PCRFTTM** — Pharmacokinetic reference date-time, date, and time.
+- **NFRLT / AFRLT** — Nominal and actual relative time from the reference dose.
+- **EVID** — Event identifier distinguishing doses from observations.
+- **BASE / CHG** — Baseline value and change from baseline.
+- **ANL01FL / ANL02FL** — Analysis inclusion flags.
+- **ASEQ** — Analysis sequence number.
+

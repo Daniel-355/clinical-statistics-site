@@ -1,0 +1,55 @@
+---
+title: "ADAE Adverse Event Analysis Dataset"
+description: "Summary of the source data, derivations, and principal variables used to create ADAE."
+date: 2026-09-02
+section: "Data Management & Programming"
+category: "CDISC Standards"
+topic: "ADaM"
+type: article
+tags: ["ADAE", "ADaM", "Adverse Events"]
+status: published
+featured: true
+youtube: []
+pdf: []
+downloads:
+  - title: "adae.xlsx"
+    file: "files/adae.xlsx"
+---
+
+## Overview
+
+ADAE is an occurrence data structure for adverse-event analyses. It combines SDTM event records with subject-level treatment information and analysis-ready timing and flag variables.
+
+## Analysis Steps
+
+1. Start with SDTM AE records and merge selected subject-level variables from ADSL.
+2. Convert adverse-event start and end character dates to analysis dates.
+3. Calculate study days and event duration.
+4. Join exposure information to support treatment-emergent and on-treatment assessments.
+5. Derive severity-based occurrence flags and standardized query indicators.
+6. Apply metadata, controlled terminology, labels, sort order, and validation checks.
+
+## Source Data
+
+### SDTM datasets
+
+- **AE** — Adverse events; the primary event-level source.
+- **EX** — Exposure; supports treatment timing and on-treatment classification.
+
+### ADaM datasets
+
+- **ADSL** — Subject-level treatment dates, treatment groups, and population variables.
+
+## Main Variables
+
+- **ASTDT / AENDT** — Analysis start and end dates of the adverse event.
+- **ASTDY / AENDY** — Analysis start and end study days.
+- **ADURN / ADURU** — Adverse-event duration and duration unit.
+- **TRTEMFL** — Treatment-emergent adverse-event flag.
+- **ONTRTFL** — On-treatment event flag.
+- **AOCCFL** — First occurrence flag for the analysis grouping.
+- **AOCCSFL** — First occurrence flag based on severity ordering.
+- **CQ01NAM / CQ01NAMN** — Standardized query name and numeric representation when applicable.
+- **TRTA / TRTAN** — Actual treatment and its numeric code.
+- **ASEQ** — Analysis sequence number.
+

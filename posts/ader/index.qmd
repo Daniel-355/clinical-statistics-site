@@ -1,0 +1,96 @@
+---
+title: "ADaM Integrated Efficacy and Response Datasets"
+description: "Summary of the derivations used to create ADER, ADEE, ADES, and ADTRR."
+date: 2026-09-02
+section: "Data Management & Programming"
+category: "CDISC Standards"
+topic: "ADaM"
+type: article
+tags: ["ADER", "ADEE", "ADES", "ADTRR", "ADaM"]
+status: published
+featured: true
+youtube: []
+pdf: []
+downloads:
+  - title: "ader.xlsx"
+    file: "files/ader.xlsx"
+  - title: "adee.xlsx"
+    file: "files/adee.xlsx"
+  - title: "ades.xlsx"
+    file: "files/ades.xlsx"
+  - title: "adtrr.xlsx"
+    file: "files/adtrr.xlsx"
+---
+
+## Overview
+
+This program creates four integrated analysis datasets: ADER for efficacy-response modeling, ADEE for time-to-event efficacy endpoints, ADES for adverse-event summaries, and ADTRR for tumor-response analyses.
+
+## Analysis Steps
+
+1. Assemble subject-level covariates from ADSL and selected upstream analysis datasets.
+2. Create **ADER** by combining demographic, treatment, laboratory, vital-sign, pharmacokinetic, safety, survival, and response covariates.
+3. Create **ADEE** from time-to-event endpoints and derive event indicators, units, parameter-specific flags, and treatment variables.
+4. Create **ADES** with subject-level adverse-event occurrence parameters and event-term records.
+5. Create **ADTRR** with tumor-size, best-response, and nadir records plus response-analysis flags.
+6. Apply metadata, controlled terminology, labels, sort order, and validation checks to each output.
+
+## Source Data
+
+### SDTM datasets
+
+No SDTM dataset is read directly by this program. SDTM-derived information is supplied through the upstream ADaM datasets.
+
+### ADaM datasets
+
+- **ADSL** — Subject-level demographics, treatment, and population variables.
+- **ADRS** — Oncology response records.
+- **ADTTE** — Time-to-event endpoints and censoring indicators.
+- **ADLB** — Laboratory analysis results and baseline laboratory covariates.
+- **ADVS** — Vital-sign results, including baseline height and weight.
+- **ADEX** — Exposure and dose variables.
+- **ADPP** — Pharmacokinetic parameter results.
+- **ADAE** — Adverse-event records and analysis flags.
+- **ADTR** — Tumor measurement and response data.
+
+## Main Variables
+
+### ADER
+
+- **AGE, SEX, RACE, ETHNIC** — Demographic covariates.
+- **TRT01P / TRT01A** — Planned and actual treatment.
+- **HTBL / WTBL** — Baseline height and weight.
+- **CREATBL / ALTBL / ASTBL / BILIBL** — Selected baseline laboratory values.
+- **AUCLST / CMAX** — Selected pharmacokinetic covariates.
+- **OS / PFS** — Overall-survival and progression-free-survival durations.
+- **OSIND / PFSIND** — Corresponding censoring indicators.
+- **BOR / BORC** — Best overall response in numeric and character form.
+
+### ADEE
+
+- **PARAMCD / PARAM** — Efficacy endpoint code and description.
+- **AVAL / AVALU** — Endpoint value and unit.
+- **CNSR / EVENT** — Censoring and derived event indicators.
+- **ANL01FL–ANL04FL** — Parameter-specific analysis flags.
+- **ASEQ** — Analysis sequence number.
+
+### ADES
+
+- **PARAMCD** — Safety-summary parameter, including TEAE, severe TEAE, SAE, treatment-related AE, and discontinuation-related AE.
+- **AVAL / AVALC** — Numeric and character occurrence indicators.
+- **AETERM** — Reported adverse-event term for event-level records.
+- **AOCCFL** — Occurrence flag.
+- **ANL01FL–ANL05FL** — Safety-analysis flags.
+- **ASEQ** — Analysis sequence number.
+
+### ADTRR
+
+- **PARAMCD = TSIZE** — Sum of tumor diameters.
+- **PARAMCD = BOR** — Best overall response.
+- **PARAMCD = NADIR** — Lowest post-baseline tumor-size result.
+- **AVAL / AVALC / AVALU** — Numeric value, character value, and unit.
+- **CHG / PCHG** — Change and percent change from baseline.
+- **BORN / NADIR** — Numeric best-response and nadir values.
+- **ANL01FL–ANL03FL** — Tumor-response analysis flags.
+- **ASEQ** — Analysis sequence number.
+

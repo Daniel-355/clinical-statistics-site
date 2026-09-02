@@ -1,0 +1,55 @@
+---
+title: "ADTTE Time-to-Event Analysis Dataset"
+description: "Summary of the source data, derivations, and principal variables used to create ADTTE."
+date: 2026-09-02
+section: "Data Management & Programming"
+category: "CDISC Standards"
+topic: "ADaM"
+type: article
+tags: ["ADTTE", "ADaM", "Time to Event"]
+status: published
+featured: true
+youtube: []
+pdf: []
+downloads:
+  - title: "adtte.xlsx"
+    file: "files/adtte.xlsx"
+---
+
+## Overview
+
+ADTTE provides one analysis record per subject and time-to-event parameter for overall survival and progression-free survival analyses.
+
+## Analysis Steps
+
+1. Use ADSL to obtain randomization, death, treatment, and subject-level variables.
+2. Use ADRS to obtain progressive-disease and last-response dates.
+3. Define death, progression, last-known-alive, progression-free-alive, and randomization events.
+4. Apply event and censoring rules to derive overall survival and progression-free survival parameters.
+5. Calculate time from the start date to the event or censoring date.
+6. Assign sequence numbers and apply metadata, controlled terminology, labels, and validation checks.
+
+## Source Data
+
+### SDTM datasets
+
+No SDTM dataset is read directly by this program. The underlying SDTM information is supplied through the upstream ADSL and ADRS datasets.
+
+### ADaM datasets
+
+- **ADSL** — Randomization, death, last-known-alive, treatment, and population variables.
+- **ADRS** — Progressive-disease and last-response event records.
+
+## Main Variables
+
+- **PARAMCD / PARAM** — Time-to-event parameter code and description.
+- **PARAMCD = OS** — Overall survival parameter.
+- **PARAMCD = PFS** — Progression-free survival parameter.
+- **STARTDT** — Time-to-event origin date, normally randomization date.
+- **ADT** — Event or censoring analysis date.
+- **AVAL** — Time-to-event analysis value in days.
+- **CNSR** — Censoring indicator; identifies events versus censored observations.
+- **EVNTDESC** — Description of the event or censoring reason.
+- **SRCDOM / SRCVAR** — Source domain and source variable for the event date.
+- **ASEQ** — Analysis sequence number.
+

@@ -1,0 +1,57 @@
+---
+title: "ADVS Vital Signs Analysis Dataset"
+description: "Summary of the source data, derivations, and principal variables used to create ADVS."
+date: 2026-09-02
+section: "Data Management & Programming"
+category: "CDISC Standards"
+topic: "ADaM"
+type: article
+tags: ["ADVS", "ADaM", "Vital Signs"]
+status: published
+featured: true
+youtube: []
+pdf: []
+downloads:
+  - title: "advs.xlsx"
+    file: "files/advs.xlsx"
+---
+
+## Overview
+
+ADVS provides analysis-ready vital-sign measurements, calculated parameters, baseline values, changes from baseline, analysis visits, and treatment-period flags.
+
+## Analysis Steps
+
+1. Start with SDTM VS and merge treatment and subject attributes from ADSL.
+2. Derive analysis date, study day, analysis visit, and time-point variables.
+3. Map source tests to analysis parameters and standardize analysis values and units.
+4. Calculate mean arterial pressure, body mass index, and body surface area.
+5. Create summary records where multiple measurements occur at the same analysis time point.
+6. Derive normal-range indicators, baseline records, baseline values, change, percent change, and analysis flags.
+7. Assign sequence numbers, categories, metadata, labels, and controlled terminology.
+
+## Source Data
+
+### SDTM datasets
+
+- **VS** — Vital signs; supplies the observed measurements, units, visits, dates, and time points.
+
+### ADaM datasets
+
+- **ADSL** — Subject-level treatment dates, treatment assignments, and population variables.
+
+## Main Variables
+
+- **PARAMCD / PARAM / PARAMN** — Analysis parameter code, description, and numeric code.
+- **AVAL / AVALU** — Numeric analysis value and unit.
+- **ADT / ADY** — Analysis date and study day.
+- **AVISIT / AVISITN** — Analysis visit and numeric visit.
+- **ATPT / ATPTN** — Analysis time point and numeric time point.
+- **ANRLO / ANRHI** — Analysis normal-range lower and upper limits.
+- **ANRIND** — Position of the result relative to the normal range.
+- **ABLFL / BASE / BASETYPE** — Baseline flag, baseline value, and baseline definition.
+- **CHG / PCHG** — Change and percent change from baseline.
+- **ONTRTFL** — On-treatment flag.
+- **ANL01FL** — Primary analysis-record flag.
+- **ASEQ** — Analysis sequence number.
+

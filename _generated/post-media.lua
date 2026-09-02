@@ -50,4 +50,12 @@ return {
   ["Repeated-Measures Mixed Model"] = {youtube={}, pdf={{title="08_repeated_measures_mixed_model.pdf",file="files/08_repeated_measures_mixed_model.pdf"}}, downloads={}},
   ["Best Percent Change from Baseline"] = {youtube={}, pdf={{title="08_waterfall_best_percent_change.pdf",file="files/08_waterfall_best_percent_change.pdf"}}, downloads={}},
   ["Two-Sample t-Test for Triglycerides"] = {youtube={}, pdf={{title="10_triglycerides_two_sample_ttest.pdf",file="files/10_triglycerides_two_sample_ttest.pdf"}}, downloads={}},
+  ["ADAE Adverse Event Analysis Dataset"] = {youtube={}, pdf={}, downloads={{title="adae.xlsx",file="files/adae.xlsx"}}},
+  ["ADaM Integrated Efficacy and Response Datasets"] = {youtube={}, pdf={}, downloads={{title="ader.xlsx",file="files/ader.xlsx"},{title="adee.xlsx",file="files/adee.xlsx"},{title="ades.xlsx",file="files/ades.xlsx"},{title="adtrr.xlsx",file="files/adtrr.xlsx"}}},
+  ["ADPC Pharmacokinetic Concentration Dataset"] = {youtube={}, pdf={}, downloads={{title="adpc.xlsx",file="files/adpc.xlsx"}}},
+  ["ADPPK Pharmacokinetic Parameters Dataset"] = {youtube={}, pdf={}, downloads={{title="adppk.xlsx",file="files/adppk.xlsx"}}},
+  ["ADRS Tumor Response Analysis Dataset"] = {youtube={}, pdf={}, downloads={{title="adrs.xlsx",file="files/adrs.xlsx"}}},
+  ["ADSL Subject-Level Analysis Dataset"] = {youtube={}, pdf={}, downloads={{title="adsl.xlsx",file="files/adsl.xlsx"}}},
+  ["ADTTE Time-to-Event Analysis Dataset"] = {youtube={}, pdf={}, downloads={{title="adtte.xlsx",file="files/adtte.xlsx"}}},
+  ["ADVS Vital Signs Analysis Dataset"] = {youtube={}, pdf={}, downloads={{title="advs.xlsx",file="files/advs.xlsx"}}},
 }

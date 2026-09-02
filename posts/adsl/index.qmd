@@ -1,0 +1,58 @@
+---
+title: "ADSL Subject-Level Analysis Dataset"
+description: "Summary of the source data, derivations, and principal variables used to create ADSL."
+date: 2026-09-02
+section: "Data Management & Programming"
+category: "CDISC Standards"
+topic: "ADaM"
+type: article
+tags: ["ADSL", "ADaM", "Subject Level"]
+status: published
+featured: true
+youtube: []
+pdf: []
+downloads:
+  - title: "adsl.xlsx"
+    file: "files/adsl.xlsx"
+---
+
+## Overview
+
+ADSL contains one record per subject and provides the subject-level population, treatment, demographic, disposition, and study-date variables used by other ADaM datasets.
+
+## Analysis Steps
+
+1. Start with SDTM DM and add supplemental demographic qualifiers from SUPPDM.
+2. Derive treatment start and end dates/times from EX and treatment duration variables.
+3. Derive informed-consent, randomization, completion, discontinuation, and last-known-alive dates from DS and other source dates.
+4. Add death, adverse-event, and vital-sign summary information where required.
+5. Create demographic groupings, population flags, treatment variables, and subject-level identifiers.
+6. Apply metadata, controlled terminology, variable order, labels, and transport-file checks.
+
+## Source Data
+
+### SDTM datasets
+
+- **DM** — Demographics; the primary subject-level source.
+- **SUPPDM** — Supplemental demographic qualifiers.
+- **DS** — Disposition events, including completion and discontinuation information.
+- **EX** — Exposure records used to derive treatment dates and treatment duration.
+- **AE** — Adverse events used for selected subject-level event summaries.
+- **VS** — Vital signs used for selected baseline subject characteristics.
+
+## Main Variables
+
+- **USUBJID** — Unique subject identifier.
+- **TRT01P / TRT01A** — Planned and actual treatment for the first treatment period.
+- **TRTSDT / TRTEDT** — Treatment start and end dates.
+- **TRTSDTM / TRTEDTM** — Treatment start and end date-times.
+- **TRTDURD** — Treatment duration in days.
+- **AGE / AGEGR1** — Age and derived age category.
+- **SEX, RACE, ETHNIC** — Demographic characteristics.
+- **RACEGR1** — Derived race grouping.
+- **SAFFL** — Safety-population flag.
+- **DTHDT / DTHFL** — Death date and death flag.
+- **EOSDT / EOSSTT** — End-of-study date and status.
+- **RANDDT** — Randomization date.
+- **LSTALVDT** — Last known alive date.
+
