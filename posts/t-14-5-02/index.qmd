@@ -11,8 +11,8 @@ status: published
 featured: true
 youtube: []
 pdf:
-  - title: "14-5.02.rtf"
-    file: "files/14-5.02.rtf"
+  - title: "14-5.02.pdf"
+    file: "files/14-5.02.pdf"
 downloads:
 ---
 

@@ -11,8 +11,8 @@ status: published
 featured: true
 youtube: []
 pdf:
-  - title: "14-3.12.rtf"
-    file: "files/14-3.12.rtf"
+  - title: "14-3.12.pdf"
+    file: "files/14-3.12.pdf"
 downloads:
 ---
 

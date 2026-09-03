@@ -11,8 +11,8 @@ status: published
 featured: true
 youtube: []
 pdf:
-  - title: "14-6.06.rtf"
-    file: "files/14-6.06.rtf"
+  - title: "14-6.06.pdf"
+    file: "files/14-6.06.pdf"
 downloads:
 ---
 
@@ -34,4 +34,3 @@ Selects post-baseline threshold parameters, chooses each subject's maximum and l
 - `USUBJID`: subject identifier
 - `SAFFL`: safety flag
 - `TRTP`: planned treatment.
-

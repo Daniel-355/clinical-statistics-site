@@ -11,8 +11,8 @@ status: published
 featured: true
 youtube: []
 pdf:
-  - title: "14-7.02.rtf"
-    file: "files/14-7.02.rtf"
+  - title: "14-7.02.pdf"
+    file: "files/14-7.02.pdf"
 downloads:
 ---
 
@@ -35,4 +35,3 @@ Selects safety vital-sign records with baseline values, identifies Week 24 and e
 - `SAFFL`: safety flag
 - `TRTP`: planned treatment
 - `ARM in ADSL`: denominator treatment.
-

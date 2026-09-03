@@ -11,8 +11,8 @@ status: published
 featured: true
 youtube: []
 pdf:
-  - title: "14-7.04.rtf"
-    file: "files/14-7.04.rtf"
+  - title: "14-7.04.pdf"
+    file: "files/14-7.04.pdf"
 downloads:
 ---
 
@@ -28,4 +28,3 @@ Uses ADSL treatment denominators and an empty medication structure because no co
 
 - `USUBJID`: subject identifier used to link medication exposure to subjects
 - `ARM`: randomized treatment arm. CMCLAS and CMDECOD are placeholder medication class and coded-name fields, not sourced from an available ADaM dataset.
-

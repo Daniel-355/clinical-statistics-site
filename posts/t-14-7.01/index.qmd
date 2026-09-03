@@ -11,8 +11,8 @@ status: published
 featured: true
 youtube: []
 pdf:
-  - title: "14-7.01.rtf"
-    file: "files/14-7.01.rtf"
+  - title: "14-7.01.pdf"
+    file: "files/14-7.01.pdf"
 downloads:
 ---
 
@@ -35,4 +35,3 @@ Selects analysis-ready safety vital signs, derives Week 24 and end-of-treatment 
 - `ANL01FL/SAFFL`: selection flags
 - `TRTP`: planned treatment
 - `ARM in ADSL`: denominator treatment.
-

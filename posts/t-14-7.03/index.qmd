@@ -11,8 +11,8 @@ status: published
 featured: true
 youtube: []
 pdf:
-  - title: "14-7.03.rtf"
-    file: "files/14-7.03.rtf"
+  - title: "14-7.03.pdf"
+    file: "files/14-7.03.pdf"
 downloads:
 ---
 
@@ -34,4 +34,3 @@ Selects weight records, identifies baseline, Week 24, and end-of-treatment obser
 - `USUBJID`: subject identifier
 - `TRTP`: planned treatment
 - `ARM in ADSL`: denominator treatment.
-
