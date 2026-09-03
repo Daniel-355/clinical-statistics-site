@@ -1,0 +1,33 @@
+---
+title: "CIBIC-Plus Summary at Week 8"
+description: "Summarizes CIBIC-Plus assessments at Week 8 and compares treatments."
+date: 2026-08-31
+section: "Data Management & Programming"
+category: "Tables, Listings & Figures"
+topic: "Tables"
+type: article
+tags: ["ADaM", "Efficacy", "Clinical Tables"]
+status: published
+featured: true
+youtube: []
+pdf:
+  - title: "14-3.04.rtf"
+    file: "files/14-3.04.rtf"
+downloads:
+---
+
+## Analysis overview
+
+Filters to analysis-ready CIBIC-Plus records, produces Week 8 descriptive summaries by treatment, and runs the efficacy comparison model.
+
+## ADaM datasets
+
+- `ADQSCIBC`
+
+## Key ADaM variables
+
+- `PARAMCD`: parameter code, restricted to CIBICVAL
+- `AVAL`: analysis score
+- `AVISITN`: analysis visit number
+- `EFFFL/ITTFL/ANL01FL`: analysis selection flags
+- `TRTP/TRTPN`: planned treatment.

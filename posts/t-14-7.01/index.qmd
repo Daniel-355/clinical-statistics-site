@@ -1,0 +1,38 @@
+---
+title: "Vital Signs at Baseline and End of Treatment"
+description: "Summarizes blood pressure and pulse values at baseline, Week 24, and end of treatment."
+date: 2026-08-31
+section: "Data Management & Programming"
+category: "Tables, Listings & Figures"
+topic: "Tables"
+type: article
+tags: ["ADaM", "Safety", "Vital Signs"]
+status: published
+featured: true
+youtube: []
+pdf:
+  - title: "14-7.01.rtf"
+    file: "files/14-7.01.rtf"
+downloads:
+---
+
+## Analysis overview
+
+Selects analysis-ready safety vital signs, derives Week 24 and end-of-treatment flags, calculates descriptive statistics by measure, position, visit, and treatment, and adds treatment denominators.
+
+## ADaM datasets
+
+- `ADVS`
+- `ADSL`
+
+## Key ADaM variables
+
+- `PARAM`: vital-sign measure
+- `ATPT`: planned measurement position/time
+- `AVAL`: analysis value
+- `ABLFL`: baseline flag
+- `AVISIT`: analysis visit
+- `ANL01FL/SAFFL`: selection flags
+- `TRTP`: planned treatment
+- `ARM in ADSL`: denominator treatment.
+

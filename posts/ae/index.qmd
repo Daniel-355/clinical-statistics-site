@@ -1,0 +1,60 @@
+---
+title: "AE Adverse Events Domain"
+description: "Summary of the raw sources, mapping steps, and principal variables used to create the SDTM AE domain."
+date: 2026-09-03
+section: "Data Management & Programming"
+category: "CDISC Standards"
+topic: "SDTM"
+type: article
+tags: ["AE", "SDTM", "Adverse Events"]
+status: published
+featured: true
+youtube: []
+pdf: []
+downloads:
+  - title: "ae.xlsx"
+    file: "files/ae.xlsx"
+---
+
+## Overview
+
+The AE program converts raw adverse-event records into the SDTM AE domain. It standardizes event terminology and qualifiers, creates sequence numbers, and derives study days relative to the subject reference period.
+
+## Processing Steps
+
+1. Load the adverse-event raw dataset and generate technical record identifiers.
+2. Map the reported term, coded event terminology, severity, seriousness, action, relationship, outcome, and serious-event criteria.
+3. Apply study controlled terminology to variables with defined code lists.
+4. Convert collection, event-start, and event-end dates to ISO 8601 SDTM date/time values.
+5. Create study and subject identifiers and assign a sequence number within subject.
+6. Use DM reference dates to derive adverse-event start and end study days.
+7. Select and order the final SDTM AE variables.
+
+## Raw Data Sources
+
+- **ae_raw** — Primary raw source containing adverse-event terms, coded terminology, severity, seriousness, relationship, outcome, dates, and serious-event criteria.
+- **dm_raw**, **ds_raw**, and **ec_raw** — Used indirectly through the derived DM domain to provide subject reference dates for study-day calculations.
+
+## Supporting SDTM Data
+
+- **DM** — Supplies `RFXSTDTC` and `RFXENDTC` for the derivation of AE study days.
+
+## Main Variables
+
+- **STUDYID** — Study identifier.
+- **DOMAIN** — Domain abbreviation; set to `AE`.
+- **USUBJID** — Unique subject identifier.
+- **AESEQ** — Sequence number for adverse events within subject.
+- **AETERM** — Reported adverse-event term.
+- **AEDECOD** — Standardized coded adverse-event term.
+- **AELLT / AEHLT / AEHLGT / AESOC** — MedDRA hierarchy terms.
+- **AESEV** — Adverse-event severity.
+- **AESER** — Serious adverse-event indicator.
+- **AEACN** — Action taken with study treatment.
+- **AEREL** — Relationship of the event to study treatment.
+- **AEOUT** — Outcome of the adverse event.
+- **AESCAN / AESCONG / AESDISAB / AESDTH / AESHOSP / AESLIFE / AESOD** — Serious-event criterion flags.
+- **AEDTC** — Date/time of adverse-event data collection.
+- **AESTDTC / AEENDTC** — Adverse-event start and end date/time.
+- **AESTDY / AEENDY** — Adverse-event start and end study day.
+

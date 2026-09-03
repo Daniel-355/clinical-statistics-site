@@ -1,0 +1,36 @@
+---
+title: "ADAS-Cog Longitudinal Descriptive Summary"
+description: "Summarizes observed and derived ADAS-Cog results across baseline and Weeks 8, 16, and 24."
+date: 2026-08-31
+section: "Data Management & Programming"
+category: "Tables, Listings & Figures"
+topic: "Tables"
+type: article
+tags: ["ADaM", "Efficacy", "Clinical Tables"]
+status: published
+featured: true
+youtube: []
+pdf:
+  - title: "14-3.10.rtf"
+    file: "files/14-3.10.rtf"
+downloads:
+---
+
+## Analysis overview
+
+Selects ADAS-Cog total records at key visits, distinguishes LOCF and windowed records, calculates descriptive statistics for values and changes, and arranges results by visit and treatment.
+
+## ADaM datasets
+
+- `ADQSADAS`
+
+## Key ADaM variables
+
+- `PARAMCD`: ACTOT parameter
+- `AVISIT/AVISITN`: analysis visit
+- `AVAL`: analysis value
+- `BASE`: baseline value
+- `CHG`: change from baseline
+- `DTYPE`: derivation type
+- `EFFFL/ITTFL/ANL01FL`: selection flags
+- `TRTP/TRTPN`: planned treatment.

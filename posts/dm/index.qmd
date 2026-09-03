@@ -1,0 +1,56 @@
+---
+title: "DM Demographics Domain"
+description: "Summary of the raw sources, mapping steps, and principal variables used to create the SDTM DM domain."
+date: 2026-09-03
+section: "Data Management & Programming"
+category: "CDISC Standards"
+topic: "SDTM"
+type: article
+tags: ["DM", "SDTM", "Demographics"]
+status: published
+featured: true
+youtube: []
+pdf: []
+downloads:
+  - title: "dm.xlsx"
+    file: "files/dm.xlsx"
+---
+
+## Overview
+
+The DM program creates one demographics record per subject. It maps demographic and treatment information, derives important study reference dates, and assigns standard SDTM identifiers.
+
+## Processing Steps
+
+1. Load the demographics, disposition, and exposure raw datasets.
+2. Generate technical record identifiers used during the mapping process.
+3. Map age, sex, race, ethnicity, planned treatment, and actual treatment using study controlled terminology.
+4. Derive study, treatment, consent, participation-end, and death reference dates from the relevant raw sources.
+5. Create standard identifiers, country, death flag, DM collection date, and DM study day.
+6. Produce the final DM dataset in SDTM variable order.
+
+## Raw Data Sources
+
+- **dm_raw** — Subject demographics, identifiers, country, treatment assignment, consent date, and DM collection date.
+- **ds_raw** — Subject disposition information used to derive the end-of-participation date and death information.
+- **ec_raw** — Exposure information used to derive study and treatment reference start and end dates.
+
+## Main Variables
+
+- **STUDYID** — Study identifier.
+- **DOMAIN** — Domain abbreviation; set to `DM`.
+- **USUBJID** — Unique subject identifier across the study.
+- **SUBJID** — Subject identifier within the study.
+- **AGE / AGEU** — Subject age and age unit.
+- **SEX** — Administrative sex.
+- **RACE / ETHNIC** — Race and ethnicity classifications.
+- **ARM / ARMCD** — Planned treatment arm and arm code.
+- **ACTARM / ACTARMCD** — Actual treatment arm and arm code.
+- **RFSTDTC / RFENDTC** — Subject reference-period start and end date/time.
+- **RFXSTDTC / RFXENDTC** — First and last study-treatment date/time.
+- **RFICDTC** — Informed-consent date/time.
+- **RFPENDTC** — End-of-participation date/time.
+- **DTHDTC / DTHFL** — Death date/time and death flag.
+- **COUNTRY** — Country of the investigational site.
+- **DMDTC / DMDY** — DM collection date/time and study day.
+

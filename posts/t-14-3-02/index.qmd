@@ -1,0 +1,33 @@
+---
+title: "CIBIC-Plus Summary at Week 24"
+description: "Summarizes CIBIC-Plus assessments at Week 24 and compares treatments."
+date: 2026-08-31
+section: "Data Management & Programming"
+category: "Tables, Listings & Figures"
+topic: "Tables"
+type: article
+tags: ["ADaM", "Efficacy", "Clinical Tables"]
+status: published
+featured: true
+youtube: []
+pdf:
+  - title: "14-3.02.rtf"
+    file: "files/14-3.02.rtf"
+downloads:
+---
+
+## Analysis overview
+
+Selects analysis-ready CIBIC-Plus records, calculates treatment-specific Week 24 summaries, and applies the efficacy model for the Week 24 comparison.
+
+## ADaM datasets
+
+- `ADQSCIBC`
+
+## Key ADaM variables
+
+- `PARAMCD`: parameter code, restricted to CIBICVAL
+- `AVAL`: CIBIC-Plus analysis score
+- `AVISITN`: analysis visit number
+- `EFFFL/ITTFL/ANL01FL`: population and analysis flags
+- `TRTP/TRTPN`: planned treatment.

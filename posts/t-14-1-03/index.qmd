@@ -1,0 +1,34 @@
+---
+title: "Analysis Populations by Site"
+description: "Reports ITT, efficacy, and Week 24 completer counts by pooled site and treatment."
+date: 2026-08-31
+section: "Data Management & Programming"
+category: "Tables, Listings & Figures"
+topic: "Tables"
+type: article
+tags: ["ADaM", "Clinical Tables"]
+status: published
+featured: true
+youtube: []
+pdf:
+  - title: "14-1.03.rtf"
+    file: "files/14-1.03.rtf"
+downloads:
+---
+
+## Analysis overview
+
+Restricts to ITT subjects, counts analysis-population membership by pooled site, site, and treatment, derives site totals, and pivots the counts into the final display.
+
+## ADaM datasets
+
+- `ADSL`
+
+## Key ADaM variables
+
+- `SITEGR1`: pooled site grouping
+- `SITEID`: study site identifier
+- `TRT01P`: planned treatment
+- `ITTFL`: intent-to-treat flag
+- `EFFFL`: efficacy population flag
+- `COMP24FL`: Week 24 completion flag.

@@ -1,0 +1,37 @@
+---
+title: "Treatment-Emergent Adverse Events"
+description: "Summarizes treatment-emergent adverse events by system organ class and preferred term."
+date: 2026-08-31
+section: "Data Management & Programming"
+category: "Tables, Listings & Figures"
+topic: "Tables"
+type: article
+tags: ["ADaM", "Safety", "Adverse Events"]
+status: published
+featured: true
+youtube: []
+pdf:
+  - title: "14-5.01.rtf"
+    file: "files/14-5.01.rtf"
+downloads:
+---
+
+## Analysis overview
+
+Selects safety subjects with treatment-emergent events, counts subjects and events overall, by system organ class, and by preferred term, calculates percentages using ADSL denominators, and adds treatment-comparison p-values.
+
+## ADaM datasets
+
+- `ADAE`
+- `ADSL`
+
+## Key ADaM variables
+
+- `USUBJID`: subject identifier
+- `SAFFL`: safety flag
+- `TRTEMFL`: treatment-emergent flag
+- `AEBODSYS`: system organ class
+- `AETERM`: reported/preferred event term used in the display
+- `TRTA/TRTAN`: actual treatment
+- `AESER`: serious-event flag
+- `TRT01P/TRT01PN in ADSL`: denominator treatment.

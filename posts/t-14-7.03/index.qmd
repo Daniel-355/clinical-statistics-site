@@ -1,0 +1,37 @@
+---
+title: "Weight Change from Baseline"
+description: "Summarizes weight change at Week 24 and end of treatment."
+date: 2026-08-31
+section: "Data Management & Programming"
+category: "Tables, Listings & Figures"
+topic: "Tables"
+type: article
+tags: ["ADaM", "Safety", "Vital Signs"]
+status: published
+featured: true
+youtube: []
+pdf:
+  - title: "14-7.03.rtf"
+    file: "files/14-7.03.rtf"
+downloads:
+---
+
+## Analysis overview
+
+Selects weight records, identifies baseline, Week 24, and end-of-treatment observations, derives subject-level changes, and summarizes the changes by treatment and visit.
+
+## ADaM datasets
+
+- `ADVS`
+- `ADSL`
+
+## Key ADaM variables
+
+- `PARAM`: analysis parameter, restricted to Weight (kg)
+- `AVAL`: analysis value
+- `ABLFL`: baseline flag
+- `AVISIT`: analysis visit
+- `USUBJID`: subject identifier
+- `TRTP`: planned treatment
+- `ARM in ADSL`: denominator treatment.
+

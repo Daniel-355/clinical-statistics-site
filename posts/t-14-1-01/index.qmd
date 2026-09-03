@@ -1,0 +1,35 @@
+---
+title: "Population Analysis Sets Summary"
+description: "Summarizes the disposition and analysis populations by randomized treatment group."
+date: 2026-08-31
+section: "Data Management & Programming"
+category: "Tables, Listings & Figures"
+topic: "Tables"
+type: article
+tags: ["ADaM", "Clinical Tables"]
+status: published
+featured: true
+youtube: []
+pdf:
+  - title: "14-1.01.rtf"
+    file: "files/14-1.01.rtf"
+downloads:
+---
+
+## Analysis overview
+
+Creates a total-treatment category, derives overall study completion, counts subjects in the ITT, safety, efficacy, Week 24 completer, and study completer populations, and formats counts and percentages by treatment.
+
+## ADaM datasets
+
+- `ADSL`
+
+## Key ADaM variables
+
+- `USUBJID`: unique subject identifier
+- `TRT01P/TRT01PN`: planned treatment and numeric treatment code
+- `ITTFL`: intent-to-treat flag
+- `SAFFL`: safety population flag
+- `EFFFL`: efficacy population flag
+- `COMP24FL`: Week 24 completion flag
+- `DCDECOD`: standardized disposition outcome.

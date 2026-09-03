@@ -1,0 +1,34 @@
+---
+title: "ADAS-Cog Week 24 Completer Analysis"
+description: "Summarizes ADAS-Cog outcomes for subjects who completed Week 24."
+date: 2026-08-31
+section: "Data Management & Programming"
+category: "Tables, Listings & Figures"
+topic: "Tables"
+type: article
+tags: ["ADaM", "Efficacy", "Clinical Tables"]
+status: published
+featured: true
+youtube: []
+pdf:
+  - title: "14-3.07.rtf"
+    file: "files/14-3.07.rtf"
+downloads:
+---
+
+## Analysis overview
+
+Restricts to efficacy subjects completing Week 24 and excludes LOCF-derived records, then summarizes baseline, Week 24, and change from baseline by treatment.
+
+## ADaM datasets
+
+- `ADQSADAS`
+
+## Key ADaM variables
+
+- `COMP24FL`: Week 24 completion flag
+- `EFFFL/ANL01FL`: efficacy and analysis flags
+- `DTYPE`: derivation type, used to exclude LOCF
+- `PARAMCD`: ACTOT parameter
+- `AVAL/BASE/CHG`: analysis, baseline, and change values
+- `TRTP/TRTPN`: planned treatment.

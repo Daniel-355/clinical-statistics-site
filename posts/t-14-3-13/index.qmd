@@ -1,0 +1,34 @@
+---
+title: "CIBIC-Plus Categorical Assessments"
+description: "Summarizes CIBIC-Plus response categories at Weeks 8, 16, and 24."
+date: 2026-08-31
+section: "Data Management & Programming"
+category: "Tables, Listings & Figures"
+topic: "Tables"
+type: article
+tags: ["ADaM", "Efficacy", "Clinical Tables"]
+status: published
+featured: true
+youtube: []
+pdf:
+  - title: "14-3.13.rtf"
+    file: "files/14-3.13.rtf"
+downloads:
+---
+
+## Analysis overview
+
+Maps numeric scores to ordered assessment categories, calculates counts and percentages by treatment and visit, fills zero-count categories, and calculates site-stratified CMH p-values.
+
+## ADaM datasets
+
+- `ADQSCIBC`
+
+## Key ADaM variables
+
+- `AVAL`: numeric CIBIC-Plus score
+- `AVISIT/AVISITN`: analysis visit
+- `SITEGR1`: pooled site stratum
+- `EFFFL/ITTFL/ANL01FL`: selection flags
+- `USUBJID`: subject identifier
+- `TRTP/TRTPN`: planned treatment.

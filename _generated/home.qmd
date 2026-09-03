@@ -27,21 +27,21 @@
 </a>
 </div></section>
 <section class="home-section" id="featured"><h2>Featured</h2><div class="post-list">
-<div class="post-row"><div><a href="posts/adae/index.qmd">ADAE Adverse Event Analysis Dataset</a><div class="post-meta">CDISC Standards · ADaM</div></div><time datetime="2026-09-02">2026-09-02</time></div>
-<div class="post-row"><div><a href="posts/ader/index.qmd">ADaM Integrated Efficacy and Response Datasets</a><div class="post-meta">CDISC Standards · ADaM</div></div><time datetime="2026-09-02">2026-09-02</time></div>
-<div class="post-row"><div><a href="posts/adpc/index.qmd">ADPC Pharmacokinetic Concentration Dataset</a><div class="post-meta">CDISC Standards · ADaM</div></div><time datetime="2026-09-02">2026-09-02</time></div>
+<div class="post-row"><div><a href="posts/ae/index.qmd">AE Adverse Events Domain</a><div class="post-meta">CDISC Standards · SDTM</div></div><time datetime="2026-09-03">2026-09-03</time></div>
+<div class="post-row"><div><a href="posts/dm/index.qmd">DM Demographics Domain</a><div class="post-meta">CDISC Standards · SDTM</div></div><time datetime="2026-09-03">2026-09-03</time></div>
+<div class="post-row"><div><a href="posts/vs/index.qmd">VS Vital Signs Domain</a><div class="post-meta">CDISC Standards · SDTM</div></div><time datetime="2026-09-03">2026-09-03</time></div>
 </div></section>
 <section class="home-section" id="downloads"><h2>Downloads</h2><div class="download-list">
+<div class="download-row"><div><a href="posts/ae/index.qmd">AE Adverse Events Domain</a><div class="post-meta">ae.xlsx</div></div><a href="posts/ae/files/ae.xlsx" download>Download</a></div>
+<div class="download-row"><div><a href="posts/dm/index.qmd">DM Demographics Domain</a><div class="post-meta">dm.xlsx</div></div><a href="posts/dm/files/dm.xlsx" download>Download</a></div>
+<div class="download-row"><div><a href="posts/vs/index.qmd">VS Vital Signs Domain</a><div class="post-meta">vs.xlsx</div></div><a href="posts/vs/files/vs.xlsx" download>Download</a></div>
 <div class="download-row"><div><a href="posts/adae/index.qmd">ADAE Adverse Event Analysis Dataset</a><div class="post-meta">adae.xlsx</div></div><a href="posts/adae/files/adae.xlsx" download>Download</a></div>
-<div class="download-row"><div><a href="posts/ader/index.qmd">ADaM Integrated Efficacy and Response Datasets</a><div class="post-meta">ader.xlsx</div></div><a href="posts/ader/files/ader.xlsx" download>Download</a></div>
-<div class="download-row"><div><a href="posts/adpc/index.qmd">ADPC Pharmacokinetic Concentration Dataset</a><div class="post-meta">adpc.xlsx</div></div><a href="posts/adpc/files/adpc.xlsx" download>Download</a></div>
-<div class="download-row"><div><a href="posts/adppk/index.qmd">ADPPK Pharmacokinetic Parameters Dataset</a><div class="post-meta">adppk.xlsx</div></div><a href="posts/adppk/files/adppk.xlsx" download>Download</a></div>
 </div></section>
 <section class="home-section" id="latest"><h2>Latest posts</h2><div class="post-list">
+<div class="post-row"><div><a href="posts/ae/index.qmd">AE Adverse Events Domain</a><div class="post-meta">CDISC Standards · SDTM</div></div><time datetime="2026-09-03">2026-09-03</time></div>
+<div class="post-row"><div><a href="posts/dm/index.qmd">DM Demographics Domain</a><div class="post-meta">CDISC Standards · SDTM</div></div><time datetime="2026-09-03">2026-09-03</time></div>
+<div class="post-row"><div><a href="posts/vs/index.qmd">VS Vital Signs Domain</a><div class="post-meta">CDISC Standards · SDTM</div></div><time datetime="2026-09-03">2026-09-03</time></div>
 <div class="post-row"><div><a href="posts/adae/index.qmd">ADAE Adverse Event Analysis Dataset</a><div class="post-meta">CDISC Standards · ADaM</div></div><time datetime="2026-09-02">2026-09-02</time></div>
 <div class="post-row"><div><a href="posts/ader/index.qmd">ADaM Integrated Efficacy and Response Datasets</a><div class="post-meta">CDISC Standards · ADaM</div></div><time datetime="2026-09-02">2026-09-02</time></div>
-<div class="post-row"><div><a href="posts/adpc/index.qmd">ADPC Pharmacokinetic Concentration Dataset</a><div class="post-meta">CDISC Standards · ADaM</div></div><time datetime="2026-09-02">2026-09-02</time></div>
-<div class="post-row"><div><a href="posts/adppk/index.qmd">ADPPK Pharmacokinetic Parameters Dataset</a><div class="post-meta">CDISC Standards · ADaM</div></div><time datetime="2026-09-02">2026-09-02</time></div>
-<div class="post-row"><div><a href="posts/adrs/index.qmd">ADRS Tumor Response Analysis Dataset</a><div class="post-meta">CDISC Standards · ADaM</div></div><time datetime="2026-09-02">2026-09-02</time></div>
 </div></section>
 </div>

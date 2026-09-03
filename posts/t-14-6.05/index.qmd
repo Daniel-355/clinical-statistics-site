@@ -1,0 +1,37 @@
+---
+title: "Overall Laboratory Shift Summary"
+description: "Summarizes worst or overall baseline-to-treatment laboratory shifts by treatment."
+date: 2026-08-31
+section: "Data Management & Programming"
+category: "Tables, Listings & Figures"
+topic: "Tables"
+type: article
+tags: ["ADaM", "Safety", "Laboratory"]
+status: published
+featured: true
+youtube: []
+pdf:
+  - title: "14-6.05.rtf"
+    file: "files/14-6.05.rtf"
+downloads:
+---
+
+## Analysis overview
+
+Combines analysis-ready chemistry and hematology records, counts baseline and analysis normal-range combinations by parameter and treatment, calculates percentages, and performs stratified CMH comparisons when estimable.
+
+## ADaM datasets
+
+- `ADLBC`
+- `ADLBH`
+- `ADSL`
+
+## Key ADaM variables
+
+- `PARAM`: laboratory parameter
+- `BNRIND`: baseline normal-range indicator
+- `ANRIND`: analysis normal-range indicator
+- `ANL01FL`: analysis-record flag
+- `AVISITN`: analysis visit
+- `SAFFL`: safety flag
+- `TRTP`: planned treatment.

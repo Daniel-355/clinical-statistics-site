@@ -1,0 +1,35 @@
+---
+title: "ADAS-Cog Summary at Week 8"
+description: "Summarizes ADAS-Cog values and change from baseline at Week 8."
+date: 2026-08-31
+section: "Data Management & Programming"
+category: "Tables, Listings & Figures"
+topic: "Tables"
+type: article
+tags: ["ADaM", "Efficacy", "Clinical Tables"]
+status: published
+featured: true
+youtube: []
+pdf:
+  - title: "14-3.03.rtf"
+    file: "files/14-3.03.rtf"
+downloads:
+---
+
+## Analysis overview
+
+Selects analysis-ready ADAS-Cog total records, summarizes baseline, Week 8, and change from baseline, and fits the efficacy comparison model.
+
+## ADaM datasets
+
+- `ADQSADAS`
+
+## Key ADaM variables
+
+- `PARAMCD`: parameter code, restricted to ACTOT
+- `AVAL`: analysis value
+- `BASE`: baseline value
+- `CHG`: change from baseline
+- `AVISITN`: analysis visit number
+- `EFFFL/ITTFL/ANL01FL`: analysis selection flags
+- `TRTP/TRTPN`: planned treatment.

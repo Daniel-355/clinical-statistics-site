@@ -1,0 +1,36 @@
+---
+title: "Laboratory Values by Visit"
+description: "Summarizes chemistry and hematology measurements and changes from baseline by visit."
+date: 2026-08-31
+section: "Data Management & Programming"
+category: "Tables, Listings & Figures"
+topic: "Tables"
+type: article
+tags: ["ADaM", "Safety", "Laboratory"]
+status: published
+featured: true
+youtube: []
+pdf:
+  - title: "14-6.01.rtf"
+    file: "files/14-6.01.rtf"
+downloads:
+---
+
+## Analysis overview
+
+Selects safety laboratory records, retains scheduled and eligible end-of-treatment observations, standardizes parameter labels, and calculates n, mean, SD, and change-from-baseline summaries by visit and treatment.
+
+## ADaM datasets
+
+- `ADLBC`
+- `ADLBH`
+
+## Key ADaM variables
+
+- `PARAM/PARAMCD`: laboratory test name/code
+- `AVAL`: analysis result
+- `CHG`: change from baseline
+- `AVISIT/AVISITN`: analysis visit
+- `AENTMTFL`: end-of-treatment record flag
+- `SAFFL`: safety flag
+- `TRTP/TRTPN`: planned treatment.

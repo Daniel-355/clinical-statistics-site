@@ -1,0 +1,36 @@
+---
+title: "Demographic and Baseline Characteristics"
+description: "Summarizes demographic and baseline disease characteristics for the ITT population."
+date: 2026-08-31
+section: "Data Management & Programming"
+category: "Tables, Listings & Figures"
+topic: "Tables"
+type: article
+tags: ["ADaM", "Clinical Tables"]
+status: published
+featured: true
+youtube: []
+pdf:
+  - title: "14-2.01.rtf"
+    file: "files/14-2.01.rtf"
+downloads:
+---
+
+## Analysis overview
+
+Filters to ITT subjects, derives display categories, calculates descriptive statistics and category counts by treatment and total, and performs ANOVA or categorical tests for treatment comparisons.
+
+## ADaM datasets
+
+- `ADSL`
+
+## Key ADaM variables
+
+- `AGE`: age
+- `SEX`: sex
+- `RACE/ETHNIC`: race and ethnicity
+- `MMSETOT`: baseline MMSE total score
+- `DURDIS`: disease duration
+- `EDUCLVL`: education level
+- `WEIGHTBL/HEIGHTBL/BMIBL`: baseline weight, height, and BMI
+- `TRT01P/TRT01PN`: planned treatment.

@@ -1,0 +1,37 @@
+---
+title: "High Laboratory Values During Treatment"
+description: "Summarizes normal versus high chemistry and hematology results during treatment."
+date: 2026-08-31
+section: "Data Management & Programming"
+category: "Tables, Listings & Figures"
+topic: "Tables"
+type: article
+tags: ["ADaM", "Safety", "Laboratory"]
+status: published
+featured: true
+youtube: []
+pdf:
+  - title: "14-6.03.rtf"
+    file: "files/14-6.03.rtf"
+downloads:
+---
+
+## Analysis overview
+
+Selects analysis-ready laboratory records, standardizes parameters and analysis-range categories, counts normal/high outcomes by treatment, calculates percentages, and applies simulated Fisher exact tests.
+
+## ADaM datasets
+
+- `ADLBC`
+- `ADLBH`
+- `ADSL`
+
+## Key ADaM variables
+
+- `PARAM`: laboratory parameter
+- `ANRIND`: analysis normal-range indicator
+- `ANL01FL`: analysis-record flag
+- `AVISITN`: analysis visit
+- `SAFFL`: safety flag
+- `TRTP`: planned treatment
+- `ARM in ADSL`: denominator treatment.

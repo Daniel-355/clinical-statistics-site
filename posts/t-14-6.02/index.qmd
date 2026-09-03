@@ -1,0 +1,37 @@
+---
+title: "Normal-Range Laboratory Frequencies"
+description: "Reports frequencies of low, normal, and high chemistry and hematology results during treatment."
+date: 2026-08-31
+section: "Data Management & Programming"
+category: "Tables, Listings & Figures"
+topic: "Tables"
+type: article
+tags: ["ADaM", "Safety", "Laboratory"]
+status: published
+featured: true
+youtube: []
+pdf:
+  - title: "14-6.02.rtf"
+    file: "files/14-6.02.rtf"
+downloads:
+---
+
+## Analysis overview
+
+Selects analysis-ready safety laboratory records, standardizes test and normal-range categories, counts results by parameter and treatment, calculates percentages, and uses simulated Fisher exact tests for comparisons.
+
+## ADaM datasets
+
+- `ADLBC`
+- `ADLBH`
+- `ADSL`
+
+## Key ADaM variables
+
+- `PARAM`: laboratory parameter
+- `LBNRIND`: laboratory normal-range indicator
+- `ANL01FL`: analysis-record flag
+- `AVISITN`: analysis visit
+- `SAFFL`: safety flag
+- `TRTP`: planned treatment
+- `ARM in ADSL`: treatment denominator label.

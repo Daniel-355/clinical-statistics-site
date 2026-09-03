@@ -1,0 +1,38 @@
+---
+title: "Vital Signs Change from Baseline"
+description: "Summarizes changes in blood pressure and pulse at Week 24 and end of treatment."
+date: 2026-08-31
+section: "Data Management & Programming"
+category: "Tables, Listings & Figures"
+topic: "Tables"
+type: article
+tags: ["ADaM", "Safety", "Vital Signs"]
+status: published
+featured: true
+youtube: []
+pdf:
+  - title: "14-7.02.rtf"
+    file: "files/14-7.02.rtf"
+downloads:
+---
+
+## Analysis overview
+
+Selects safety vital-sign records with baseline values, identifies Week 24 and end-of-treatment observations, and calculates descriptive statistics for change from baseline by measure, position, visit, and treatment.
+
+## ADaM datasets
+
+- `ADVS`
+- `ADSL`
+
+## Key ADaM variables
+
+- `PARAM`: vital-sign measure
+- `ATPT`: measurement position/time
+- `BASE`: baseline value
+- `CHG`: change from baseline
+- `AVISIT`: analysis visit
+- `SAFFL`: safety flag
+- `TRTP`: planned treatment
+- `ARM in ADSL`: denominator treatment.
+

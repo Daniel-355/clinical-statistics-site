@@ -1,0 +1,34 @@
+---
+title: "ADAS-Cog Week 24 Analysis in Female Subjects"
+description: "Summarizes ADAS-Cog Week 24 outcomes for female efficacy subjects."
+date: 2026-08-31
+section: "Data Management & Programming"
+category: "Tables, Listings & Figures"
+topic: "Tables"
+type: article
+tags: ["ADaM", "Efficacy", "Clinical Tables"]
+status: published
+featured: true
+youtube: []
+pdf:
+  - title: "14-3.09.rtf"
+    file: "files/14-3.09.rtf"
+downloads:
+---
+
+## Analysis overview
+
+Restricts analysis-ready ADAS-Cog total records to female subjects, summarizes baseline, Week 24, and change from baseline, and performs the treatment comparison model.
+
+## ADaM datasets
+
+- `ADQSADAS`
+
+## Key ADaM variables
+
+- `SEX`: sex, restricted to F
+- `PARAMCD`: ACTOT parameter
+- `AVAL/BASE/CHG`: analysis, baseline, and change values
+- `AVISITN`: analysis visit
+- `EFFFL/ANL01FL`: selection flags
+- `TRTP/TRTPN`: planned treatment.

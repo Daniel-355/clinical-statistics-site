@@ -1,0 +1,59 @@
+---
+title: "VS Vital Signs Domain"
+description: "Summary of the raw sources, mapping steps, and principal variables used to create the SDTM VS domain."
+date: 2026-09-03
+section: "Data Management & Programming"
+category: "CDISC Standards"
+topic: "SDTM"
+type: article
+tags: ["VS", "SDTM", "Vital Signs"]
+status: published
+featured: true
+youtube: []
+pdf: []
+downloads:
+  - title: "vs.xlsx"
+    file: "files/vs.xlsx"
+---
+
+## Overview
+
+The VS program converts raw vital-sign measurements into the SDTM VS domain. It creates records for each vital-sign test, standardizes units, maps visits and time points, and derives study days.
+
+## Processing Steps
+
+1. Load the vital-sign raw dataset and generate technical record identifiers.
+2. Create separate records for systolic blood pressure, diastolic blood pressure, pulse rate, temperature, height, and weight.
+3. Map test codes, test names, original results, original units, position, and anatomical location.
+4. Convert temperature to degrees Celsius, height to centimeters, and weight to kilograms for standardized results.
+5. Combine all vital-sign test records into a single dataset.
+6. Map collection date, visit, visit number, time point, and time-point number using controlled terminology.
+7. Derive standardized numeric results, elapsed time, time-point reference, sequence number, and study day.
+8. Select and order the final SDTM VS variables.
+
+## Raw Data Sources
+
+- **vs_raw** — Primary raw source containing blood pressure, pulse, temperature, height, weight, subject position, location, visit, time-point, and collection-date information.
+- **dm_raw**, **ds_raw**, and **ec_raw** — Used indirectly through the derived DM domain to provide the subject treatment reference date for study-day calculations.
+
+## Supporting SDTM Data
+
+- **DM** — Supplies `RFXSTDTC` for the derivation of VS study day.
+
+## Main Variables
+
+- **STUDYID** — Study identifier.
+- **DOMAIN** — Domain abbreviation; set to `VS`.
+- **USUBJID** — Unique subject identifier.
+- **VSSEQ** — Sequence number for vital-sign records within subject.
+- **VSTESTCD / VSTEST** — Vital-sign test short code and test name.
+- **VSPOS** — Subject position during the measurement.
+- **VSLOC** — Anatomical location of the measurement.
+- **VSORRES / VSORRESU** — Original result and original unit.
+- **VSSTRESC / VSSTRESN / VSSTRESU** — Standardized character result, numeric result, and unit.
+- **VISIT / VISITNUM** — Clinical visit and numeric visit identifier.
+- **VSDTC / VSDY** — Vital-sign collection date/time and study day.
+- **VSTPT / VSTPTNUM** — Planned time point and numeric time-point identifier.
+- **VSELTM** — Planned elapsed time relative to the reference time point.
+- **VSTPTREF** — Description of the reference time point.
+

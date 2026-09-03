@@ -1,0 +1,35 @@
+---
+title: "NPI-X Summary of Mean Weeks 4–24"
+description: "Summarizes NPI-X baseline and mean Weeks 4–24 results with treatment comparisons."
+date: 2026-08-31
+section: "Data Management & Programming"
+category: "Tables, Listings & Figures"
+topic: "Tables"
+type: article
+tags: ["ADaM", "Efficacy", "Clinical Tables"]
+status: published
+featured: true
+youtube: []
+pdf:
+  - title: "14-3.12.rtf"
+    file: "files/14-3.12.rtf"
+downloads:
+---
+
+## Analysis overview
+
+Selects the derived NPI-X total-mean parameter, derives change from baseline, summarizes baseline and the mean Weeks 4–24 endpoint, and runs the efficacy model.
+
+## ADaM datasets
+
+- `ADQSNPIX`
+
+## Key ADaM variables
+
+- `PARAMCD`: NPTOTMN parameter
+- `AVAL`: analysis value
+- `BASE`: baseline value
+- `CHG`: derived change from baseline
+- `AVISITN`: analysis visit number, including endpoint 98
+- `EFFFL/ITTFL`: population flags
+- `TRTP/TRTPN`: planned treatment.

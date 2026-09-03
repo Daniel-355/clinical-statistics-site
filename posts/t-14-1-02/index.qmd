@@ -1,0 +1,33 @@
+---
+title: "End-of-Study Status Summary"
+description: "Summarizes Week 24 completion and reasons for early termination by treatment."
+date: 2026-08-31
+section: "Data Management & Programming"
+category: "Tables, Listings & Figures"
+topic: "Tables"
+type: article
+tags: ["ADaM", "Clinical Tables"]
+status: published
+featured: true
+youtube: []
+pdf:
+  - title: "14-1.02.rtf"
+    file: "files/14-1.02.rtf"
+downloads:
+---
+
+## Analysis overview
+
+Orders treatment and termination categories, calculates completion counts and percentages, summarizes reasons among early terminators, and adds Fisher exact test p-values for selected comparisons.
+
+## ADaM datasets
+
+- `ADSL`
+
+## Key ADaM variables
+
+- `ARM`: randomized treatment arm
+- `COMP24FL`: Week 24 completion flag
+- `DCREASCD`: coded reason for discontinuation
+- `DCDECOD`: standardized disposition outcome
+- `USUBJID`: unique subject identifier.

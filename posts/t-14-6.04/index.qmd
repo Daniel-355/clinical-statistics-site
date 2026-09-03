@@ -1,0 +1,37 @@
+---
+title: "Laboratory Shifts by Visit"
+description: "Summarizes baseline-to-post-baseline laboratory shifts for each scheduled visit."
+date: 2026-08-31
+section: "Data Management & Programming"
+category: "Tables, Listings & Figures"
+topic: "Tables"
+type: article
+tags: ["ADaM", "Safety", "Laboratory"]
+status: published
+featured: true
+youtube: []
+pdf:
+  - title: "14-6.04.rtf"
+    file: "files/14-6.04.rtf"
+downloads:
+---
+
+## Analysis overview
+
+Combines chemistry and hematology, standardizes test and visit order, counts baseline-to-analysis normal-range shifts by visit and treatment, and formats counts and percentages.
+
+## ADaM datasets
+
+- `ADLBC`
+- `ADLBH`
+- `ADSL`
+
+## Key ADaM variables
+
+- `PARAM`: laboratory parameter
+- `VISIT/AVISITN`: visit
+- `BNRIND`: baseline normal-range indicator
+- `ANRIND`: analysis normal-range indicator
+- `ABLFL`: baseline-record flag
+- `SAFFL`: safety flag
+- `TRTP`: planned treatment.

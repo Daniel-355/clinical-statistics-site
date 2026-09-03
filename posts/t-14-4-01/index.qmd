@@ -1,0 +1,34 @@
+---
+title: "Study Drug Exposure Summary"
+description: "Summarizes exposure for Week 24 completers and the safety population."
+date: 2026-08-31
+section: "Data Management & Programming"
+category: "Tables, Listings & Figures"
+topic: "Tables"
+type: article
+tags: ["ADaM", "Clinical Tables"]
+status: published
+featured: true
+youtube: []
+pdf:
+  - title: "14-4.01.rtf"
+    file: "files/14-4.01.rtf"
+downloads:
+---
+
+## Analysis overview
+
+Creates completer and safety analysis groups, calculates treatment-specific subject counts, and summarizes average daily dose and cumulative dose.
+
+## ADaM datasets
+
+- `ADSL`
+
+## Key ADaM variables
+
+- `COMP24FL`: Week 24 completion flag
+- `SAFFL`: safety population flag
+- `AVGDD`: average daily dose
+- `CUMDOSE`: cumulative dose
+- `TRT01P/TRT01PN`: planned treatment
+- `USUBJID`: subject identifier.

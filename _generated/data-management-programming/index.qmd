@@ -56,6 +56,14 @@ toc: false
 <li><a href="../../posts/advs/index.qmd">ADVS Vital Signs Analysis Dataset</a></li>
 </ul>
 </div>
+<div class="topic-group">
+<h3>SDTM</h3>
+<ul>
+<li><a href="../../posts/ae/index.qmd">AE Adverse Events Domain</a></li>
+<li><a href="../../posts/dm/index.qmd">DM Demographics Domain</a></li>
+<li><a href="../../posts/vs/index.qmd">VS Vital Signs Domain</a></li>
+</ul>
+</div>
 </section>
 <section class="category-block" id="analysis-dataset-development">
 <h2>Analysis Dataset Development</h2>
@@ -205,6 +213,41 @@ toc: false
 <h3>Time-to-Event Analysis</h3>
 <ul>
 <li><a href="../../posts/03_time_to_event_analysis/index.qmd">Kaplan–Meier Summary of Time-to-Event Endpoint</a></li>
+</ul>
+</div>
+<div class="topic-group">
+<h3>Tables</h3>
+<ul>
+<li><a href="../../posts/t-14-1-01/index.qmd">Population Analysis Sets Summary</a></li>
+<li><a href="../../posts/t-14-1-02/index.qmd">End-of-Study Status Summary</a></li>
+<li><a href="../../posts/t-14-1-03/index.qmd">Analysis Populations by Site</a></li>
+<li><a href="../../posts/t-14-2-01/index.qmd">Demographic and Baseline Characteristics</a></li>
+<li><a href="../../posts/t-14-3-01/index.qmd">ADAS-Cog Summary at Week 24</a></li>
+<li><a href="../../posts/t-14-3-02/index.qmd">CIBIC-Plus Summary at Week 24</a></li>
+<li><a href="../../posts/t-14-3-03/index.qmd">ADAS-Cog Summary at Week 8</a></li>
+<li><a href="../../posts/t-14-3-04/index.qmd">CIBIC-Plus Summary at Week 8</a></li>
+<li><a href="../../posts/t-14-3-05/index.qmd">ADAS-Cog Summary at Week 16</a></li>
+<li><a href="../../posts/t-14-3-06/index.qmd">CIBIC-Plus Summary at Week 16</a></li>
+<li><a href="../../posts/t-14-3-07/index.qmd">ADAS-Cog Week 24 Completer Analysis</a></li>
+<li><a href="../../posts/t-14-3-08/index.qmd">ADAS-Cog Week 24 Analysis in Male Subjects</a></li>
+<li><a href="../../posts/t-14-3-09/index.qmd">ADAS-Cog Week 24 Analysis in Female Subjects</a></li>
+<li><a href="../../posts/t-14-3-10/index.qmd">ADAS-Cog Longitudinal Descriptive Summary</a></li>
+<li><a href="../../posts/t-14-3-11/index.qmd">ADAS-Cog Repeated-Measures Analysis</a></li>
+<li><a href="../../posts/t-14-3-12/index.qmd">NPI-X Summary of Mean Weeks 4–24</a></li>
+<li><a href="../../posts/t-14-3-13/index.qmd">CIBIC-Plus Categorical Assessments</a></li>
+<li><a href="../../posts/t-14-4-01/index.qmd">Study Drug Exposure Summary</a></li>
+<li><a href="../../posts/t-14-5-01/index.qmd">Treatment-Emergent Adverse Events</a></li>
+<li><a href="../../posts/t-14-5-02/index.qmd">Treatment-Emergent Serious Adverse Events</a></li>
+<li><a href="../../posts/t-14-6-01/index.qmd">Laboratory Values by Visit</a></li>
+<li><a href="../../posts/t-14-6.02/index.qmd">Normal-Range Laboratory Frequencies</a></li>
+<li><a href="../../posts/t-14-6.03/index.qmd">High Laboratory Values During Treatment</a></li>
+<li><a href="../../posts/t-14-6.04/index.qmd">Laboratory Shifts by Visit</a></li>
+<li><a href="../../posts/t-14-6.05/index.qmd">Overall Laboratory Shift Summary</a></li>
+<li><a href="../../posts/t-14-6.06/index.qmd">Potential Hy's Law Shift Summary</a></li>
+<li><a href="../../posts/t-14-7.01/index.qmd">Vital Signs at Baseline and End of Treatment</a></li>
+<li><a href="../../posts/t-14-7.02/index.qmd">Vital Signs Change from Baseline</a></li>
+<li><a href="../../posts/t-14-7.03/index.qmd">Weight Change from Baseline</a></li>
+<li><a href="../../posts/t-14-7.04/index.qmd">Concomitant Medication Summary</a></li>
 </ul>
 </div>
 </section>

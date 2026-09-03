@@ -1,0 +1,37 @@
+---
+title: "Potential Hy's Law Shift Summary"
+description: "Summarizes transaminase and bilirubin threshold shifts relevant to potential Hy's law."
+date: 2026-08-31
+section: "Data Management & Programming"
+category: "Tables, Listings & Figures"
+topic: "Tables"
+type: article
+tags: ["ADaM", "Safety", "Laboratory"]
+status: published
+featured: true
+youtube: []
+pdf:
+  - title: "14-6.06.rtf"
+    file: "files/14-6.06.rtf"
+downloads:
+---
+
+## Analysis overview
+
+Selects post-baseline threshold parameters, chooses each subject's maximum and latest qualifying record, summarizes baseline-to-analysis shifts by treatment, and calculates a Mantel–Haenszel p-value for transaminase shifts.
+
+## ADaM datasets
+
+- `ADLBHY`
+- `ADSL`
+
+## Key ADaM variables
+
+- `PARAMCD`: threshold parameter code, including TRANSHY and HYLAW
+- `BASE`: baseline threshold status
+- `AVAL`: analysis threshold status
+- `AVISITN`: analysis visit
+- `USUBJID`: subject identifier
+- `SAFFL`: safety flag
+- `TRTP`: planned treatment.
+
