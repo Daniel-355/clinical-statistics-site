@@ -16,10 +16,12 @@ pdf: []
 downloads: []
 ---
 
-<div class="founder-profile founder-profile-page">
-  <img src="images/daniel-he-founder.png" alt="Daniel He with a family member by the ocean">
-  <div>
-    <h2>Daniel He, PhD</h2>
-    <p>Daniel He, PhD, is the founder of Clinical Statistics Notes, an independent knowledge-sharing platform focused on practical clinical research. He created the site to provide clear and accessible resources on clinical trial data, CDISC standards, statistical programming, biostatistics, and real-world evidence. His goal is to make complex statistical and programming concepts easier to understand and apply through practical notes, examples, and reusable resources.</p>
-  </div>
-</div>
+::: {.founder-profile .founder-profile-page}
+
+![Daniel He with a family member by the ocean](images/daniel-he-founder.png){.founder-photo}
+
+## Daniel He, PhD
+
+Daniel He, PhD, is the founder of Clinical Statistics Notes, an independent knowledge-sharing platform focused on practical clinical research. He created the site to provide clear and accessible resources on clinical trial data, CDISC standards, statistical programming, biostatistics, and real-world evidence. His goal is to make complex statistical and programming concepts easier to understand and apply through practical notes, examples, and reusable resources.
+
+:::
