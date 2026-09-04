@@ -23,7 +23,14 @@ toc: false
 </section>
 <section class="category-block" id="founder">
 <h2>Founder</h2>
-<p class="text-muted">No published notes yet.</p>
+<article class="founder-profile">
+<img src="../../posts/founder/images/daniel-he-founder.png" alt="Portrait of Daniel He, PhD">
+<div>
+<h3><a href="../../posts/founder/index.qmd">Daniel He, PhD</a></h3>
+<p>Daniel He, PhD, is the founder of Clinical Statistics Notes, an independent knowledge-sharing platform focused on practical clinical research. He created the site to provide clear and accessible resources on clinical trial data, CDISC standards, statistical programming, biostatistics, and real-world evidence. His goal is to make complex statistical and programming concepts easier to understand and apply through practical notes, examples, and reusable resources.</p>
+<a class="founder-profile-link" href="../../posts/founder/index.qmd">Read profile</a>
+</div>
+</article>
 </section>
 <section class="category-block" id="disclaimer">
 <h2>Disclaimer</h2>

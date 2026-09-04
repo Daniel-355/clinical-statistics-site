@@ -52,6 +52,19 @@ for (section in sections) {
       '<p class="text-muted">No published notes yet.</p>'
     } else unlist(lapply(topics, function(topic) {
       these <- Filter(function(p) identical(p$topic %||% "General", topic), cat_posts)
+      profiles <- Filter(function(p) isTRUE(p$profile) && nzchar(p$image %||% ""), these)
+      if (length(profiles)) {
+        return(unlist(lapply(profiles, function(p) c(
+          '<article class="founder-profile">',
+          paste0('<img src="../../posts/', p$slug, '/', p$image, '" alt="Portrait of ', p$title, '">'),
+          '<div>',
+          paste0('<h3><a href="../../', p$path, '">', p$title, '</a></h3>'),
+          paste0('<p>', p$description, '</p>'),
+          paste0('<a class="founder-profile-link" href="../../', p$path, '">Read profile</a>'),
+          '</div>',
+          '</article>'
+        ))))
+      }
       links <- vapply(these, function(p) paste0('<li><a href="../../', p$path, '">', p$title, '</a></li>'), "")
       c('<div class="topic-group">', paste0("<h3>", topic, "</h3>"), "<ul>", links, "</ul>", "</div>")
     }))
@@ -62,7 +75,8 @@ for (section in sections) {
   write_utf8(page, file.path("_generated", section$slug, "index.qmd"))
 }
 
-published <- posts[order(vapply(posts, function(p) as.character(p$date %||% "1900-01-01"), ""), decreasing = TRUE)]
+home_posts <- Filter(function(p) !identical(p$section, "About"), posts)
+published <- home_posts[order(vapply(home_posts, function(p) as.character(p$date %||% "1900-01-01"), ""), decreasing = TRUE)]
 featured <- Filter(function(p) isTRUE(p$featured), published)
 with_downloads <- Filter(function(p) length(p$downloads %||% list()) > 0, published)
 topic_cards <- unlist(lapply(Filter(function(x) !x$slug %in% "about", sections), function(s) c(

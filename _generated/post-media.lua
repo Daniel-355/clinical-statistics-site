@@ -60,6 +60,7 @@ return {
   ["ADVS Vital Signs Analysis Dataset"] = {youtube={}, pdf={}, downloads={{title="advs.xlsx",file="files/advs.xlsx"}}},
   ["AE Adverse Events Domain"] = {youtube={}, pdf={}, downloads={{title="ae.xlsx",file="files/ae.xlsx"}}},
   ["DM Demographics Domain"] = {youtube={}, pdf={}, downloads={{title="dm.xlsx",file="files/dm.xlsx"}}},
+  ["Daniel He, PhD"] = {youtube={}, pdf={}, downloads={}},
   ["Population Analysis Sets Summary"] = {youtube={}, pdf={{title="14-1.01.pdf",file="files/14-1.01.pdf"}}, downloads={}},
   ["End-of-Study Status Summary"] = {youtube={}, pdf={{title="14-1.02.pdf",file="files/14-1.02.pdf"}}, downloads={}},
   ["Analysis Populations by Site"] = {youtube={}, pdf={{title="14-1.03.pdf",file="files/14-1.03.pdf"}}, downloads={}},

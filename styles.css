@@ -51,6 +51,12 @@ h2 { margin-top: 2.5rem; }
 .topic-group { margin: 1.1rem 0; padding: 1.15rem 1.3rem; border-left: 3px solid #a8d7b4; background: #fbfcfb; }
 .topic-group h3 { margin: 0 0 .55rem; font-size: 1.28rem; }
 .topic-group ul { margin-bottom: 0; }
+.founder-profile { display: grid; grid-template-columns: minmax(180px, 280px) minmax(0, 1fr); gap: clamp(1.4rem, 4vw, 2.5rem); align-items: center; margin: 1.1rem 0; padding: clamp(1.1rem, 3vw, 1.6rem); background: #fbfcfb; border: 1px solid var(--study-rule); border-radius: 10px; }
+.founder-profile img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 8px; }
+.founder-profile h2, .founder-profile h3 { margin: 0 0 .65rem; }
+.founder-profile p { margin: 0; color: #46514b; }
+.founder-profile-link { display: inline-block; margin-top: .8rem; font-weight: 700; }
+.founder-profile-page { grid-template-columns: minmax(240px, 360px) minmax(0, 1fr); }
 .breadcrumbs { margin: 0 0 1.4rem; color: var(--study-muted); font-size: .88rem; }
 .breadcrumbs a { color: var(--study-muted); }
 .post-header-card { margin-bottom: 2rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--study-rule); }
@@ -65,5 +71,5 @@ h2 { margin-top: 2.5rem; }
 code { overflow-wrap: anywhere; }
 footer.footer { border-top: 1px solid var(--study-rule); }
 @media (max-width: 900px) { .section-layout { grid-template-columns: 1fr; } .section-nav { position: static; columns: 2; } .pdf-frame { min-height: 420px; } }
-@media (max-width: 600px) { .hero { padding-top: 3rem; } .home-shell { padding-left: 2.5rem; } .home-shell::before { left: 1.1rem; } .home-section::before { left: -1.78rem; } .section-nav { columns: 1; } .post-row, .download-row, .download-item { flex-direction: column; } .pdf-frame { min-height: 360px; } }
+@media (max-width: 600px) { .hero { padding-top: 3rem; } .home-shell { padding-left: 2.5rem; } .home-shell::before { left: 1.1rem; } .home-section::before { left: -1.78rem; } .section-nav { columns: 1; } .post-row, .download-row, .download-item { flex-direction: column; } .founder-profile, .founder-profile-page { grid-template-columns: 1fr; } .pdf-frame { min-height: 360px; } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; } }
