@@ -33,6 +33,10 @@ jobs:
             libcairo2-dev libxt-dev libgit2-dev libglu1-mesa-dev \
             libgsl-dev libudunits2-dev libgdal-dev libgeos-dev \
             libproj-dev libnode-dev libtbb-dev jags
+      - name: Build Stan packages from source
+        run: |
+          Rscript -e 'install.packages("renv", repos = "https://cloud.r-project.org")'
+          Rscript -e 'options(pkgType = "source"); renv::restore(packages = c("RcppParallel", "StanHeaders", "rstan"), rebuild = TRUE, prompt = FALSE)'
       - uses: r-lib/actions/setup-renv@v2
       - uses: quarto-dev/quarto-actions/setup@v2
       - name: Generate and validate
