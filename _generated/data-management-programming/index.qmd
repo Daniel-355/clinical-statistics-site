@@ -31,7 +31,30 @@ toc: false
 </section>
 <section class="category-block" id="data-cleaning-quality-control">
 <h2>Data Cleaning & Quality Control</h2>
-<p class="text-muted">No published notes yet.</p>
+<div class="topic-group">
+<h3>Data summarization</h3>
+<ul>
+<li><a href="../../posts/data-summarization/index.qmd">Data summarization</a></li>
+</ul>
+</div>
+<div class="topic-group">
+<h3>Data visualization course</h3>
+<ul>
+<li><a href="../../posts/data-visualization-course/index.qmd">Data visualization course</a></li>
+</ul>
+</div>
+<div class="topic-group">
+<h3>Data visualization</h3>
+<ul>
+<li><a href="../../posts/data-visualization/index.qmd">Data visualization</a></li>
+</ul>
+</div>
+<div class="topic-group">
+<h3>Data wrangling</h3>
+<ul>
+<li><a href="../../posts/data-wrangling/index.qmd">Data wrangling</a></li>
+</ul>
+</div>
 </section>
 <section class="category-block" id="medical-coding">
 <h2>Medical Coding</h2>

@@ -1,0 +1,91 @@
+---
+title: "Data summarization"
+date: '2022-05-20'
+author: Daniel 
+output: 
+  html_document:
+    theme: cerulean
+    toc: true 
+    toc_float: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## How to do aggregation/ summarization
+### Summarization after grouping
+```{r echo=TRUE,  message=FALSE}
+library(tidyverse)
+```
+
+```{r echo=TRUE,  include=FALSE}
+library(tidyverse)
+```
+
+```{r}
+iris %>% 
+  group_by(Species) %>% 
+  summarize(Support = mean(Sepal.Length)) %>%    # average
+  arrange(-Support)                         # sort
+```
+
+```{r}
+iris %>% 
+  group_by(Species) %>% 
+summarize(mean_s = mean(Sepal.Width), 
+            meas_p = mean(Petal.Length), 
+            diff = mean(Sepal.Width-Petal.Length)) %>% 
+  arrange(-diff) 
+```
+
+```{r}
+iris %>% 
+  group_by(Species) %>% 
+summarize(n = n(), 
+            meas_p = mean(Petal.Length), 
+            sd = sd(Petal.Length))  
+```
+### Summarization with upgroup
+```{r}
+iris %>% 
+  ungroup( ) %>% 
+summarize(n = n(), 
+            meas_p = mean(Petal.Length), 
+            sd = sd(Petal.Length))  
+```
+### Mutate new variables after grouping
+```{r}
+iris %>% 
+  group_by(Species) %>% 
+mutate(n = n(), 
+            meas_p = mean(Petal.Length), 
+            sd = sd(Petal.Length))  
+```
+
+
+```{r}
+iris %>% 
+  group_by(Species) %>% 
+mutate(n = n(), 
+            meas_p = mean(Petal.Length, na.rm = T), 
+            sd = sd(Petal.Length))  %>% 
+  summarize (n_mean = paste ("sample size:",mean(n)), 
+            meas_p = mean(Petal.Length), 
+            sd = sd(Petal.Length))
+```
+
+### Recode and generate new variables, then value label
+```{r}
+irisifelse <- iris %>% 
+mutate(Species2 = ifelse(Species == "setosa", NA, Species))
+# relabel values
+irisifelse$Species2 <- factor(irisifelse$Species2,labels = c( "versi","virg"))
+irisifelse
+```
+```{r}
+str(irisifelse)
+```
+ 
+
+

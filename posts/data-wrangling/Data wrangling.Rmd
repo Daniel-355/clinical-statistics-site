@@ -1,0 +1,181 @@
+---
+title: "Data wrangling"
+date: '2022-05-20'
+author: Daniel 
+output: 
+  html_document:
+    theme: cerulean
+    toc: true 
+    toc_float: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## How to do data wrangling  
+We will use `tidyverse` package to work with data.  
+
+### Load data and package
+```{r}
+head (iris)
+```
+```{r}
+library(tidyverse)
+```
+### Select certain rows
+```{r}
+setosa <- filter(iris, Species == 'setosa')
+setosa
+```
+### Select certain columns
+```{r}
+select(iris, Sepal.Length, Species)
+```
+
+```{r}
+select(iris, -Sepal.Length, -Species)
+```
+### Rename variables
+```{r}
+rename(iris,  Sepal_Width= Sepal.Width,  Sepal_Length= Sepal.Length )
+```
+### Sorting in ascending or descending order  
+- put a minus in front of a variable for descending order
+```{r}
+arrange(iris, Petal.Length, -Petal.Width)
+ 
+```
+### Transform variables
+```{r}
+mutate(iris,  newvar= Sepal.Width*10, Petal.Length=Petal.Length/100  )
+```
+### Working with pipes %>% 
+```{r}
+iris %>% 
+  filter(Species=="setosa") %>% 
+  mutate (newvar=Sepal.Width*10) %>% 
+  select (-Sepal.Width, -Petal.Width) %>% 
+  arrange(-Sepal.Length, newvar)
+```
+### Pivot wider (long to wide)  
+- If no unique identifier row in each group **doesn't work**   
+
+```{r}
+iris %>%
+pivot_wider(  names_from=Species, values_from= c(Sepal.Length))
+```
+- Create a unique identifier row for each name and then use pivot_wider 
+
+```{r}
+widedata <- iris %>%
+  # create groups then assign unique identifier row number in each group
+  group_by(Species) %>%
+  mutate(row = row_number()) %>%
+pivot_wider(names_from=Species, values_from= c(Petal.Length,Sepal.Length,Petal.Width,Sepal.Width))
+widedata
+```
+
+```{r}
+iris %>%
+  group_by(Species) %>%
+  mutate(row = row_number()) %>%
+pivot_wider( names_from=Species, values_from= c(Petal.Length, Petal.Width))
+```
+### Pivot longer (wide to long)   
+
+```{r}
+longdata = pivot_longer(widedata, -
+                          c(  "row"   ,                  "Petal.Length_setosa" ,    "Petal.Length_versicolor",
+  "Petal.Length_virginica",  "Sepal.Length_setosa"  ,   "Sepal.Length_versicolor",
+  "Sepal.Length_virginica" , "Petal.Width_setosa"    ,  "Petal.Width_versicolor" ,
+  "Petal.Width_virginica"    )        , names_to="Sepal.Width", values_to="Sepal.Width.value")
+longdata
+```
+- Pivot wider again (long to wide)
+
+```{r}
+pivot_wider(longdata, names_from=Sepal.Width, values_from= c(Sepal.Width.value))
+
+```
+### Separate columns       
+```{r}
+separate(iris, Species, into = c("integer","decimal","third"), sep="o")
+
+```
+### Recode/relabel data    
+```{r}
+mutate(iris, Species2 = recode(Species, "setosa"="seto", "versicolor"="versi"))
+```
+### Combine data sets  
+- prepare data sets 
+```{r}
+data1 <- data.frame(ID = 1:4,                       
+                    X1 = c("a1", "a2","a3", "a4"),
+                    stringsAsFactors = FALSE)
+data2 <- data.frame(ID = 2:5,                       
+                    X2 = c("b1", "b2","b3", "b4"),
+                    stringsAsFactors = FALSE)
+```
+- inner join   
+```{r}
+inner_join(data1, data2, by = "ID")    
+```
+- left join   
+```{r}
+left_join(data1, data2, by = "ID")   
+```
+- right join   
+```{r}
+right_join(data1, data2, by = "ID")  
+```
+- full join   
+```{r}
+full_join(data1, data2, by = "ID") 
+```
+- keep cases of left data table without in right data table 
+```{r}
+anti_join(data1, data2, by = "ID")  
+```
+- keep cases of left data table in right data table 
+```{r}
+semi_join(data1, data2, by = "ID")  
+```
+- multiple full join  
+```{r}
+full_join(data1, data2, by = "ID") %>%              
+  full_join(., data2, by = "ID") 
+```
+- rbind **doesn't work** 
+```{r}
+# df1 <- data.frame(col1 = LETTERS[1:6],
+#                   col2a = c(5:10),
+#                   col3a = TRUE)
+#   
+# df2 <- data.frame(col1 = LETTERS[4:8],
+#                   col2b= c(4:8),
+#                   col3b = FALSE)
+# rbind(df1,df2)
+```
+- append two data tables by using join and merge       
+```{r}
+data_frame1 <- data.frame(col1 = c(6:8),
+                         col2 = letters[1:3],
+                         col3 = c(1,4,NA))
+ 
+data_frame2 <- data.frame(col1 = c(5:6),
+                          col5 = letters[7:8])
+ 
+data_frame_merge <- merge(data_frame1, data_frame2,
+                          by = 'col1', all = TRUE)
+ 
+print (data_frame_merge)
+```
+```{r}
+full_join(data_frame1,data_frame2, by=c("col1"),)
+```
+
+ 
+
+ 
+

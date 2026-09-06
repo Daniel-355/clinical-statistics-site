@@ -1,0 +1,15 @@
+{
+  "hash": "765248c9123a3d939c1f5df0b5c08cc2",
+  "result": {
+    "engine": "knitr",
+    "markdown": "---\ntitle: \"Kaplan-Meier Survival Analysis in R\"\ndescription: \"A practical first analysis of time-to-event data with a Kaplan-Meier estimator.\"\ndate: 2026-08-28\nsection: \"Biostatistics\"\ncategory: \"Time-to-Event Analysis\"\ntopic: \"Kaplan-Meier\"\ntype: tutorial\ntags: [Survival Analysis, Kaplan-Meier, R]\nstatus: published\nfeatured: true\nyoutube: [\"bM7LSQ1tQnU\"]\npdf:\n  - title: \"Kaplan-Meier Notes\"\n    file: \"files/kaplan-meier-notes.pdf\"\ndownloads:\n  - title: \"R example\"\n    file: \"files/km-analysis.R\"\n  - title: \"Example dataset\"\n    file: \"files/km-data.csv\"\n  - title: \"PDF notes\"\n    file: \"files/kaplan-meier-notes.pdf\"\n---\n\n## Estimand and data\n\nThe Kaplan-Meier estimator describes the probability of remaining event-free beyond time $t$:\n\n$$\n\\widehat{S}(t) = \\prod_{t_i \\le t}\\left(1 - \\frac{d_i}{n_i}\\right).\n$$\n\nHere, $d_i$ is the number of events and $n_i$ is the risk set immediately before event time $t_i$.\n\n## Fit the curve in R\n\n\n::: {.cell}\n\n```{.r .cell-code}\nlibrary(survival)\ndat <- read.csv(\"files/km-data.csv\")\nfit <- survfit(Surv(time, status) ~ arm, data = dat)\nsummary(fit)\n```\n:::\n\n\n## Interpretation\n\nReport the time origin, event definition, censoring rules, analysis population, and uncertainty. A visually separated pair of curves does not by itself establish a clinically meaningful treatment effect.\n",
+    "supporting": [],
+    "filters": [
+      "rmarkdown/pagebreak.lua"
+    ],
+    "includes": {},
+    "engineDependencies": {},
+    "preserve": {},
+    "postProcess": true
+  }
+}
