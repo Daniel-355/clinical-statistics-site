@@ -16,7 +16,7 @@ validate-yaml: false
 execute:
   echo: true
   warning: false
-  error: true
+  error: false
 ---
 
 ## Why This Topic Matters
