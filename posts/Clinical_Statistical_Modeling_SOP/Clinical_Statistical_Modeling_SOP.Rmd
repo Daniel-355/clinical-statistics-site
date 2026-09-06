@@ -1,0 +1,502 @@
+---
+title: "Clinical Statistical Modeling SOP"
+author: "[Author / Study Team]"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    toc_depth: 2
+    number_sections: true
+  word_document:
+    toc: true
+    toc_depth: 2
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  warning = FALSE,
+  message = FALSE,
+  fig.width = 7,
+  fig.height = 5
+)
+```
+
+# 1. Purpose
+
+This SOP provides a concise and reusable framework for clinical statistical modeling.
+
+It is intended for common clinical and epidemiologic modeling tasks, including:
+
+- binary outcomes,
+- continuous outcomes,
+- count outcomes,
+- time-to-event outcomes,
+- repeated-measures outcomes,
+- and clinical prediction models.
+
+The objective is to ensure that model development, assessment, validation, interpretation, and reporting are scientifically justified, reproducible, and clinically meaningful.
+
+# 2. Define the Modeling Objective
+
+Before analysis, clearly define:
+
+- research question,
+- target population,
+- outcome,
+- candidate predictors or covariates,
+- time point or prediction horizon when relevant,
+- intended model use,
+- and primary estimand or performance target.
+
+The modeling objective should be classified as one of the following:
+
+1. **Explanation / association**
+2. **Causal effect estimation**
+3. **Prediction / risk estimation**
+
+The model-building strategy and interpretation should follow the scientific objective.
+
+# 3. Define the Analysis Population and Variables
+
+Prespecify:
+
+- inclusion criteria,
+- exclusion criteria,
+- outcome definition,
+- predictor/covariate definitions,
+- reference categories,
+- baseline or measurement windows,
+- and variable coding.
+
+Variables that occur after the outcome or directly encode the outcome should not be used as predictors because they may introduce **outcome leakage**.
+
+# 4. Data Quality Assessment
+
+Before modeling, assess:
+
+- duplicate subjects or records,
+- variable types,
+- categorical coding,
+- clinically implausible values,
+- inconsistent dates,
+- logical inconsistencies,
+- missing values,
+- and unexpected distributions.
+
+Potential errors should be investigated rather than automatically deleted.
+
+A statistical outlier should not automatically be treated as a data error.
+
+```{r data-quality-example, eval=FALSE}
+# Duplicate IDs
+sum(duplicated(data$id))
+
+# Missing values
+colSums(is.na(data))
+
+# Basic distributions
+summary(data)
+```
+
+# 5. Missing Data
+
+Summarize missingness:
+
+- overall,
+- by variable,
+- and, when useful, by outcome or treatment group.
+
+The missing-data strategy should be prespecified.
+
+Common approaches include:
+
+- complete-case analysis when missingness is minimal and defensible,
+- multiple imputation,
+- or another justified model-based approach.
+
+For multiple imputation, the imputation model should generally include:
+
+- the outcome,
+- candidate predictors/covariates,
+- and variables related to missingness.
+
+When prediction-model validation uses resampling, imputation should ideally be incorporated within the resampling procedure.
+
+# 6. Descriptive Analysis and EDA
+
+Before fitting the final model:
+
+- summarize the outcome,
+- summarize candidate predictors,
+- inspect distributions,
+- identify sparse categories,
+- examine clinically important relationships,
+- and evaluate potential outliers.
+
+Continuous variables should generally be retained as continuous when possible rather than arbitrarily categorized.
+
+# 7. Predictor / Covariate Selection
+
+Candidate variables should preferably be selected using:
+
+- clinical knowledge,
+- prior literature,
+- prespecified hypotheses,
+- and scientific relevance.
+
+Variables should not be removed solely because their univariable P-value exceeds 0.05.
+
+Traditional stepwise selection may be used for exploratory purposes but is generally not preferred as the primary model-building strategy because it can produce unstable variable selection and optimistic performance.
+
+When the number of candidate predictors is large relative to the available information, consider:
+
+- LASSO,
+- ridge regression,
+- elastic net,
+- or other shrinkage/penalization methods.
+
+# 8. Model Selection by Outcome Type
+
+The statistical model should match the outcome structure.
+
+| Outcome | Common Model |
+|---|---|
+| Continuous | Linear regression |
+| Binary | Logistic regression |
+| Count | Poisson / Negative Binomial |
+| Time-to-event | Cox proportional hazards model |
+| Repeated continuous | Linear mixed model / MMRM |
+| Repeated binary | GEE / GLMM |
+
+The primary model should be prespecified whenever possible.
+
+# 9. Functional Form of Continuous Variables
+
+Do not automatically assume that continuous predictors have linear effects.
+
+Assess nonlinear relationships when clinically or statistically plausible.
+
+Common approaches include:
+
+- restricted cubic splines,
+- fractional polynomials,
+- transformations,
+- or clinically justified piecewise functions.
+
+Example:
+
+```{r spline-example, eval=FALSE}
+library(rms)
+
+fit_spline <- lrm(
+  outcome ~ rcs(age, 4) + rcs(bmi, 4) + sex,
+  data = model_data
+)
+```
+
+Avoid arbitrary categorization unless there is a strong clinical reason.
+
+# 10. Interaction Assessment
+
+Interactions should be evaluated when there is a prespecified clinical or scientific rationale.
+
+Example:
+
+```{r interaction-example, eval=FALSE}
+fit_interaction <- glm(
+  outcome ~ treatment * sex + age + bmi,
+  family = binomial(),
+  data = model_data
+)
+```
+
+When an interaction is important, interpretation should focus on the treatment or predictor effect within relevant levels of the interacting variable rather than interpreting the main effect alone.
+
+Exploratory interaction testing should be interpreted cautiously.
+
+# 11. Multicollinearity
+
+Assess strong correlation among predictors when relevant.
+
+Possible methods include:
+
+- correlation matrices,
+- variance inflation factors (VIF),
+- condition indices,
+- and clinical review of redundant variables.
+
+Highly correlated variables may lead to unstable coefficients even when overall prediction remains acceptable.
+
+# 12. Fit the Prespecified Model
+
+Fit the prespecified or final candidate model using the selected modeling approach.
+
+Example for a binary outcome:
+
+```{r logistic-example, eval=FALSE}
+fit <- glm(
+  outcome ~ age + bmi + blood_pressure +
+    cholesterol + sex + smoking,
+  family = binomial(),
+  data = model_data
+)
+
+summary(fit)
+```
+
+Model coefficients, standard errors, confidence intervals, and clinically relevant effect measures should be reported when inference is an objective.
+
+# 13. Model Diagnostics
+
+Model diagnostics should be appropriate to the model type.
+
+Common checks include:
+
+- residual diagnostics,
+- influential observations,
+- model convergence,
+- sparse cells,
+- proportional hazards for Cox models,
+- distributional assumptions for linear models,
+- overdispersion for count models,
+- and random-effect assumptions for mixed models.
+
+Influential observations should be investigated rather than automatically removed.
+
+# 14. Model Performance
+
+For prediction models, performance should generally be evaluated across several dimensions.
+
+## 14.1 Discrimination
+
+For binary models, commonly use:
+
+- ROC curve,
+- AUC / C-statistic.
+
+For survival models, commonly use:
+
+- Harrell's C-index,
+- time-dependent AUC when appropriate.
+
+Discrimination evaluates how well the model separates individuals with different outcomes.
+
+## 14.2 Calibration
+
+Assess agreement between predicted and observed outcomes.
+
+Common measures include:
+
+- calibration plot,
+- calibration intercept,
+- calibration slope,
+- observed versus predicted risk.
+
+Calibration is essential and should not be replaced by AUC alone.
+
+## 14.3 Overall Prediction Error
+
+For binary prediction models, the **Brier score** may be reported.
+
+A lower Brier score indicates better overall prediction accuracy.
+
+# 15. Internal Validation
+
+Apparent performance calculated in the same data used to develop the model is usually optimistic.
+
+Internal validation should be performed when the model is intended for prediction.
+
+Preferred methods include:
+
+- bootstrap validation,
+- cross-validation.
+
+Bootstrap validation can be used to estimate optimism-corrected:
+
+- discrimination,
+- calibration,
+- and overall performance.
+
+If variable selection, imputation, or tuning is part of the modeling algorithm, these steps should ideally be repeated within each resampling iteration.
+
+# 16. External or Temporal Validation
+
+When independent data are available, evaluate the frozen model in:
+
+- a later time period,
+- another institution,
+- another geographic region,
+- or another relevant population.
+
+Assess at least:
+
+- discrimination,
+- calibration,
+- and overall prediction error.
+
+If discrimination remains acceptable but calibration has shifted, recalibration may be considered.
+
+# 17. Clinical Utility
+
+When the model is intended to support clinical decisions, evaluate whether predictions provide meaningful clinical benefit.
+
+Decision-curve analysis (DCA) may be used to evaluate **net benefit** across clinically relevant threshold probabilities.
+
+DCA should not be interpreted simply as an automatic method for choosing a cutoff.
+
+Threshold-based measures such as:
+
+- sensitivity,
+- specificity,
+- PPV,
+- and NPV
+
+should be reported only when the threshold is clinically justified.
+
+# 18. Sensitivity Analyses
+
+Perform sensitivity analyses that address important modeling assumptions.
+
+Common examples include:
+
+1. complete-case versus multiple-imputation analysis;
+2. linear versus nonlinear functional forms;
+3. alternative predictor sets;
+4. exclusion versus inclusion of influential observations;
+5. alternative outcome definitions;
+6. penalized versus conventional regression;
+7. alternative modeling assumptions.
+
+Sensitivity analyses should evaluate whether conclusions are materially changed.
+
+# 19. Subgroup Assessment
+
+When clinically relevant, evaluate model performance or effects in prespecified subgroups.
+
+Examples include:
+
+- sex,
+- age group,
+- race/ethnicity when appropriate,
+- disease severity,
+- treatment group,
+- or major comorbidity groups.
+
+For prediction models, subgroup evaluation may include:
+
+- AUC,
+- calibration,
+- observed versus predicted risk,
+- and sample size/event counts.
+
+Small subgroup results should be interpreted cautiously.
+
+# 20. Reporting
+
+The final report should clearly describe:
+
+- modeling objective,
+- study population,
+- outcome definition,
+- candidate variables,
+- missing-data handling,
+- model specification,
+- nonlinear terms,
+- interactions,
+- model-selection strategy,
+- diagnostics,
+- validation method,
+- performance measures,
+- sensitivity analyses,
+- and limitations.
+
+For prediction models, recommended performance reporting includes:
+
+| Domain | Common Measure |
+|---|---|
+| Discrimination | AUC / C-index |
+| Calibration | Calibration plot, intercept, slope |
+| Overall error | Brier score |
+| Clinical utility | Decision-curve analysis |
+| Validation | Bootstrap / external validation |
+
+# 21. Reproducibility and Quality Control
+
+The analysis should be reproducible.
+
+Recommended practices include:
+
+- set and document random seeds when needed,
+- version-control analysis code,
+- retain the data dictionary,
+- document all derived variables,
+- independently review key model code and outputs,
+- retain model coefficients and model specification,
+- and record software/package versions.
+
+```{r session-info, eval=FALSE}
+sessionInfo()
+```
+
+# Appendix A. Minimal Modeling Workflow
+
+```text
+Research question
+        ↓
+Define target population and outcome
+        ↓
+Define candidate predictors / covariates
+        ↓
+Data quality checks
+        ↓
+Missing-data assessment
+        ↓
+Descriptive analysis / EDA
+        ↓
+Check outliers and multicollinearity
+        ↓
+Assess continuous-variable functional forms
+        ↓
+Handle missing data
+        ↓
+Fit prespecified model
+        ↓
+Assess nonlinear terms / interactions
+        ↓
+Model diagnostics
+        ↓
+Evaluate performance
+        ↓
+Internal validation
+        ↓
+Sensitivity analyses
+        ↓
+External / temporal validation if available
+        ↓
+Clinical interpretation and reporting
+```
+
+# Appendix B. Pre-Modeling Checklist
+
+Before final modeling, confirm:
+
+- [ ] Research question is clearly defined
+- [ ] Modeling objective is defined: association, causal effect, or prediction
+- [ ] Target population is defined
+- [ ] Outcome is clearly defined
+- [ ] Candidate predictors/covariates are prespecified
+- [ ] Outcome leakage variables are excluded
+- [ ] Data quality checks are completed
+- [ ] Missing-data strategy is specified
+- [ ] Continuous-variable strategy is specified
+- [ ] Interaction terms are prespecified when relevant
+- [ ] Multicollinearity has been assessed
+- [ ] Primary model is specified
+- [ ] Model diagnostics are specified
+- [ ] Validation strategy is specified
+- [ ] Performance measures are specified
+- [ ] Sensitivity analyses are specified
+- [ ] Subgroup analyses are prespecified when relevant
+- [ ] Reporting outputs are defined
+- [ ] Analysis code is reproducible

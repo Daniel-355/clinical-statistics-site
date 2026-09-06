@@ -1,0 +1,587 @@
+---
+title: "Missing Data Analysis: MAR and MNAR Sensitivity"
+description: "A practical R learning guide to Missing Data Analysis: MAR and MNAR Sensitivity, with concise explanations, reproducible examples, and interpretation guidance."
+date: 2026-08-31
+section: "Biostatistics"
+category: "Missing Data & Sensitivity Analysis"
+topic: "Missing Data Analysis: MAR and MNAR Sensitivity"
+type: article
+tags: ["Missing Data & Sensitivity Analysis", "Biostatistics", "Missing", "Data", "MAR"]
+status: published
+featured: true
+youtube: []
+pdf: []
+downloads: []
+validate-yaml: false
+execute:
+  echo: true
+  warning: false
+  error: true
+---
+
+## Why This Topic Matters
+
+Missing-data methods make assumptions about unobserved values explicit and propagate the resulting uncertainty into inference.
+
+## Learning Objectives
+
+After working through this material, you should be able to:
+
+- explain the main ideas behind **Missing Data Analysis: MAR and MNAR Sensitivity**;
+- interpret the R workflow and its output; and
+- adapt the examples to a related analysis.
+
+## Lesson Roadmap
+
+The original material is organized around the following topics:
+
+1. 1. Objective
+2. 2. Packages
+3. 3. Simulate Clinical Trial Data
+4. 4. Generate MAR Dropout
+5. 5. Primary Analysis: MMRM Under MAR
+6. 6. Primary Analysis: Multiple Imputation Under MAR
+
+## How to Use This Lesson
+
+Read the explanation before each workflow, then run the R chunks in sequence. Code and output are shown together so that each numerical or graphical result can be connected to the command that produced it. Some source examples require optional packages or external data. Those setup-dependent chunks remain visible for reference but are marked `eval: false` when they cannot be reproduced safely in a clean website build.
+
+## Reproducible Learning Check
+
+This short R chunk confirms the scope of the lesson and always produces a visible output.
+
+```{r}
+#| label: learning-overview
+learning_overview <- data.frame(
+  section = "Biostatistics",
+  category = "Missing Data & Sensitivity Analysis",
+  topic = "Missing Data Analysis: MAR and MNAR Sensitivity"
+)
+learning_overview
+```
+
+## Learning Material
+
+The following material develops **Missing Data Analysis: MAR and MNAR Sensitivity** from core ideas to practical implementation. Definitions and assumptions come first; worked code then shows how the ideas are represented computationally.
+
+### Conceptual Foundation
+
+The material below closely follows the original R Markdown source, with its examples retained for study and reuse.
+
+#### 1. Objective
+
+<!-- generated-learning-note -->
+This subsection explains **1. Objective** and shows how it contributes to the overall Missing Data Analysis: MAR and MNAR Sensitivity workflow.
+
+
+This example demonstrates:
+
+1. Primary analysis under **MAR** using MMRM / MI.
+2. Sensitivity analysis under **MNAR** using a pattern-mixture model with delta adjustment.
+
+Clinical example:
+
+- Drug vs Placebo
+- HbA1c measured at Baseline, Week 4, Week 8, and Week 12
+- Some patients discontinue because of adverse events
+- Week 12 HbA1c may therefore be missing
+
+#### 2. Packages
+
+<!-- generated-learning-note -->
+This subsection explains **2. Packages** and shows how it contributes to the overall Missing Data Analysis: MAR and MNAR Sensitivity workflow.
+
+### R Workflow and Examples
+
+Run the examples in order because later blocks may reuse objects created earlier. Each block includes a short purpose statement and guidance for reading its output.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r}
+library(dplyr)
+library(tidyr)
+library(nlme)
+library(mice)
+library(emmeans)
+
+set.seed(123)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+
+#### 3. Simulate Clinical Trial Data
+
+<!-- generated-learning-note -->
+This section prepares the information needed for **3. Simulate Clinical Trial Data**. Check variable definitions, units, coding, and missing values before moving to analysis.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block generates controlled example data. Simulation makes the data-generating assumptions explicit and provides a known setting in which to study the method.
+
+```{r}
+n <- 300
+
+dat <- data.frame(
+  ID = 1:n,
+  TRT = sample(c("Placebo", "Drug"), n, replace = TRUE),
+  Baseline = rnorm(n, 8.5, 0.8)
+)
+
+dat <- dat %>%
+  mutate(
+    Y4 = Baseline +
+      ifelse(TRT == "Drug", -0.4, -0.1) +
+      rnorm(n, 0, 0.35),
+
+    Y8 = Baseline +
+      ifelse(TRT == "Drug", -0.8, -0.2) +
+      rnorm(n, 0, 0.35),
+
+    Y12_true = Baseline +
+      ifelse(TRT == "Drug", -1.1, -0.3) +
+      rnorm(n, 0, 0.35),
+
+    AE = rbinom(
+      n,
+      1,
+      ifelse(TRT == "Drug", 0.30, 0.12)
+    )
+  )
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the generated sample with the parameters used to create it. Differences reflect random variation unless the code intentionally introduces bias or structure.
+
+
+#### 4. Generate MAR Dropout
+
+<!-- generated-learning-note -->
+This subsection explains **4. Generate MAR Dropout** and shows how it contributes to the overall Missing Data Analysis: MAR and MNAR Sensitivity workflow.
+
+
+Missingness depends on observed information:
+
+- Treatment
+- Week 8 HbA1c
+- Adverse event status
+
+Therefore, this can still satisfy MAR.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block generates controlled example data. Simulation makes the data-generating assumptions explicit and provides a known setting in which to study the method.
+
+```{r}
+# Target approximately 10% Week 12 missingness.
+# Calibrate the intercept while preserving the MAR mechanism.
+
+target_missing <- 0.10
+
+lp_without_intercept <-
+  1.2 * dat$AE +
+  0.35 * (dat$Y8 - 8) +
+  0.3 * (dat$TRT == "Drug")
+
+calibrate_fun <- function(intercept) {
+  mean(plogis(intercept + lp_without_intercept)) - target_missing
+}
+
+dropout_intercept <- uniroot(
+  calibrate_fun,
+  interval = c(-10, 2)
+)$root
+
+drop_prob <- plogis(
+  dropout_intercept + lp_without_intercept
+)
+
+dat$Dropout <- rbinom(n, 1, drop_prob)
+
+dat$Y12 <- dat$Y12_true
+dat$Y12[dat$Dropout == 1] <- NA
+
+# Overall and treatment-specific missing rates
+overall_missing_rate <- mean(is.na(dat$Y12))
+
+missing_by_trt <- dat %>%
+  group_by(TRT) %>%
+  summarise(
+    MissingRate = mean(is.na(Y12)),
+    .groups = "drop"
+  )
+
+overall_missing_rate
+missing_by_trt
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the generated sample with the parameters used to create it. Differences reflect random variation unless the code intentionally introduces bias or structure.
+
+
+#### 5. Primary Analysis: MMRM Under MAR
+
+<!-- generated-learning-note -->
+This subsection explains **5. Primary Analysis: MMRM Under MAR** and shows how it contributes to the overall Missing Data Analysis: MAR and MNAR Sensitivity workflow.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block prepares the analysis data. Follow each transformation carefully because filtering, recoding, grouping, and reshaping determine the observations used downstream.
+
+```{r}
+longdat <- dat %>%
+  select(ID, TRT, Baseline, Y4, Y8, Y12) %>%
+  pivot_longer(
+    cols = c(Y4, Y8, Y12),
+    names_to = "Visit",
+    values_to = "HbA1c"
+  )
+
+longdat$Visit <- factor(
+  longdat$Visit,
+  levels = c("Y4", "Y8", "Y12")
+)
+
+mmrm_fit <- lme(
+  HbA1c ~ TRT * Visit + Baseline,
+  random = ~1 | ID,
+  data = longdat,
+  na.action = na.exclude,
+  method = "REML"
+)
+
+summary(mmrm_fit)
+
+# Week 12 Drug - Placebo contrast
+mmrm_emm <- emmeans(
+  mmrm_fit,
+  ~ TRT | Visit
+)
+
+mmrm_contrasts <- contrast(
+  mmrm_emm,
+  method = "revpairwise"
+)
+
+# Request confidence intervals explicitly.
+# Depending on the model, emmeans may name CI columns
+# lower.CL/upper.CL or asymp.LCL/asymp.UCL.
+mmrm_contrast_summary <- as.data.frame(
+  summary(
+    mmrm_contrasts,
+    infer = c(TRUE, TRUE)
+  )
+)
+
+mmrm_week12 <- mmrm_contrast_summary %>%
+  filter(Visit == "Y12")
+
+mmrm_week12
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the data before and after the transformation. Confirm that row counts, group sizes, missingness, and variable values changed as intended.
+
+
+The coefficient `TRTDrug` in an MMRM with a `TRT * Visit` interaction is the treatment difference at the **reference visit**, not necessarily the Week 12 effect.
+
+Therefore, the clinically relevant Week 12 effect should be obtained from a visit-specific contrast.
+
+#### 6. Primary Analysis: Multiple Imputation Under MAR
+
+<!-- generated-learning-note -->
+This subsection explains **6. Primary Analysis: Multiple Imputation Under MAR** and shows how it contributes to the overall Missing Data Analysis: MAR and MNAR Sensitivity workflow.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block prepares the analysis data. Follow each transformation carefully because filtering, recoding, grouping, and reshaping determine the observations used downstream.
+
+```{r}
+mi_dat <- dat %>%
+  select(TRT, Baseline, Y4, Y8, AE, Y12)
+
+mi_dat$TRT <- factor(
+  mi_dat$TRT,
+  levels = c("Placebo", "Drug")
+)
+
+imp <- mice(
+  mi_dat,
+  m = 20,
+  method = "pmm",
+  seed = 123,
+  printFlag = FALSE
+)
+
+fit_mi <- with(
+  imp,
+  lm(Y12 ~ TRT + Baseline)
+)
+
+mi_pooled <- summary(
+  pool(fit_mi),
+  conf.int = TRUE
+)
+
+mi_pooled
+
+mi_week12 <- mi_pooled %>%
+  filter(term == "TRTDrug") %>%
+  transmute(
+    Method = "MI under MAR",
+    Estimate = estimate,
+    SE = std.error,
+    Lower95 = `2.5 %`,
+    Upper95 = `97.5 %`
+  )
+
+mi_week12
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the data before and after the transformation. Confirm that row counts, group sizes, missingness, and variable values changed as intended.
+
+
+The MI analysis is a Week 12 ANCOVA. Because Placebo is the reference group, `TRTDrug` directly estimates the adjusted **Drug - Placebo difference at Week 12**.
+
+#### 7. Compare MMRM and MI Week 12 Treatment Effects
+
+<!-- generated-learning-note -->
+This subsection explains **7. Compare MMRM and MI Week 12 Treatment Effects** and shows how it contributes to the overall Missing Data Analysis: MAR and MNAR Sensitivity workflow.
+
+
+The two methods should be compared using the **same Week 12 contrast**, rather than comparing the raw `TRTDrug` coefficient from the MMRM output.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+# Identify the confidence-interval column names returned by emmeans
+lower_col <- intersect(
+  c("lower.CL", "asymp.LCL"),
+  names(mmrm_week12)
+)[1]
+
+upper_col <- intersect(
+  c("upper.CL", "asymp.UCL"),
+  names(mmrm_week12)
+)[1]
+
+if (is.na(lower_col) || is.na(upper_col)) {
+  stop("Confidence interval columns were not found in the emmeans output.")
+}
+
+mmrm_compare <- data.frame(
+  Method = "MMRM under MAR",
+  Estimate = mmrm_week12$estimate,
+  SE = mmrm_week12$SE,
+  Lower95 = mmrm_week12[[lower_col]],
+  Upper95 = mmrm_week12[[upper_col]]
+)
+
+comparison_table <- bind_rows(
+  mmrm_compare,
+  mi_week12
+)
+
+comparison_table
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+Interpretation:
+
+- **MMRM** uses all available repeated outcomes and estimates the Week 12 Drug - Placebo contrast from the longitudinal model.
+- **MI** imputes missing Week 12 outcomes using observed information and then fits a Week 12 ANCOVA.
+- Both are MAR-based approaches, but the estimates do not have to be exactly identical because the model structures differ.
+- Similar estimates support consistency of the primary analysis.
+
+#### 8. MNAR Sensitivity Analysis: Delta Adjustment
+
+<!-- generated-learning-note -->
+This subsection explains **8. MNAR Sensitivity Analysis: Delta Adjustment** and shows how it contributes to the overall Missing Data Analysis: MAR and MNAR Sensitivity workflow.
+
+
+Under MNAR, assume that patients with missing Week 12 HbA1c have outcomes worse than predicted under MAR.
+
+For example:
+
+\[
+Y_{MNAR} = Y_{MAR} + \delta
+\]
+
+where a positive delta means higher, and therefore worse, HbA1c.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block specifies and fits the statistical model. Identify the outcome, predictors, reference levels, link or distribution, and any correlation structure before interpreting coefficients.
+
+```{r}
+run_delta <- function(delta, imp_object, original_data) {
+
+  missing_y12 <- is.na(original_data$Y12)
+
+  estimates <- numeric(imp_object$m)
+  variances <- numeric(imp_object$m)
+
+  for (i in 1:imp_object$m) {
+
+    temp <- complete(imp_object, i)
+
+    # Keep Placebo as the reference group
+    temp$TRT <- factor(
+      temp$TRT,
+      levels = c("Placebo", "Drug")
+    )
+
+    # MNAR delta adjustment:
+    # higher HbA1c is worse, so positive delta is unfavorable
+    # to patients with originally missing Week 12 outcomes
+    temp$Y12[missing_y12] <-
+      temp$Y12[missing_y12] + delta
+
+    fit <- lm(
+      Y12 ~ TRT + Baseline,
+      data = temp
+    )
+
+    estimates[i] <- unname(coef(fit)["TRTDrug"])
+
+    vc <- vcov(fit)
+
+    if (!"TRTDrug" %in% rownames(vc)) {
+      stop(
+        "TRTDrug coefficient was not found. ",
+        "Check treatment factor levels."
+      )
+    }
+
+    variances[i] <- vc["TRTDrug", "TRTDrug"]
+  }
+
+  # Rubin's rules
+  Qbar <- mean(estimates)
+  Ubar <- mean(variances)
+  B <- var(estimates)
+
+  total_var <-
+    Ubar + (1 + 1 / imp_object$m) * B
+
+  SE <- sqrt(total_var)
+
+  data.frame(
+    Delta = delta,
+    Estimate = Qbar,
+    SE = SE,
+    Lower95 = Qbar - 1.96 * SE,
+    Upper95 = Qbar + 1.96 * SE
+  )
+}
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Focus on coefficient direction and scale, uncertainty intervals, fit statistics, and diagnostics. Statistical significance alone does not establish practical importance or model adequacy.
+
+
+#### 9. Test Several MNAR Assumptions
+
+<!-- generated-learning-note -->
+This section establishes the concepts and assumptions needed to understand **9. Test Several MNAR Assumptions** in the context of Missing Data Analysis: MAR and MNAR Sensitivity.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+delta_values <- c(
+  0,
+  0.2,
+  0.4,
+  0.6,
+  0.8,
+  1.0
+)
+
+results <- bind_rows(
+  lapply(
+    delta_values,
+    run_delta,
+    imp_object = imp,
+    original_data = mi_dat
+  )
+)
+
+results
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+Interpretation:
+
+The treatment coefficient is **Drug - Placebo** because Placebo is explicitly set as the reference group. For HbA1c, a negative estimate favors Drug.
+
+- `Delta = 0`: MAR assumption
+- `Delta = 0.2`: missing HbA1c values are assumed to be 0.2% worse than MAR predictions
+- `Delta = 0.5`: 0.5% worse
+- Larger delta values represent increasingly unfavorable MNAR assumptions
+
+#### 10. Interpretation
+
+<!-- generated-learning-note -->
+This section focuses on **10. Interpretation**. Emphasize effect size, uncertainty, diagnostics, and scientific relevance rather than a single threshold.
+
+
+The overall strategy is:
+
+\[
+\text{Primary Analysis}
+\rightarrow
+\text{MMRM or MI under MAR}
+\]
+
+followed by:
+
+\[
+\text{Sensitivity Analysis}
+\rightarrow
+\text{Pattern-Mixture Model + Delta Adjustment}
+\]
+
+If the treatment conclusion remains similar across clinically plausible delta values, the result is considered robust to departures from MAR.
+
+If the conclusion changes only after a sufficiently large delta, that value can be interpreted as a **tipping point**.
+
+#### 11. Key Takeaway
+
+<!-- generated-learning-note -->
+This subsection explains **11. Key Takeaway** and shows how it contributes to the overall Missing Data Analysis: MAR and MNAR Sensitivity workflow.
+
+
+**MAR allows missingness to depend on observed covariates and prior outcomes.**
+
+For the primary analysis, MMRM or MI can therefore be used under a reasonable MAR assumption.
+
+Because MAR cannot be verified from the observed data alone, MNAR sensitivity analyses such as **pattern-mixture models with delta adjustment** are used to assess robustness.
+
+## Interpreting the Results
+
+Compare complete-case, imputed, and sensitivity results; large changes signal dependence on unverifiable assumptions. Treat the output as evidence generated under the stated data, coding choices, and assumptions. Before using the workflow in practice, replace example inputs with validated data and confirm that the method targets the intended scientific question.
+
+## Key Takeaways
+
+- **Connect method to purpose.** Identify the question and target quantity before choosing code or a model.
+- **Read code and output together.** Confirm what each object, estimate, interval, table, or plot represents.
+- **Check assumptions and diagnostics.** A successful computation is not by itself evidence that the result is reliable.
+- **Adapt deliberately.** When applying the example elsewhere, document changes to data definitions, parameters, and analytical choices.

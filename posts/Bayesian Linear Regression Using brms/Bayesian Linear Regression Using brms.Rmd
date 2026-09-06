@@ -1,0 +1,131 @@
+---
+title: "Bayesian Linear Regression Using brms"
+output: html_document
+---
+
+## Introduction
+
+This example fits a Bayesian linear regression model using the `brms` package.
+
+The model is
+
+$$
+y_i = \beta_0 + \beta_1 x_i + \epsilon_i,
+$$
+
+where
+
+$$
+\epsilon_i \sim N(0,\sigma^2).
+$$
+
+## Load Package and Simulate Data
+
+```{r setup, message=FALSE, warning=FALSE}
+library(brms)
+
+set.seed(123)
+
+n <- 31
+
+dat <- data.frame(
+  x = seq(-15, 15, length.out = n)
+)
+
+dat$y <- 5 * dat$x + rnorm(
+  n,
+  mean = 0,
+  sd = 10
+)
+```
+
+## Plot the Simulated Data
+
+```{r data-plot}
+plot(
+  dat$x,
+  dat$y,
+  pch = 19,
+  xlab = "x",
+  ylab = "y",
+  main = "Simulated Data"
+)
+```
+
+## Define Prior Distributions
+
+The prior distributions are
+
+$$
+\beta_1 \sim N(5,2^2),
+$$
+
+$$
+\beta_0 \sim N(0,5^2),
+$$
+
+and
+
+$$
+\sigma \sim \text{Exponential}(0.1).
+$$
+
+```{r priors}
+priors <- c(
+  brms::set_prior(
+    "normal(5, 2)",
+    class = "b"
+  ),
+  brms::set_prior(
+    "normal(0, 5)",
+    class = "Intercept"
+  ),
+  brms::set_prior(
+    "exponential(0.1)",
+    class = "sigma"
+  )
+)
+```
+
+## Fit the Bayesian Linear Regression Model
+
+```{r fit-model, results='hide'}
+fit <- brms::brm(
+  y ~ x,
+  data = dat,
+  family = gaussian(),
+  prior = priors,
+  chains = 4,
+  iter = 4000,
+  warmup = 2000,
+  cores = 4,
+  seed = 123,
+  refresh = 0
+)
+```
+
+## Model Summary
+
+```{r model-summary}
+summary(fit)
+```
+
+## MCMC Diagnostic Plots
+
+```{r diagnostic-plots}
+# Close all active graphics devices
+while (dev.cur() > 1) {
+  dev.off()
+}
+
+# Draw brms diagnostic plots
+plot(fit)
+```
+
+## Interpretation
+
+The posterior estimate of `b_x` represents the slope of the relationship between `x` and `y`.
+
+The posterior estimate of `Intercept` represents the expected value of `y` when (x=0).
+
+The posterior estimate of `sigma` represents the residual standard deviation.

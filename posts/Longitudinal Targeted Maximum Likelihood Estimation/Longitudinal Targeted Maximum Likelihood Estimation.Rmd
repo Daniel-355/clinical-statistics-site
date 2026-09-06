@@ -1,0 +1,163 @@
+---
+title: "Longitudinal Targeted Maximum Likelihood Estimation"
+output: html_document
+date: '2023-05-08'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## LMTLE: A Brief Introduction
+This instruction (of causal inference) is for the complex longitudinal data.
+
+In detail please see the reference by [Ashley I Naimi](https://github.com/ainaimi/mlci_shortcourse).  
+
+### Inplementaion by hand
+Constructing stabilized IP weights
+```{r}
+library(tidyverse)
+# data management or manipulate to generate lag variables
+a <- read_csv("C:\\Users\\hed2\\Downloads\\mybook2\\mybook2\\2023_04_21-time-dependent.csv") %>% 
+group_by(ID) %>%
+  
+# lag after group id
+mutate(exposure_lag = lag(exposure, n = 1L,
+default = 0), c1_lag = lag(c1, n = 1L,
+default = 0), c2_lag = lag(c2, n = 1L,
+default = 0)) %>%
+ungroup()
+a
+```
+
+Calculate stabilized IP weights by ID
+```{r}
+# numerator
+num <- glm(exposure ~ factor(Int), data = a,
+family = binomial("logit"))$fitted.values
+# denominator
+den <- glm(exposure ~ factor(Int) + exposure_lag +
+c1 + c2 + c1_lag + c2_lag, data = a,
+# using lag?
+  
+family = binomial("logit"))$fitted.values
+```
+
+Cumulative product wights by ID (each one has the different weights in different times)
+```{r}
+# ip
+a <- a %>%
+mutate(sw_ = (num/den) * exposure + ((1 -
+num)/(1 - den)) * (1 - exposure)) %>%
+  
+# cumprod ip  
+group_by(ID) %>%
+mutate(sw = cumprod(sw_))  
+
+head(cbind(a$ID, a$Int,a$sw,a$sw_))
+  
+a <- a %>% ungroup() %>%
+select(-sw_)
+```
+
+Summary weights by time
+```{r}
+# summary weights
+a %>%
+group_by(Int) %>%
+# group by time (close to 1) 
+summarise(meanSW = mean(sw), maxSW = max(sw))
+
+# a %>%
+# group_by(ID) %>%
+# # group by ID
+# summarise(meanSW = mean(sw), maxSW = max(sw))  
+```
+
+Use these weights to fit an IP weighted MSM
+```{r}
+# aim to adjust the weight
+library(lmtest)
+library(sandwich)
+
+modMSM <- lm(Y ~ factor(Int) + I(exposure/4),  #why divided by 4, otherwise, coefficient *4
+data = a, weights = sw)
+
+coeftest(modMSM, vcov. = vcovCL(modMSM, cluster = a$ID,
+type = "HC3"))
+
+```
+
+### Longitudinal Targeted Maximum Likelihood Estimation by package
+
+```{r}
+library(ltmle)
+```
+
+```{r}
+# read in data
+a <- read_csv("C:\\Users\\hed2\\Downloads\\mybook2\\mybook2\\2023_04_21-time-dependent.csv")
+a %>%
+print(n = 3)
+```
+
+Convert data from long to wide
+```{r}
+# data transform, without lag
+# keep confounders
+b <- a %>%
+pivot_wider(names_from = Int, values_from = c(exposure,
+c1, c2, Y)) %>%
+mutate(Y_1 = if_else(is.na(Y_1), 1, Y_1),
+Y_2 = if_else(is.na(Y_2), 1, Y_2),
+Y_3 = if_else(is.na(Y_3), 1, Y_3),
+Y_4 = if_else(is.na(Y_4), 1, Y_4)) %>%
+select(exposure_1, c1_1, c2_1, Y_1, exposure_2,
+c1_2, c2_2, Y_2, exposure_3, c1_3,
+c2_3, Y_3, exposure_4, c1_4, c2_4,
+Y_4)
+
+head(b)
+```
+
+Setup parameters of model
+```{r}
+# ltmle
+# super learner library, algorithm
+sl.lib <- c("SL.mean",
+"SL.glm",
+"SL.ranger")
+
+#ltmle
+result <- ltmle(b,
+Anodes=c(paste0("exposure_",1:4)),   #treatment
+Lnodes=c("c1_1", "c2_1", "c1_2", "c2_2",  #
+"c1_3", "c2_3", "c1_4", "c2_4"),
+Ynodes=c("Y_1","Y_2","Y_3","Y_4"),
+
+survivalOutcome = TRUE,
+SL.library = list(Q = sl.lib, g = sl.lib), #g computation and ps?
+
+abar=list(treament = c(1, 1, 1, 1),
+control = c(0, 0, 0, 0)),
+# estimate.time = T,
+# need to comment out to run
+stratify = T) 
+```
+
+```{r}
+# summary(result)
+summary(result)[[2]]$ATE
+# result$fit$g
+# result$fit$Q
+```
+
+
+
+
+
+
+
+
+
+

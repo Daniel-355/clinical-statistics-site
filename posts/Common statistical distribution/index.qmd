@@ -1,0 +1,1664 @@
+---
+title: "Common statistical distribution"
+description: "A practical R learning guide to Common statistical distribution, with concise explanations, reproducible examples, and interpretation guidance."
+date: 2026-08-31
+section: "Biostatistics"
+category: "Statistical Principles & Estimands"
+topic: "Common statistical distribution"
+type: article
+tags: ["Statistical Principles & Estimands", "Biostatistics", "Common", "statistical", "distribution"]
+status: published
+featured: true
+youtube: []
+pdf: []
+downloads: []
+validate-yaml: false
+execute:
+  echo: true
+  warning: false
+  error: true
+---
+
+## Why This Topic Matters
+
+Statistical principles define what is being estimated, under which assumptions, and how uncertainty should be represented.
+
+## Learning Objectives
+
+After working through this material, you should be able to:
+
+- explain the main ideas behind **Common statistical distribution**;
+- interpret the R workflow and its output; and
+- adapt the examples to a related analysis.
+
+## Lesson Roadmap
+
+The original material is organized around the following topics:
+
+1. Continuous Distributions
+2. Normal distribution
+3. Probaility density function
+4. Cummulative distribution function
+5. Properties
+6. t distribution
+
+## How to Use This Lesson
+
+Read the explanation before each workflow, then run the R chunks in sequence. Code and output are shown together so that each numerical or graphical result can be connected to the command that produced it. Some source examples require optional packages or external data. Those setup-dependent chunks remain visible for reference but are marked `eval: false` when they cannot be reproduced safely in a clean website build.
+
+## Reproducible Learning Check
+
+This short R chunk confirms the scope of the lesson and always produces a visible output.
+
+```{r}
+#| label: learning-overview
+learning_overview <- data.frame(
+  section = "Biostatistics",
+  category = "Statistical Principles & Estimands",
+  topic = "Common statistical distribution"
+)
+learning_overview
+```
+
+## Learning Material
+
+The following material develops **Common statistical distribution** from core ideas to practical implementation. Definitions and assumptions come first; worked code then shows how the ideas are represented computationally.
+
+### Conceptual Foundation
+
+The material below closely follows the original R Markdown source, with its examples retained for study and reuse.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+[References](https://www.itl.nist.gov/div898/handbook/eda/section3/eda366.htm) and D. Joyce
+
+
+#### Continuous Distributions
+
+<!-- generated-learning-note -->
+This subsection explains **Continuous Distributions** and shows how it contributes to the overall Common statistical distribution workflow.
+
+
+#### Normal distribution
+
+<!-- generated-learning-note -->
+This subsection explains **Normal distribution** and shows how it contributes to the overall Common statistical distribution workflow.
+
+
+The Central Limit Theorem says sample means and sample sums approach normal distributions as the sample size approaches infinity (normal, t, chisq, f distributions).
+
+#### Probaility density function
+
+<!-- generated-learning-note -->
+This subsection explains **Probaility density function** and shows how it contributes to the overall Common statistical distribution workflow.
+
+
+$$
+f(x)=\frac{e^{-(x-\mu)^2 /\left(2 \sigma^2\right)}}{\sigma \sqrt{2 \pi}}
+$$
+
+
+where $\mu$ is the location (shift the graph)/center parameter and $\sigma$ is the scale (stretch out the graph)/spread parameter.
+
+### R Workflow and Examples
+
+Run the examples in order because later blocks may reuse objects created earlier. Each block includes a short purpose statement and guidance for reading its output.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+# numbers from  
+x<-seq(-5,5,0.1)
+ 
+# calculate the distribution function
+# based on the parameters
+pdf<- dnorm(x,(0),(2))
+ 
+# Plotting the PDF 
+plot(x,pdf,type = "l")
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+- two different normal distribution multiple, approaching normal
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block generates controlled example data. Simulation makes the data-generating assumptions explicit and provides a known setting in which to study the method.
+
+```{r}
+# numbers from  
+ 
+# calculate the distribution function
+# based on the parameters
+pdf1<- rnorm(1000,(9),(1))
+pdf2<- rnorm(1000,(30),(10))
+pdf=pdf1*pdf2
+ 
+# Plotting the PDF 
+hist(pdf,probability = T)
+lines(density(pdf),col=2)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the generated sample with the parameters used to create it. Differences reflect random variation unless the code intentionally introduces bias or structure.
+
+
+
+
+- normal distribution *n, normal 
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block generates controlled example data. Simulation makes the data-generating assumptions explicit and provides a known setting in which to study the method.
+
+```{r}
+# numbers from  
+ 
+ 
+# calculate the distribution function
+# based on the parameters
+pdf1<- rnorm(1000,(1),(1))
+pdf=pdf1*60
+ 
+# Plotting the PDF 
+hist(pdf,probability = T)
+lines(density(pdf),col=2)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the generated sample with the parameters used to create it. Differences reflect random variation unless the code intentionally introduces bias or structure.
+
+
+- normal distribution *power, not normal
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block generates controlled example data. Simulation makes the data-generating assumptions explicit and provides a known setting in which to study the method.
+
+```{r}
+# numbers from  
+
+# calculate the distribution function
+# based on the parameters
+pdf1<- rnorm(1000,(1),(1))
+pdf=pdf1**4
+ 
+# Plotting the PDF 
+hist(pdf,probability = T)
+lines(density(pdf),col=2)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the generated sample with the parameters used to create it. Differences reflect random variation unless the code intentionally introduces bias or structure.
+
+
+- normal distribution square root, approaching normal
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block generates controlled example data. Simulation makes the data-generating assumptions explicit and provides a known setting in which to study the method.
+
+```{r}
+# numbers from  
+
+# calculate the distribution function
+# based on the parameters
+pdf1<- rnorm(1000,(10),(3))
+pdf1=pdf1[pdf1>0]
+pdf=sqrt(pdf1) 
+ 
+# Plotting the PDF 
+hist(pdf,probability = T)
+lines(density(pdf),col=2)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the generated sample with the parameters used to create it. Differences reflect random variation unless the code intentionally introduces bias or structure.
+
+
+- two normal distribution plus, approaching normal
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block generates controlled example data. Simulation makes the data-generating assumptions explicit and provides a known setting in which to study the method.
+
+```{r}
+# numbers from  
+ 
+# calculate the distribution function
+# based on the parameters
+pdf1<- rnorm(1000,(2),(1))
+pdf2<- rnorm(1000,(8),(1))
+pdf=pdf1+pdf2
+ 
+# Plotting the PDF 
+hist(pdf,probability = T)
+lines(density(pdf),col=2)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the generated sample with the parameters used to create it. Differences reflect random variation unless the code intentionally introduces bias or structure.
+
+
+
+- normal distribution plus n, approaching normal
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block generates controlled example data. Simulation makes the data-generating assumptions explicit and provides a known setting in which to study the method.
+
+```{r}
+# numbers from  
+ 
+ 
+# calculate the distribution function
+# based on the parameters
+pdf1<- rnorm(1000,(1),(1))
+pdf=pdf1+100
+ 
+# Plotting the PDF 
+hist(pdf,probability = T)
+lines(density(pdf),col=2)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the generated sample with the parameters used to create it. Differences reflect random variation unless the code intentionally introduces bias or structure.
+
+
+- two normal distribution, arithmetic operations (mixed distribution is approaching normal) 
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block generates controlled example data. Simulation makes the data-generating assumptions explicit and provides a known setting in which to study the method.
+
+```{r}
+# numbers from  
+
+# calculate the distribution function
+# based on the parameters
+pdf1<- rnorm(1000,(8),(1))
+pdf2<- rnorm(1000,(2),(1))
+pdf=pdf1**2+pdf2
+ 
+# Plotting the PDF 
+hist(pdf,probability = T)
+lines(density(pdf),col=2)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the generated sample with the parameters used to create it. Differences reflect random variation unless the code intentionally introduces bias or structure.
+
+
+
+- normalization by scale (center and standard deviation) toward normal
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+# numbers from  
+
+# calculate the distribution function
+# based on the parameters
+ 
+chi=rchisq(1000,4)
+hist(chi,probability = T)
+lines(density(chi),col=2)
+
+pdf1<- scale(chi)
+pdf=pdf1
+# Plotting the PDF 
+hist(pdf,probability = T)
+lines(density(pdf),col=2)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+#### Cummulative distribution function
+
+<!-- generated-learning-note -->
+This subsection explains **Cummulative distribution function** and shows how it contributes to the overall Common statistical distribution workflow.
+
+
+$$
+F(x)=\int_{-\infty}^x \frac{e^{-x^2 / 2}}{\sqrt{2 \pi}}
+$$
+
+Note that this integral does not exist in a simple closed formula. It is computed numerically. it is not related to mu and sigma. 
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+# numbers from  
+x<-seq(-5,5,0.1)
+ 
+# calculate the distribution function
+# based on the parameters
+cdf<- pnorm(x,(0),(2))
+ 
+# Plotting the PDF 
+plot(x,cdf,type = "l")
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+
+#### Properties
+
+<!-- generated-learning-note -->
+This subsection explains **Properties** and shows how it contributes to the overall Common statistical distribution workflow.
+
+
+Mean	The location parameter μ.
+Median	The location parameter μ.
+Mode	The location parameter μ.
+x Range	−∞ to ∞. 
+Standard Deviation	The scale parameter σ.
+Coefficient of Variation	σ/μ 
+Skewness	0 (is systematic)
+Kurtosis	3 (>3 thin peak)
+
+
+
+#### t distribution
+
+<!-- generated-learning-note -->
+This subsection explains **t distribution** and shows how it contributes to the overall Common statistical distribution workflow.
+
+
+#### PDF
+
+<!-- generated-learning-note -->
+This subsection explains **PDF** and shows how it contributes to the overall Common statistical distribution workflow.
+
+
+$$
+f(x)=\frac{\left(1+\frac{x^2}{\nu}\right)^{\frac{-(\nu+1)}{2}}}{B(0.5,0.5 \nu) \sqrt{\nu}}
+$$
+
+where $\boldsymbol{B}$ is the beta function and $v$ is a positive integer shape parameter.  
+
+$$
+B(0.5, 0.5\nu)=\int_0^1 t^{0.5-1}(1-t)^{0.5\nu-1} d t
+$$
+
+In a testing context, the $t$ distribution is treated as a "standardized distribution" (i.e., no location or scale parameters).  
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+# numbers from  
+x<-seq(-5,5,0.1)
+ 
+# calculate the distribution function
+# based on the parameters
+pdf1<- dt(x,1)
+pdf2<- dt(x,30)
+ 
+# Plotting the PDF 
+plot(x,pdf1,type = "l")
+lines(x,pdf2 ,col=2)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+#### CDF
+
+<!-- generated-learning-note -->
+This subsection explains **CDF** and shows how it contributes to the overall Common statistical distribution workflow.
+
+
+The formula for the cumulative distribution function of the t distribution is complicated. 
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+# numbers from  
+x<-seq(-5,5,0.1)
+ 
+# calculate the distribution function
+# based on the parameters
+cdf1<- pt(x,1)
+cdf2<- pt(x,30)
+ 
+# Plotting the PDF 
+plot(x,cdf1,type = "l")
+lines(x,cdf2 ,col=2)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+
+#### properties
+
+<!-- generated-learning-note -->
+This subsection explains **properties** and shows how it contributes to the overall Common statistical distribution workflow.
+
+
+
+$$
+\begin{aligned}
+&\begin{array}{ll}
+\text { Mean } & 0 \text { (It is undefined for } v \text { equal to 1.) } \\
+\text { Median } & 0 \\
+\text { Mode } & 0 \\
+\text { Range } & -\infty \text { to } \infty \\
+\text { Standard } & \sqrt{\frac{\nu}{(\nu-2)}} \\
+\text { Deviation } & \text { It is undefined for } v \text { equal to } 1 \text { or } 2 . \\
+& \text { Undefined } \\
+\text { Coefficient of } & \\
+\text { Variation } & \begin{array}{l}
+ \\
+\text {  }
+\end{array} \\
+
+& \begin{array}{l}
+\text { Skewness: 3 } \\
+\text {  }
+\end{array} \\
+\text { Kurtosis } & \frac{3(\nu-2)}{(\nu-4)}
+\end{array}\\
+&\text { It is undefined for } v \text { less than or equal to } 4 \text {. }
+\end{aligned}
+$$
+
+
+#### Chi-square distribution
+
+<!-- generated-learning-note -->
+This subsection explains **Chi-square distribution** and shows how it contributes to the overall Common statistical distribution workflow.
+
+
+$v$ independent variables with standard normal distributions are `squared` and summed.  
+
+$$
+f(x)=\frac{e^{\frac{-x}{2}} x^{\frac{\nu}{2}-1}}{2^{\frac{\nu}{2}} \Gamma\left(\frac{\nu}{2}\right)} \quad \text { for } x \geq 0
+$$
+where $v$ is the shape parameter and $\Gamma$ is the gamma function.  
+
+$$
+\Gamma(v/2)=\int_0^{\infty} t^{v/2-1} e^{-t} d t
+$$
+
+In a testing context, the chi-square distribution is treated as a "standardized distribution" (i.e., no location or scale parameters).  
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+# numbers from  
+x<-seq(0,5,0.1)
+ 
+# calculate the distribution function
+# based on the parameters
+pdf1<- dchisq(x,1)
+pdf2<- dchisq(x,5)
+ 
+# Plotting the PDF 
+plot(x,pdf1,type = "l")
+lines(x,pdf2 ,col=2)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+chisq= normal distribution**2 with freedom degree 1
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block generates controlled example data. Simulation makes the data-generating assumptions explicit and provides a known setting in which to study the method.
+
+```{r}
+# numbers from  
+
+# calculate the distribution function
+# based on the parameters
+x<- rnorm(1000,(1),(1))
+y=x**2
+ 
+# Plotting the PDF 
+hist(y,prob=T)
+lines(density(y),col=2)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the generated sample with the parameters used to create it. Differences reflect random variation unless the code intentionally introduces bias or structure.
+
+
+#### CDF
+
+<!-- generated-learning-note -->
+This subsection explains **CDF** and shows how it contributes to the overall Common statistical distribution workflow.
+
+
+$$
+F(x)=\frac{\gamma\left(\frac{\nu}{2}, \frac{x}{2}\right)}{\Gamma\left(\frac{\nu}{2}\right)} \quad \text { for } x \geq 0
+$$
+
+γ is the incomplete gamma function. 
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+# numbers from  
+x<-seq(0,5,0.1)
+ 
+# calculate the distribution function
+# based on the parameters
+cdf1<- pchisq(x,1)
+cdf2<- pchisq(x,5)
+ 
+# Plotting the PDF 
+plot(x,cdf1,type = "l")
+lines(x,cdf2 ,col=2)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+
+#### Properties
+
+<!-- generated-learning-note -->
+This subsection explains **Properties** and shows how it contributes to the overall Common statistical distribution workflow.
+
+
+$$
+\begin{array}{ll}
+\text { Mean } & v \\
+\text { Median } & \text { approximately } v-2 / 3 \text { for large } v \\
+\text { Mode } & \nu-2 \quad \text { for } \nu>2 \\
+\text { Range } & 0 \text { to } \infty \\
+\text { Standard } & \sqrt{2 \nu} \\
+\text { Deviation } & \\
+\text { Coefficient of Variation} & \sqrt{\frac{2}{\nu}} \\
+\text {  } & \frac{2^{1.5}}{\sqrt{\nu}} \\
+\text { Skewness } & 3+\frac{12}{\nu} \\
+\text { Kurtosis } &
+\end{array}
+$$
+
+#### f distribution
+
+<!-- generated-learning-note -->
+This subsection explains **f distribution** and shows how it contributes to the overall Common statistical distribution workflow.
+
+
+
+#### PDF
+
+<!-- generated-learning-note -->
+This subsection explains **PDF** and shows how it contributes to the overall Common statistical distribution workflow.
+
+
+The $\mathrm{F}$ distribution is the ratio of two chi-square distributions with degrees of freedom $v_1$ and $v_2$, respectively, where each chisquare has first been divided by its degrees of freedom.  
+
+$$
+f(x)=\frac{\Gamma\left(\frac{\nu_1+\nu_2}{2}\right)\left(\frac{\nu_1}{\nu_2}\right)^{\frac{\nu_1}{2}} x^{\frac{\nu_1}{2}-1}}{\Gamma\left(\frac{\nu_1}{2}\right) \Gamma\left(\frac{\nu_2}{2}\right)\left(1+\frac{\nu_1 x}{\nu_2}\right)^{\frac{\nu_1+\nu_2}{2}}}
+$$
+
+where $v_1$ and $v_2$ are the shape parameters and $\Gamma$ is the gamma function.  
+
+$$
+\Gamma(y)=\int_0^{\infty} t^{y-1} e^{-t} d t
+$$
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+# numbers from  
+x<-seq(0,5,0.1)
+ 
+# calculate the distribution function
+# based on the parameters
+pdf1<- df(x,1,1)
+pdf2<- df(x,10,10)
+ 
+# Plotting the PDF 
+plot(x,pdf1,type = "l")
+lines(x,pdf2 ,col=2)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+f= chisq1/chisq2
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+# numbers from  
+ 
+# calculate the distribution function
+# based on the parameters
+cdf1<- rchisq(100,9)
+cdf2<- rchisq(100,7)
+f=cdf1/cdf2
+
+# Plotting the PDF 
+hist(f,probability = T)
+lines(density(f),col=2)
+
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+#### CDF
+
+<!-- generated-learning-note -->
+This subsection explains **CDF** and shows how it contributes to the overall Common statistical distribution workflow.
+
+
+ 
+
+$F(x)=1-I_k\left(\frac{\nu_2}{2}, \frac{\nu_1}{2}\right)$ where $k=\nu_2 /\left(\nu_2+\nu_1 \cdot x\right)$ and $\boldsymbol{I}_{\boldsymbol{k}}$ is the incomplete beta function.  
+
+$$
+I_k(x, \alpha, \beta)=\frac{\int_0^x t^{\alpha-1}(1-t)^{\beta-1} d t}{B(\alpha, \beta)}
+$$
+
+where $\boldsymbol{B}$ is the beta function
+
+$$
+B(\alpha, \beta)=\int_0^1 t^{\alpha-1}(1-t)^{\beta-1} d t
+$$
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+# numbers from  
+x<-seq(0,5,0.1)
+ 
+# calculate the distribution function
+# based on the parameters
+cdf1<- pf(x,1,1)
+cdf2<- pf(x,10,10)
+ 
+# Plotting the PDF 
+plot(x,cdf1,type = "l")
+lines(x,cdf2 ,col=2)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+#### Properties
+
+<!-- generated-learning-note -->
+This subsection explains **Properties** and shows how it contributes to the overall Common statistical distribution workflow.
+
+
+$$
+\begin{array}{lll}
+\text { Mean } & \frac{\nu_2}{\left(\nu_2-2\right)} \quad \nu_2>2 & \\
+\text { Mode } & \frac{\nu_2\left(\nu_1-2\right)}{\nu_1\left(\nu_2+2\right)} \quad \nu_1>2 & \\
+\text { Range } & 0 \text { to } \infty & \\
+\text { Standard Deviation} & \sqrt{\frac{2 \nu_2^2\left(\nu_1+\nu_2-2\right)}{\nu_1\left(\nu_2-2\right)^2\left(\nu_2-4\right)}} \quad \nu_2>4 \\
+\text {  } & \sqrt{\frac{2\left(\nu_1+\nu_2-2\right)}{\nu_1\left(\nu_2-4\right)}} \quad \nu_2>4 \\
+\text { Coefficient of Variation} & \frac{\left(2 \nu_1+\nu_2-2\right) \sqrt{8\left(\nu_2-4\right)}}{\sqrt{\nu_1}\left(\nu_2-6\right) \sqrt{\left(\nu_1+\nu_2-2\right)}} \quad \nu_2>6 \\
+\text {  } & \text { Skewness } &
+\end{array}
+$$
+
+
+
+
+
+
+#### Uniform distribution
+
+<!-- generated-learning-note -->
+This subsection explains **Uniform distribution** and shows how it contributes to the overall Common statistical distribution workflow.
+
+
+#### Probaility density function
+
+<!-- generated-learning-note -->
+This subsection explains **Probaility density function** and shows how it contributes to the overall Common statistical distribution workflow.
+
+
+$$
+f(x)=\frac{1}{B-A} \quad \text { for } A \leq x \leq B
+$$
+where $\mathrm{A}$ is the location parameter and $(\mathrm{B}-\mathrm{A})$ is the scale parameter.  
+
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+# numbers from  
+x<-seq(-5,5,0.1)
+ 
+# calculate the distribution function
+# based on the parameters
+pdf<- dunif(x,(-5),(5))
+ 
+# Plotting the PDF 
+plot(x,pdf,type = "l")
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+#### Cummulative distribution function
+
+<!-- generated-learning-note -->
+This subsection explains **Cummulative distribution function** and shows how it contributes to the overall Common statistical distribution workflow.
+
+
+$$
+F(x)=x \quad \text { for } 0 \leq x \leq 1
+$$
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+# numbers from  
+x<-seq(-5,5,0.1)
+ 
+# calculate the distribution function
+# based on the parameters
+cdf<- punif(x,(-5),(5))
+ 
+# Plotting the PDF 
+plot(x,cdf,type = "l")
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+#### Preporties
+
+<!-- generated-learning-note -->
+This subsection explains **Preporties** and shows how it contributes to the overall Common statistical distribution workflow.
+
+
+Mean	(A + B)/2
+Median	(A + B)/2
+Range	B - A
+Standard Deviation	√((B−A)*(B−A)/12) 
+Coefficient of Variation	(B−A)/√3(B+A)
+Skewness	0
+Kurtosis	9/5
+
+
+
+
+
+
+#### Discrete Distributions
+
+<!-- generated-learning-note -->
+This subsection explains **Discrete Distributions** and shows how it contributes to the overall Common statistical distribution workflow.
+
+
+
+If you ask how many successes there will be among $n$ Bernoulli trials, then the answer will have a binomial distribution, $\operatorname{Binomial}(n, p)$. The Bernoulli distribution, Bernoulli $(p)$, simply says whether one trial is a success. If you ask how many trials it will be to get the first success, then the answer will have a geometric distribution, Geometric $(p)$. If you ask how many trials there will be to get the $r^{\text {th }}$ success, then the answer will have a negative binomial distribution, NegativeBinomial $(p, r)$. Given that there are $M$ successes among $N$ trials, if you ask how many of the first $n$ trials are successes, then the answer will have a $\operatorname{HypergeOmetric~}(N, M, n)$ distribution. Sampling with replacement is described below under the binomial distribution, while sampling without replacement is described under the hypergeometric distribution.
+
+
+#### Bernoulli Distribution
+
+<!-- generated-learning-note -->
+This subsection explains **Bernoulli Distribution** and shows how it contributes to the overall Common statistical distribution workflow.
+
+
+As in a Bernoulli process, you can ask various questions about a Poisson process, and the answers will have various distributions. If you ask how many events occur in an interval of length $t$, then the answer will have a Poisson distribution, Poisson $(\lambda t)$. If you ask how long until the first event occurs, then the answer will have an exponential distribution, $\operatorname{Exponential}(\lambda)$. If you ask how long until the $r^{\text {th }}$ event, then the answer will have a gamma distribution, $\operatorname{Gamma}(\lambda, r)$. If there are $\alpha+\beta$ events in a given time interval, if you ask what fraction of the interval it takes until the $\alpha^{\text {th }}$ event occurs, then the answer will have a $\operatorname{BETA}(\alpha, \beta)$ distribution.
+
+
+#### PDF
+
+<!-- generated-learning-note -->
+This subsection explains **PDF** and shows how it contributes to the overall Common statistical distribution workflow.
+
+
+The Bernoulli distribution is the probability distribution of Bernoulli trial, which only has 2 outcomes (eg: success or failure, win or lose).
+
+$$
+p(x)=p^x(1-p)^{1-x}
+$$
+
+ 
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+# numbers from  
+x<-c(0,1)
+ 
+# calculate the distribution function
+# based on the parameters
+pdf1<- dbinom(x, 1, 0.56)
+pdf2<- dbinom(x, 1, 0.07)
+ 
+# Plotting the PDF 
+barplot(names.arg =x,height =pdf1)
+barplot(names.arg =x,height =pdf2)
+
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+
+
+
+#### Binomial Distribution
+
+<!-- generated-learning-note -->
+This subsection explains **Binomial Distribution** and shows how it contributes to the overall Common statistical distribution workflow.
+
+
+#### PDF
+
+<!-- generated-learning-note -->
+This subsection explains **PDF** and shows how it contributes to the overall Common statistical distribution workflow.
+
+
+the plot of the binomial probability density function is on p and n.
+
+$$
+P(x ; p, n)=\left(\begin{array}{l}
+n \\
+x
+\end{array}\right)(p)^x(1-p)^{(n-x)} \quad \text { for } x=0,1,2, \cdots, n
+$$
+
+approaching normal
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+# numbers from  
+x<-seq(0,1000,1)
+ 
+# calculate the distribution function
+# based on the parameters
+pdf1<- dbinom(x, 1000, 0.56)
+pdf2<- dbinom(x, 1000, 0.07)
+ 
+# Plotting the PDF 
+plot(x,pdf1,type = "l")
+lines(x,pdf2 ,col=2)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+#### CDF
+
+<!-- generated-learning-note -->
+This subsection explains **CDF** and shows how it contributes to the overall Common statistical distribution workflow.
+
+
+$$
+F(x ; p, n)=\sum_{i=0}^x\left(\begin{array}{c}
+n \\
+i
+\end{array}\right)(p)^i(1-p)^{(n-i)}
+$$
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+# numbers from  
+x<-seq(0,1000,1)
+ 
+# calculate the distribution function
+# based on the parameters
+cdf1<- pbinom(x, 1000, 0.56)
+cdf2<- pbinom(x, 1000, 0.07)
+ 
+# Plotting the PDF 
+plot(x,cdf1,type = "l")
+lines(x,cdf2 ,col=2)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+#### Properties
+
+<!-- generated-learning-note -->
+This subsection explains **Properties** and shows how it contributes to the overall Common statistical distribution workflow.
+
+
+$$
+\begin{array}{ll}
+\text { Mean } & n p \\
+\text { Mode } & p(n+1)-1 \leq x \leq p(n+1) \\
+\text { Range } & 0 \text { to } n \\
+\text { Standard } & \sqrt{n p(1-p)} \\
+\text { Deviation } & \sqrt{\frac{(1-p)}{n p}} \\
+\text { Coefficient of Variation} & \frac{(1-2 p)}{\sqrt{n p(1-p)}} \\
+\text {  } & 3-\frac{6}{n}+\frac{1}{n p(1-p)} \\
+\text { Skewness } &
+\end{array}
+$$
+
+#### Geometric distribution
+
+<!-- generated-learning-note -->
+This subsection explains **Geometric distribution** and shows how it contributes to the overall Common statistical distribution workflow.
+
+
+with probability $p$ of success, the number of trials $X$ it takes to get the first success has a geometric distribution (`failures prior to the first success`).
+
+$$
+\begin{aligned}
+& f(x)=q^{x-1} p, \text { for } x=1,2, \ldots \\
+& \mu=\frac{1}{p} \cdot \sigma^2=\frac{1-p}{p^2} . \\
+& m(t)=\frac{p e^t}{1-q e^t} .
+\end{aligned}
+$$
+
+the moment generating function m(t) = E(X^t).
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+# numbers from  
+x<-seq(0,10,1)
+ 
+# calculate the distribution function
+# based on the parameters
+pdf1<- dgeom(x, 0.23)
+pdf2<- dgeom(x, 0.7)
+ 
+# Plotting the PDF 
+plot(x,pdf1,type = "l")
+lines(x,pdf2 ,col=2)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+#### Negative binomal distribution
+
+<!-- generated-learning-note -->
+This subsection explains **Negative binomal distribution** and shows how it contributes to the overall Common statistical distribution workflow.
+
+
+with probability $p$ of success, and $X$ is the trial number when $r$ successes are first achieved (x failures before r successes). 
+
+$\operatorname{Geometric}(p)=\operatorname{NegativeBinomial}(p, 1)$.
+
+$$
+\begin{aligned}
+& f(x)=\left(\begin{array}{l}
+x-1 \\
+r-1
+\end{array}\right) p^r q^{x-r}, \text { for } x=r, r+1, \ldots \\
+& \mu=\frac{r}{p} . \sigma^2=\frac{r q}{p^2} . \\
+& m(t)=\left(\frac{p e^t}{1-q e^t}\right)^r .
+\end{aligned}
+$$
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+# numbers from  
+x<-seq(0,10,1)
+ 
+# calculate the distribution function
+# based on the parameters
+pdf1<- dnbinom(x, 2,0.23)
+pdf2<- dnbinom(x, 2,0.7)
+ 
+# Plotting the PDF 
+plot(x,pdf1,type = "l")
+lines(x,pdf2 ,col=2)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+
+#### Hypergeometric distribution
+
+<!-- generated-learning-note -->
+This subsection explains **Hypergeometric distribution** and shows how it contributes to the overall Common statistical distribution workflow.
+
+
+there are $M$ successes among $N$ trials, the number $X$ of successes among the first $n$ trials has a HypergEOMETric $(N, M, n)$ distribution.
+
+$$
+\begin{aligned}
+& f(x)=\frac{\left(\begin{array}{c}
+M \\
+x
+\end{array}\right)\left(\begin{array}{c}
+N-M \\
+n-x
+\end{array}\right)}{\left(\begin{array}{l}
+N \\
+n
+\end{array}\right)} \text {, for } x=0,1, \ldots, n . \\
+& \mu=n p . \sigma^2=\left(\begin{array}{l}
+N-n \\
+N-1
+\end{array}\right) n p q .
+\end{aligned}
+$$
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+# numbers from  
+x<-seq(0,5,1)
+ 
+# calculate the distribution function
+# based on the parameters
+pdf1<- dhyper(x, 10,14,5)
+pdf2<- dhyper(x, 14,10,5)
+ 
+# Plotting the PDF 
+plot(x,pdf1,type = "l")
+lines(x,pdf2 ,col=2)
+
+# m
+# the number of white balls in the urn.
+# n
+# the number of black balls in the urn.
+# k
+# the number of balls drawn from the urn.
+# x
+# the number of white balls drawn without replacement 
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+
+#### Poisson process
+
+<!-- generated-learning-note -->
+This subsection explains **Poisson process** and shows how it contributes to the overall Common statistical distribution workflow.
+
+
+
+#### Poisson
+
+<!-- generated-learning-note -->
+This subsection explains **Poisson** and shows how it contributes to the overall Common statistical distribution workflow.
+
+
+#### PDF
+
+<!-- generated-learning-note -->
+This subsection explains **PDF** and shows how it contributes to the overall Common statistical distribution workflow.
+
+
+$$
+p(x ; \lambda)=\frac{e^{-\lambda} \lambda^x}{x !} \text { for } x=0,1,2, \cdots
+$$
+
+$\lambda$ is the shape parameter which indicates the average number of events.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+# numbers from  
+x<-seq(0,30,1)
+ 
+# calculate the distribution function
+# based on the parameters
+pdf1<- dpois(x, 1)
+pdf2<- dpois(x, 7)
+pdf3<- dpois(x, 12)
+ 
+# Plotting the PDF 
+plot(x,pdf1,type = "l")
+lines(x,pdf2 ,col=2)
+lines(x,pdf3 ,col=3)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+#### CDF
+
+<!-- generated-learning-note -->
+This subsection explains **CDF** and shows how it contributes to the overall Common statistical distribution workflow.
+
+
+$$
+F(x ; \lambda)=\sum_{i=0}^x \frac{e^{-\lambda} \lambda^i}{i !}
+$$
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+# numbers from  
+x<-seq(0,30,1)
+ 
+# calculate the distribution function
+# based on the parameters
+cdf1<- ppois(x, 1)
+cdf2<- ppois(x, 7)
+cdf3<- ppois(x, 12)
+ 
+# Plotting the PDF 
+plot(x,cdf1,type = "l")
+lines(x,cdf2 ,col=2)
+lines(x,cdf3 ,col=3)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+#### Properties
+
+<!-- generated-learning-note -->
+This subsection explains **Properties** and shows how it contributes to the overall Common statistical distribution workflow.
+
+
+$$
+\begin{array}{ll}
+\text { Mean } & \lambda \\
+\text { Mode } & \text { For non-integer } \lambda, \text { it is the largest integer } \\
+& \text { less than } \lambda . \text { For integer } \lambda, x=\lambda \text { and } x=\lambda \text { - } \\
+& 1 \text { are both the mode. } \\
+& 0 \text { to } \infty \\
+\text { Range } & \sqrt{\lambda} \\
+\text { Standard } & \\
+\text { Deviation } & \\
+\text { Coefficient of Variation} & \frac{1}{\sqrt{\lambda}} \\
+\text { Skewness } & \frac{1}{\sqrt{\lambda}} \\
+\text { Kurtosis } & 3+\frac{1}{\lambda}
+\end{array}
+$$
+
+
+
+ 
+
+#### Exponential distribution
+
+<!-- generated-learning-note -->
+This subsection explains **Exponential distribution** and shows how it contributes to the overall Common statistical distribution workflow.
+
+
+#### Probaility density function
+
+<!-- generated-learning-note -->
+This subsection explains **Probaility density function** and shows how it contributes to the overall Common statistical distribution workflow.
+
+
+let's say mu=0 below. 
+
+$$
+f(x)=\frac{1}{\beta} e^{-(x-\mu) / \beta} \quad x \geq \mu ; \beta>0
+$$
+
+
+where $\mu$=0 here is the location parameter and $\beta$ is the scale parameter (the scale parameter is often referred to as $\lambda$ which equals $1 / \beta$ ).  
+
+$$
+f(x)=\lambda e^{-(x) \lambda} \quad x \geq 0 ; \lambda>0
+$$
+
+$\lambda=1 or 5$ is scale 
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+# numbers from  
+x<-seq(0,5,0.1)
+ 
+# calculate the distribution function
+# based on the parameters
+pdf1<- dexp(x,1)
+pdf2<- dexp(x,5)
+ 
+# Plotting the PDF 
+plot(x,pdf1,type = "l")
+lines(x,pdf2,col=2)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+#### Cummulative distribution function
+
+<!-- generated-learning-note -->
+This subsection explains **Cummulative distribution function** and shows how it contributes to the overall Common statistical distribution workflow.
+
+
+$$
+F(x)=1-e^{-\left(x^\gamma\right)} \quad x \geq 0 ; \gamma>0
+$$
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+# numbers from  
+x<-seq(0,5,0.1)
+ 
+# calculate the distribution function
+# based on the parameters
+cdf<- pexp(x,2)
+ 
+# Plotting the PDF 
+plot(x,cdf,type = "l")
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+
+#### Properties
+
+<!-- generated-learning-note -->
+This subsection explains **Properties** and shows how it contributes to the overall Common statistical distribution workflow.
+
+
+Mean	β =1/lambda
+Median	βln2
+Mode	μ
+Range	μ to ∞
+Standard Deviation	β =1/lambda
+Coefficient of Variation	1
+Skewness	2
+Kurtosis	9
+
+
+#### Weibull Distribution
+
+<!-- generated-learning-note -->
+This subsection explains **Weibull Distribution** and shows how it contributes to the overall Common statistical distribution workflow.
+
+
+let's say mu=0 below. 
+
+#### Probaility density function
+
+<!-- generated-learning-note -->
+This subsection explains **Probaility density function** and shows how it contributes to the overall Common statistical distribution workflow.
+
+
+$$
+f(x)=\frac{\gamma}{\alpha}\left(\frac{x-\mu}{\alpha}\right)^{(\gamma-1)} \exp \left(-((x-\mu) / \alpha)^\gamma\right) \quad x \geq \mu ; \gamma, \alpha>0
+$$
+
+where $\gamma$ is the shape parameter, $\mu$=0 here is the location parameter and $\alpha$ is the scale parameter. 
+
+
+The case where $\mu=0$ and $\alpha=1$ is called the standard Weibull distribution. 
+$$
+f(x)=\gamma x^{(\gamma-1)} \exp \left(-\left(x^\gamma\right)\right) \quad x \geq 0 ; \gamma>0
+$$
+
+
+
+shape/ gamma =0.5 or 3
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+# numbers from  
+x<-seq(0,5,0.1)
+ 
+# calculate the distribution function
+# based on the parameters
+pdf1<- dweibull(x,0.5,1)
+pdf2<- dweibull(x,3,1)
+ 
+# Plotting the PDF 
+plot(x,pdf1,type = "l")
+lines(x,pdf2 ,col=2)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+same shape/ gamma =0.5 but different scales
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+# numbers from  
+x<-seq(0,5,0.1)
+ 
+# calculate the distribution function
+# based on the parameters
+pdf1<- dweibull(x,0.5,1)
+pdf2<- dweibull(x,0.5,5)
+ 
+# Plotting the PDF 
+plot(x,pdf1,type = "l")
+lines(x,pdf2 ,col=2)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+
+#### Cummulative distribution function
+
+<!-- generated-learning-note -->
+This subsection explains **Cummulative distribution function** and shows how it contributes to the overall Common statistical distribution workflow.
+
+
+$$
+F(x)=1-e^{-\left(x^\gamma\right)} \quad x \geq 0 ; \gamma>0
+$$
+
+
+
+
+shape/ gamma=0.5 or 3
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+# numbers from  
+x<-seq(0,5,0.1)
+ 
+# calculate the distribution function
+# based on the parameters
+cdf1<- pweibull(x,0.5,1)
+cdf2<- pweibull(x,3,1)
+ 
+# Plotting the PDF 
+plot(x,cdf1,type = "l")
+lines(x,cdf2,col=2)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+
+#### Properties
+
+<!-- generated-learning-note -->
+This subsection explains **Properties** and shows how it contributes to the overall Common statistical distribution workflow.
+
+
+Mean $\quad \Gamma\left(\frac{\gamma+1}{\gamma}\right)$
+where $\Gamma$ is the gamma function
+ $\Gamma(a)=\int_0^{\infty} t^{a-1} e^{-t} d t$  
+Median & $\ln (2)^{1 / \gamma}$  
+Mode & $\left(1-\frac{1}{\gamma}\right)^{1 / \gamma}$ & $\gamma>1$ 
+Range & 0 & $\gamma \leq 1$ 
+Standard Deviation & $\sqrt{\Gamma\left(\frac{\gamma+2}{\gamma}\right)-\left(\Gamma\left(\frac{\gamma+1}{\gamma}\right)\right)^2}$ 
+Coefficient of & $\sqrt{\frac{\Gamma\left(\frac{\gamma+2}{\gamma}\right)}{\left(\Gamma\left(\frac{\gamma+1}{\gamma}\right)\right)^2}-1}$
+
+
+**$\gamma$ if or shape and $\lambda$ is for scale.**
+
+
+#### Gamma Distribution
+
+<!-- generated-learning-note -->
+This subsection explains **Gamma Distribution** and shows how it contributes to the overall Common statistical distribution workflow.
+
+
+#### probability density function
+
+<!-- generated-learning-note -->
+This subsection explains **probability density function** and shows how it contributes to the overall Common statistical distribution workflow.
+
+
+$$
+f(x)=\frac{\left(\frac{x-\mu}{\beta}\right)^{\gamma-1} \exp \left(-\frac{x-\mu}{\beta}\right)}{\beta \Gamma(\gamma)} \quad x \geq \mu ; \gamma, \beta>0
+$$
+
+where $\gamma$ is the shape parameter, $\mu$ is the location parameter, $\beta$ is the scale parameter, and $\Gamma$ is the gamma function which has the formula
+
+$$
+\Gamma(\gamma)=\int_0^{\infty} t^{\gamma-1} e^{-t} d t
+$$
+
+The case where $\mu=0$ and $\beta=1$ is called the standard gamma distribution.  
+
+$$
+f(x)=\frac{x^{\gamma-1} e^{-x}}{\Gamma(\gamma)} \quad x \geq 0 ; \gamma>0
+$$
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+# numbers from  
+x<-seq(0,5,0.1)
+ 
+# calculate the distribution function
+# based on the parameters
+pdf1<- dgamma(x,0.5,1)
+pdf2<- dgamma(x,2,1)
+ 
+# Plotting the PDF 
+plot(x,pdf1,type = "l")
+lines(x,pdf2 ,col=2)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+
+#### Cummulative distribution function
+
+<!-- generated-learning-note -->
+This subsection explains **Cummulative distribution function** and shows how it contributes to the overall Common statistical distribution workflow.
+
+
+$$
+F(x)=\frac{\Gamma_x(\gamma)}{\Gamma(\gamma)} \quad x \geq 0 ; \gamma>0
+$$
+
+where $\Gamma$ is the gamma function defined  
+
+$$
+\Gamma_x(\gamma)=\int_0^x t^{\gamma-1} e^{-t} d t
+$$
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+# numbers from  
+x<-seq(0,5,0.1)
+ 
+# calculate the distribution function
+# based on the parameters
+cdf1<- pgamma(x,0.5,1)
+cdf2<- pgamma(x,2,1)
+ 
+# Plotting the PDF 
+plot(x,cdf1,type = "l")
+lines(x,cdf2 ,col=2)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+
+#### Properties
+
+<!-- generated-learning-note -->
+This subsection explains **Properties** and shows how it contributes to the overall Common statistical distribution workflow.
+
+
+$$
+\begin{array}{ll}
+\text { Mean } & \gamma \\
+\text { Mode } & \gamma-1 \quad \gamma \geq 1 \\
+\text { Range } & 0 \text { to } \infty . \\
+\text { Standard } & \sqrt{\gamma} \\
+\text { Deviation } & \\
+\text { Skewness } & \frac{2}{\sqrt{\gamma}} \\
+\text { Kurtosis } & 3+\frac{6}{\gamma} \\
+\text { Coefficient of } & \frac{1}{\sqrt{\gamma}} \\
+\text { Variation } &
+\end{array}
+$$
+
+#### Beta distribution
+
+<!-- generated-learning-note -->
+This subsection explains **Beta distribution** and shows how it contributes to the overall Common statistical distribution workflow.
+
+
+#### PDF
+
+<!-- generated-learning-note -->
+This subsection explains **PDF** and shows how it contributes to the overall Common statistical distribution workflow.
+
+
+$$
+f(x)=\frac{(x-a)^{p-1}(b-x)^{q-1}}{B(p, q)(b-a)^{p+q-1}} \quad a \leq x \leq b ; p, q>0
+$$
+where $p$ and $q$ are the shape parameters, $a$ and $b$ are the lower and upper bounds, respectively
+
+$$
+\begin{aligned}
+& \text { location }=a \\
+& \text { scale }=b-a
+\end{aligned}
+$$
+
+$B(p, q)$ is the beta function. The beta function has the formula
+
+$$
+B(p, q)=\int_0^1 t^{p-1}(1-t)^{q-1} d t
+$$
+
+The case where $a=0$ and $b=1$ is called the standard beta distribution.  
+
+$$
+f(x)=\frac{x^{p-1}(1-x)^{q-1}}{B(p, q)} \quad 0 \leq x \leq 1 ; p, q>0
+$$
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+# numbers from  
+x<-seq(0,2,0.01)
+ 
+# calculate the distribution function
+# based on the parameters
+pdf1<- dbeta(x,0.5,0.5)
+pdf2<- dbeta(x,0.5,1)
+pdf3<- dbeta(x,1,0.5)
+pdf4<- dbeta(x,2,2)
+ 
+# Plotting the PDF 
+plot(x,pdf1,type = "l")
+lines(x,pdf2 ,col=2) #red
+lines(x,pdf3 ,col=3) #green
+lines(x,pdf4 ,col=4) #blue
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+
+#### Properties
+
+<!-- generated-learning-note -->
+This subsection explains **Properties** and shows how it contributes to the overall Common statistical distribution workflow.
+
+
+$$
+\begin{array}{ll}
+\text { Mean } & \frac{p}{p+q} \\
+\text { Mode } & \frac{p-1}{p+q-2} \quad p, q>1 \\
+\text { Range } & 0 \text { to } 1 \\
+\text { Standard } & \sqrt{\frac{p q}{(p+q)^2(p+q+1)}} \\
+\text { Deviation } & \sqrt{\frac{q}{p(p+q+1)}} \\
+\text { Coefficient of variance} & \frac{2(q-p) \sqrt{p+q+1}}{(p+q+2) \sqrt{p q}}
+\end{array}
+$$
+
+## Interpreting the Results
+
+Link every numerical result to its target quantity, assumptions, and sampling interpretation. Treat the output as evidence generated under the stated data, coding choices, and assumptions. Before using the workflow in practice, replace example inputs with validated data and confirm that the method targets the intended scientific question.
+
+## Key Takeaways
+
+- **Connect method to purpose.** Identify the question and target quantity before choosing code or a model.
+- **Read code and output together.** Confirm what each object, estimate, interval, table, or plot represents.
+- **Check assumptions and diagnostics.** A successful computation is not by itself evidence that the result is reliable.
+- **Adapt deliberately.** When applying the example elsewhere, document changes to data definitions, parameters, and analytical choices.

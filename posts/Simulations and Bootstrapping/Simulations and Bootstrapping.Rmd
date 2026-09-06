@@ -1,0 +1,160 @@
+---
+title: "Simulations and Bootstrapping"
+output: html_document
+date: '2023-12-10'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Simulations and Bootstrapping
+
+The bootstrapping approach will always work because it doesn't assume any underlying distribution of the data. 
+
+- Test the robust of t test what if violation of the normality assumption 
+
+`How sensitive is the two-sample t-test to violations of the normality assumption? Test this by using the rpois() function, and try different lambda values`
+
+```{r}
+set.seed(123)
+hist(rpois(100, 10))
+hist(rpois(100, 5))
+hist(rpois(100, 2)) #not normality intuition
+
+psum=c()
+r=1
+while (r<=20) {
+  r=r+1
+  count=1
+  pval=c()
+while ( count<=1000) {
+  sample1=rpois(100,r) #re sample
+  sample2=rpois(100,r)
+  pval=c(pval,t.test(sample1,sample2)$p.value)
+  count=count+1
+}
+  psum=c(psum,sum(pval<0.05)/1000)
+}
+psum
+
+```
+
+
+`two-sample t-test is robust even violation of the normality assumption but it will be not applicable under some extrem conditions.  `
+
+
+`The purpose of the t-test is to compare certain characteristics representing groups, and the mean values become representative when the population has a normal distribution. This is the reason why satisfaction of the normality assumption is essential in the t-test.`
+
+- ANOVA by bootstrapping
+
+
+`Consider what null hypothesis (Sample with replacement to create empirical sampling distributions); After creating bootstrap samples, run statistical test; p-value= proportion of times bootstrap data show statistics more extreme than the observed statistic (and CI); `
+
+
+```{r}
+# example 1
+hist(iris$Petal.Width) #violation of normal distribution
+one.way <- aov(Petal.Width ~ Species, data = iris)
+anov=summary(one.way)[[1]]$`F value`[1]
+summary(one.way)
+
+set.seed(123)
+count=1
+boot=c()
+while ( count<=1000) {
+  sample1=iris[sample(1:nrow(iris),replace=T,size =  table(iris$Species)[1]),]
+  sample1$group=1
+  sample2=iris[sample(1:nrow(iris),replace=T,size =  table(iris$Species)[2]),]
+  sample2$group=2
+  sample3=iris[sample(1:nrow(iris),replace=T,size =  table(iris$Species)[3]),]
+  sample3$group=3
+  sample=rbind(sample1,sample2,sample3)
+  
+  test=aov(Petal.Width ~ as.factor(group), data = sample)
+  boot =c(boot,summary(test)[[1]]$`F value`[1]) 
+  
+  count=count+1
+}
+(sum(abs(boot)>abs(anov))/1000) # Equivalent to p value
+
+hist(boot)
+
+quantile(boot,.025)
+quantile(boot,.975)
+
+```
+
+- The Central Limit Theorem
+
+`sampling distribution of means from a population will be approximately normally distributed regardless of the underlying population distribution.`
+
+```{r}
+set.seed(123)
+hist(rpois(1000, 2))
+
+r=1
+while (r<=10) {
+  r=r+1
+  count=1
+  pval=c()
+  while ( count<=100) {
+    sample1=rpois(30,r)
+    pval=c(pval,mean(sample1))
+    count=count+1
+  }
+  hist(pval, prob = TRUE)
+  lines(density(pval), col = 4, lwd = 2)
+}
+```
+
+`the means (not other statistics, like median) follow the normal distribution but it also depends on the sample size and the original distribution. `
+
+```{r}
+# if median
+r=1
+while (r<=10) {
+  r=r+1
+  count=1
+  pval=c()
+  while ( count<=1000) {
+    sample1=rpois(30,r)
+    pval=c(pval,median(sample1))
+    count=count+1
+  }
+  hist(pval, prob = TRUE)
+  lines(density(pval), col = 4, lwd = 2)
+}
+```
+
+
+
+- Test of Normality
+
+`The critical assumption for this type of test concerns the normality of residuals, not the dependent variable. Also, with a large sample size the null of the Shapiro-Wilk test will often be rejected.` 
+
+
+```{r}
+hist(residuals(one.way)) 
+#Create a Normal Q-Q Plot of the residuals for "model_job_loss".
+qqnorm(residuals(one.way), main = "Normal Q-Q Plot of Residuals")
+qqline(residuals(one.way))
+
+shapiro.test(residuals(one.way))
+```
+
+
+- Kruskal-Wallis Rank Sum Test (nonparametric)
+```{r}
+kruskal.test(iris$Petal.Width ,iris$Species)
+```
+
+
+
+
+
+
+
+
+
+

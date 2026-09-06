@@ -1,0 +1,223 @@
+---
+title: "Joint model with longitudinal and survival data"
+output: html_document
+date: "2025-05-27"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Joint model with longitudinal and survival data
+
+##### Lattice plot for data
+```{r}
+library(JM)
+lattice::xyplot(log(serBilir) ~ year | id, group = id, 
+       data = pbc2[pbc2$id %in% c(1:10),], 
+       xlab = "years", ylab = expression(log("serBilir")), col = 1, type = "b")
+```
+
+
+##### Cox model with longitudinal data
+```{r}
+library(tidyverse)
+# data transform
+pbc2_new=pbc2
+pbc2_new$start=pbc2_new$year
+pbc2_new=pbc2_new %>%
+  arrange(id, year) %>%   
+  group_by(id) %>%
+  mutate(stop = lead(year, n = 1))  
+pbc2_new=pbc2_new %>% mutate(event=ifelse(is.na(stop), status2,0 ), event_cr=ifelse(is.na(stop), status,1 ),stop = ifelse(is.na(stop), years, stop))
+pbc2_new$event_cr=pbc2_new$event_cr-1
+# cox
+coxph=coxph(Surv(start,stop,event) ~ drug+ log(serBilir) +sex, data = pbc2_new, x = TRUE,model = TRUE) # event is death
+coxph
+table(pbc2_new$event_cr)
+# FGR (Hist(start,stop, event_cr)~drug+ log(serBilir) +sex, data = pbc2_new)   #competing risk model doesn't work in this form
+# Error in Hist(start, stop, event_cr) : 
+```
+
+Proportional-hazards (PH) assumption
+
+```{r}
+test.ph <- cox.zph(coxph)
+test.ph
+# log(serBilir) not meet the ph assumption
+```
+
+Updated cox model time dependent 
+```{r}
+
+fit.ph<-coxph(Surv(start,stop,event) ~ drug+ log(serBilir) +sex +tt(log(serBilir)),
+              tt=function(x,t,...) x*log(t+20 ),data=pbc2_new)
+summary(fit.ph)
+```
+
+
+
+```{r}
+# for sex
+plot(survfit(Surv(start, stop, event) ~ sex, data = pbc2_new),
+     xlab = "Time",
+     ylab = "Survival probability")
+# for drug
+plot(survfit(Surv(start, stop, event) ~ drug, data = pbc2_new),
+     xlab = "Time",
+     ylab = "Survival probability")
+```
+
+
+
+##### Joint model with longitudinal and survival data
+```{r}
+# two datasets
+# View(pbc2)  #long format , outcome is log serum bilirubin 
+# View(pbc2.id) #baseline data, time to event data , event is death
+lmeFit <-   
+  # lme(log(serBilir) ~ drug * ns(year, 3), 
+  #                           random = list(id = pdDiag(form = ~ ns(year, 3))), data = pbc2)
+  lme(log(serBilir) ~ drug * year, random = ~ year | id, data = pbc2)
+coxFit <- coxph(Surv(years, status2) ~ drug+sex, data = pbc2.id, x = TRUE)
+# to fit this model we need to specify the 'derivForm' argument, which is a list
+# with first component the derivative of the fixed-effects formula of 'lmeFit' with
+# respect to 'obstime', second component the indicator of which fixed-effects 
+# coefficients correspond to the previous defined formula, third component the 
+# derivative of the random-effects formula of 'lmeFit' with respect to 'obstime', 
+# and fourth component the indicator of which random-effects correspond to the 
+# previous defined formula
+dForm <- list(fixed = ~ 1 + drug, indFixed = c(3, 4), random = ~ 1, indRandom = 2)
+jointModel=jointModel(lmeFit, coxFit, timeVar = "year", method = "spline-PH-aGH",
+           parameterization = "both", derivForm = dForm)
+# jointModel=jointModel(lmeFit, coxFit, timeVar = "year", method = "spline-PH-aGH")
+jointModel
+exp(confint(jointModel, parm = "Event"))
+
+
+```
+
+##### Perfromance of model
+```{r}
+ND <- pbc2[pbc2$id == 2, ] # the data of Subject 2
+head(ND,20)
+plot(rocJM(jointModel, dt = c(1, 9,  10), ND, idVar = "id"))
+# dt: a numeric vector indicating the lengths of the time intervals of primary interest
+# within which we want to distinguish between subjects who died within the
+# intervals from subjects who survived longer than that.
+aucJM(jointModel, pbc2, Tstart = 1, Thoriz = 8)
+```
+
+
+##### Predict and plot
+
+Prediction
+```{r}
+set.seed(300716) # it uses Monte Carlo samples
+preds <- survfitJM(jointModel, newdata = pbc2[pbc2$id %in% c("2"), ],
+                   idVar = "id")  # last.time = "Time"
+preds
+# 
+survfitJM(jointModel, newdata = pbc2[pbc2$id %in% c("2"), ],
+          idVar = "id",
+          survTimes = c(8, 10, 12))  # you can specify the times
+
+```
+
+Plot
+```{r}
+par(mfrow=c(1,2))
+plot(preds, which = "2", conf.int = TRUE)
+
+plot(preds, which = "2", conf.int = TRUE, 
+     fun = function (x) -log(x), ylab = "Cumulative Risk")
+
+# overall true plot
+sfit2 <- survfitJM(jointModel, newdata = pbc2[pbc2$id == "2", ], idVar = "id")
+plot(sfit2, include.y = TRUE, conf.int = TRUE)
+
+sfit7 <- survfitJM(jointModel, newdata = pbc2[pbc2$id == "7", ], idVar = "id")
+plot(sfit7, include.y = TRUE, conf.int = TRUE)
+```
+
+Predicted plot using the first n observations 
+```{r}
+survPreds <- vector("list", nrow(ND))
+for (i in 1:nrow(ND)) {
+  survPreds[[i]] <- survfitJM(jointModel, newdata = ND[1:3, ])
+}
+ND[1:3, ]
+survPreds[[3]]
+
+par(mfrow = c(2, 2), oma = c(0, 2, 0, 2))
+for (i in c(1,3,5,7)) {
+  plot(survPreds[[i]], estimator = "median", conf.int = TRUE,
+       include.y = TRUE, main = paste("Follow-up time:",
+                                      round(survPreds[[i]]$last.time, 1)), ylab = "", ylab2 = "")
+}
+mtext("log serum bilirubin", side = 2, line = -1, outer = TRUE)
+mtext("Survival Probability", side = 4, line = -1, outer = TRUE)
+par(mfrow=c(1,1))
+```
+
+
+
+##### Competing Risks joint model
+
+```{r}
+# data transform
+# we first expand the PBC dataset in the competing risks long format
+# with two competing risks being death and transplantation
+pbc2.idCR <- crLong(pbc2.id, "status", "alive")  #alive is censoring, others are competing outcomes 
+ # 1 dead
+ # 0 crisk
+# 0 dead
+# 0 crisk
+```
+```{r}
+# we fit the linear mixed model as before
+lmeFit.pbc <- lme(log(serBilir) ~ drug * ns(year, 3), 
+                  random = list(id = pdDiag(form = ~ ns(year, 3))), data = pbc2)
+ # lme(log(serBilir) ~ drug * year, random = ~ year | id, data = pbc2)
+ 
+# however, for the survival model we need to use the data in the long
+# format, and include the competing risks indicator as a stratification
+# factor. We also take interactions of the baseline covariates with the
+# stratification factor in order to allow the effect of these covariates
+# to be different for each competing risk
+coxCRFit.pbc <- coxph(Surv(years, status2) ~ (drug+sex  )*strata + strata(strata), 
+                      data = pbc2.idCR, x = TRUE)
+```
+
+```{r}
+# the corresponding joint model is fitted simply by including the above
+# two submodels as main arguments, setting argument CompRisk to TRUE, 
+# and choosing as method = "spline-PH-aGH". Similarly as above, we also 
+# include strata as an interaction factor to allow serum bilirubin to 
+# have a different effect for each of the two competing risks
+jmCRFit.pbc <- jointModel(lmeFit.pbc, coxCRFit.pbc, timeVar = "year", 
+                          method = "spline-PH-aGH", 
+                          interFact = list(value = ~ strata, data = pbc2.idCR), 
+                          CompRisk = TRUE)
+summary(jmCRFit.pbc)
+
+exp(confint(jmCRFit.pbc, parm = "Event"))
+
+# https://stats.stackexchange.com/questions/427547/jointmodelbayes-output
+# survfitJM() is not currently implemented for competing risks joint models.
+```
+
+[Reference1](https://www.rdocumentation.org/packages/JM/versions/1.5-2/topics/jointModel) 
+[Reference2](https://bookdown.org/sestelo/sa_financial/the-jm-package.html) 
+[Reference3](http://jmr.r-forge.r-project.org/) 
+
+
+
+
+
+
+
+
+
+
+

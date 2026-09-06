@@ -1,0 +1,594 @@
+---
+title: "Doubly robust estimators_TMLE_Superlearner"
+description: "A practical R learning guide to Doubly robust estimators_TMLE_Superlearner, with concise explanations, reproducible examples, and interpretation guidance."
+date: 2026-08-31
+section: "Epidemiology & Real-World Evidence"
+category: "Causal Methods"
+topic: "Doubly robust estimators_TMLE_Superlearner"
+type: article
+tags: ["Causal Methods", "Epidemiology & Real-World Evidence", "Doubly", "robust", "estimators"]
+status: published
+featured: true
+youtube: []
+pdf: []
+downloads: []
+validate-yaml: false
+execute:
+  enabled: false
+  echo: true
+  warning: false
+  error: true
+---
+
+## Why This Topic Matters
+
+Causal methods combine design assumptions and statistical adjustment to estimate well-defined treatment or exposure contrasts.
+
+## Learning Objectives
+
+After working through this material, you should be able to:
+
+- explain the main ideas behind **Doubly robust estimators_TMLE_Superlearner**;
+- interpret the R workflow and its output; and
+- adapt the examples to a related analysis.
+
+## Lesson Roadmap
+
+The original material is organized around the following topics:
+
+1. Doubly robust estimators
+2. step 1 Transform continuous outcome to be within the range [0,1]
+3. Step 2: Initial G-comp estimate
+4. Step 3: PS model
+5. Step 4: Estimate  H
+6. Step 5: Estimate  ϵ
+
+## How to Use This Lesson
+
+Read the explanation before each workflow, then run the R chunks in sequence. Code and output are shown together so that each numerical or graphical result can be connected to the command that produced it. Some source examples require optional packages or external data. Those setup-dependent chunks remain visible for reference but are marked `eval: false` when they cannot be reproduced safely in a clean website build.
+
+## Reproducible Learning Check
+
+This short R chunk confirms the scope of the lesson and always produces a visible output.
+
+```{r}
+#| label: learning-overview
+learning_overview <- data.frame(
+  section = "Epidemiology & Real-World Evidence",
+  category = "Causal Methods",
+  topic = "Doubly robust estimators_TMLE_Superlearner"
+)
+learning_overview
+```
+
+## Learning Material
+
+The following material develops **Doubly robust estimators_TMLE_Superlearner** from core ideas to practical implementation. Definitions and assumptions come first; worked code then shows how the ideas are represented computationally.
+
+### Conceptual Foundation
+
+The material below closely follows the original R Markdown source, with its examples retained for study and reuse.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#### Doubly robust estimators
+
+<!-- generated-learning-note -->
+This subsection explains **Doubly robust estimators** and shows how it contributes to the overall Doubly robust estimators_TMLE_Superlearner workflow.
+
+
+[Reference](https://ehsanx.github.io/TMLEworkshop/tmle.html#doubly-robust-estimators)
+
+  Step 1	Transformation of continuous outcome variable. 
+  Step 2	Predict from initial outcome modelling: G-computation, y1-y0=average total effect (using regression to calculate the predictions).
+  Step 3	Predict from propensity score model, x=covariates (using logistic regression to calculate ps for exposure).
+  Step 4	Estimate clever covariate  H (calculate the weight for exposure). 
+  Step 5	Estimate fluctuation parameter  ϵ (calculate the weight for outcome). 
+  Step 6	Update the initial outcome model prediction based on targeted adjustment of the initial predictions using the PS model (adjust the outcome using the above weight).
+  Step 7	Find treatment effect estimate , average total effect. 
+  Step 8	Transform back the treatment effect estimate in the original outcome scale.
+  Step 9	Confidence interval estimation based on closed form formula.
+
+
+- Data processing
+
+### R Workflow and Examples
+
+Run the examples in order because later blocks may reuse objects created earlier. Each block includes a short purpose statement and guidance for reading its output.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This source block depends on optional software, external data, or a machine-specific path. It is retained as a reference and is not executed during the website build.
+
+```{r}
+#| eval: false
+#| code-fold: true
+# load the dataset
+ObsData <- read.csv("C:\\Users\\hed2\\Downloads\\mybook2\\mybook2\\obsdata.csv", header = TRUE)
+# add column for outcome Y: length of stay 
+# Y = date of discharge - study admission date
+# Y = date of death - study admission date if date of discharge not available
+ObsData$Y <- ObsData$dschdte - ObsData$sadmdte
+ObsData$Y[is.na(ObsData$Y)] <- ObsData$dthdte[is.na(ObsData$Y)] - 
+  ObsData$sadmdte[is.na(ObsData$Y)]
+# remove outcomes we are not examining in this example
+ObsData <- dplyr::select(ObsData, 
+                         !c(dthdte, lstctdte, dschdte, death, t3d30, dth30, surv2md1))
+# remove unnecessary and problematic variables 
+ObsData <- dplyr::select(ObsData, 
+                         !c(sadmdte, ptid, X, adld3p, urin1, cat2))
+
+# convert all categorical variables to factors 
+factors <- c("cat1", "ca", "cardiohx", "chfhx", "dementhx", "psychhx", 
+             "chrpulhx", "renalhx", "liverhx", "gibledhx", "malighx", 
+             "immunhx", "transhx", "amihx", "sex", "dnr1", "ninsclas", 
+             "resp", "card", "neuro", "gastr", "renal", "meta", "hema", 
+             "seps", "trauma", "ortho", "race", "income")
+ObsData[factors] <- lapply(ObsData[factors], as.factor)
+# convert our treatment A (RHC vs. No RHC) to a binary variable
+ObsData$A <- ifelse(ObsData$swang1 == "RHC", 1, 0)
+ObsData <- dplyr::select(ObsData, !swang1)
+# Categorize the variables to match with the original paper
+ObsData$age <- cut(ObsData$age,breaks=c(-Inf, 50, 60, 70, 80, Inf),right=FALSE)
+ObsData$race <- factor(ObsData$race, levels=c("white","black","other"))
+ObsData$sex <- as.factor(ObsData$sex)
+ObsData$sex <- relevel(ObsData$sex, ref = "Male")
+ObsData$cat1 <- as.factor(ObsData$cat1)
+levels(ObsData$cat1) <- c("ARF","CHF","Other","Other","Other",
+                          "Other","Other","MOSF","MOSF")
+ObsData$ca <- as.factor(ObsData$ca)
+levels(ObsData$ca) <- c("Metastatic","None","Localized (Yes)")
+ObsData$ca <- factor(ObsData$ca, levels=c("None",
+                                          "Localized (Yes)","Metastatic"))
+# Rename variables
+names(ObsData) <- c("Disease.category", "Cancer", "Cardiovascular", 
+                    "Congestive.HF", "Dementia", "Psychiatric", "Pulmonary", 
+                    "Renal", "Hepatic", "GI.Bleed", "Tumor", 
+                    "Immunosupperssion", "Transfer.hx", "MI", "age", "sex", 
+                    "edu", "DASIndex", "APACHE.score", "Glasgow.Coma.Score", 
+                    "blood.pressure", "WBC", "Heart.rate", "Respiratory.rate", 
+                    "Temperature", "PaO2vs.FIO2", "Albumin", "Hematocrit", 
+                    "Bilirubin", "Creatinine", "Sodium", "Potassium", "PaCo2", 
+                    "PH", "Weight", "DNR.status", "Medical.insurance", 
+                    "Respiratory.Diag", "Cardiovascular.Diag", 
+                    "Neurological.Diag", "Gastrointestinal.Diag", "Renal.Diag",
+                    "Metabolic.Diag", "Hematologic.Diag", "Sepsis.Diag", 
+                    "Trauma.Diag", "Orthopedic.Diag", "race", "income", 
+                    "Y", "A")
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Because this block is not executed, it produces no website output. Enable it only after its dependencies and input paths have been validated.
+
+
+#### step 1 Transform continuous outcome to be within the range [0,1]
+
+<!-- generated-learning-note -->
+This section prepares the information needed for **step 1 Transform continuous outcome to be within the range [0,1]**. Check variable definitions, units, coding, and missing values before moving to analysis.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+min.Y <- min(ObsData$Y)
+max.Y <- max(ObsData$Y)
+ObsData$Y.bounded <- (ObsData$Y-min.Y)/(max.Y-min.Y)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+#### Step 2: Initial G-comp estimate
+
+<!-- generated-learning-note -->
+This section develops **Step 2: Initial G-comp estimate**. Read the model specification together with its assumptions and the scale of each reported effect.
+
+We construct our outcome model, and make our initial predictions using Superlearner.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r}
+library(SuperLearner)
+library(glmnet)
+set.seed(123)
+ObsData.noY <- dplyr::select(ObsData, !c(Y,Y.bounded))
+Y.fit.sl <- SuperLearner(Y=ObsData$Y.bounded, 
+                       X=ObsData.noY, 
+                       cvControl = list(V = 3),
+                       
+                       SL.library=c("SL.glm", 
+                                    "SL.glmnet", 
+                                    "SL.xgboost"),
+                       method="method.CC_nloglik", 
+                       family="gaussian")
+
+ObsData$init.Pred <- predict(Y.fit.sl, newdata = ObsData.noY, 
+                           type = "response")$pred
+
+summary(ObsData$init.Pred)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+
+Get predictions under both treatments:
+
+A=1  
+
+<!-- generated-learning-note -->
+**Purpose.** This block extracts inferential or predictive results from fitted objects. Match each estimate, interval, contrast, or diagnostic to the quantity it represents.
+
+```{r}
+ObsData.noY$A <- 1
+ObsData$Pred.Y1 <- predict(Y.fit.sl, newdata = ObsData.noY, 
+                           type = "response")$pred
+summary(ObsData$Pred.Y1)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Interpret estimates on the scale reported by the function, and use intervals or other uncertainty measures when drawing conclusions.
+
+A=0   
+
+<!-- generated-learning-note -->
+**Purpose.** This block extracts inferential or predictive results from fitted objects. Match each estimate, interval, contrast, or diagnostic to the quantity it represents.
+
+```{r}
+ObsData.noY$A <- 0
+ObsData$Pred.Y0 <- predict(Y.fit.sl, newdata = ObsData.noY, 
+                           type = "response")$pred
+summary(ObsData$Pred.Y0)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Interpret estimates on the scale reported by the function, and use intervals or other uncertainty measures when drawing conclusions.
+
+
+Get initial treatment effect estimate
+
+<!-- generated-learning-note -->
+**Purpose.** This block extracts inferential or predictive results from fitted objects. Match each estimate, interval, contrast, or diagnostic to the quantity it represents.
+
+```{r}
+ObsData$Pred.TE <- ObsData$Pred.Y1 - ObsData$Pred.Y0   
+
+summary(ObsData$Pred.TE) 
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Interpret estimates on the scale reported by the function, and use intervals or other uncertainty measures when drawing conclusions.
+
+
+
+#### Step 3: PS model
+
+<!-- generated-learning-note -->
+This section develops **Step 3: PS model**. Read the model specification together with its assumptions and the scale of each reported effect.
+
+
+calculate ps
+
+`At this point, we have our initial estimate and now want to perform our targeted improvement.`
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r}
+library(SuperLearner)
+set.seed(124)
+ObsData.noYA <- dplyr::select(ObsData, !c(Y,Y.bounded,
+                                          A,init.Pred,
+                                          Pred.Y1,Pred.Y0,
+                                          Pred.TE))   #delete Pred.TE
+PS.fit.SL <- SuperLearner(Y=ObsData$A, 
+                          
+                       X=ObsData.noYA, 
+                       cvControl = list(V = 3),
+                       
+                       SL.library=c("SL.glm", 
+                                    "SL.glmnet", 
+                                    "SL.xgboost"),
+                       method="method.CC_nloglik",
+                       family="binomial")  
+
+all.pred <- predict(PS.fit.SL, type = "response")
+ObsData$PS.SL <- all.pred$pred 
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block extracts inferential or predictive results from fitted objects. Match each estimate, interval, contrast, or diagnostic to the quantity it represents.
+
+```{r}
+summary(ObsData$PS.SL)
+tapply(ObsData$PS.SL, ObsData$A, summary)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Interpret estimates on the scale reported by the function, and use intervals or other uncertainty measures when drawing conclusions.
+
+
+Plot ps and treatment
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+plot(density(ObsData$PS.SL[ObsData$A==0]), 
+     col = "red", main = "")
+lines(density(ObsData$PS.SL[ObsData$A==1]), 
+      col = "blue", lty = 2)
+legend("topright", c("No RHC","RHC"), 
+       col = c("red", "blue"), lty=1:2) 
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+`independently estimate`
+
+#### Step 4: Estimate  H
+
+<!-- generated-learning-note -->
+This section develops **Step 4: Estimate  H**. Read the model specification together with its assumptions and the scale of each reported effect.
+
+
+We have estimated g(a=1|l) by ps model then can estimate  g(a=0|l) by 1 - PS.SL.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block extracts inferential or predictive results from fitted objects. Match each estimate, interval, contrast, or diagnostic to the quantity it represents.
+
+```{r}
+# inverse probability
+ObsData$H.A1L <- (ObsData$A) / ObsData$PS.SL 
+ObsData$H.A0L <- (1-ObsData$A) / (1- ObsData$PS.SL)
+
+# estimate H
+ObsData$H.AL <- ObsData$H.A1L - ObsData$H.A0L
+
+summary(ObsData$H.AL)
+tapply(ObsData$H.AL, ObsData$A, summary)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Interpret estimates on the scale reported by the function, and use intervals or other uncertainty measures when drawing conclusions.
+
+
+
+$$
+H(A_i, L_i) = \frac{I(A_i=1)}{g(A_i=1|L_i)} - \frac{I(A_i=0)}{g(A_i=0|L_i)}
+$$
+
+#### Step 5: Estimate  ϵ
+
+<!-- generated-learning-note -->
+This section develops **Step 5: Estimate  ϵ**. Read the model specification together with its assumptions and the scale of each reported effect.
+
+
+H clever covariate is to calculate the e epsilon `(H coefficient)`. It is estimated through MLE, using a model with an `offset` based on the initial estimate (initial g compute predictions), and H clever covariates as independent variables.
+
+
+Fluctuation parameter  ϵ , representing how large of an adjustment we will make to the initial estimate.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block specifies and fits the statistical model. Identify the outcome, predictors, reference levels, link or distribution, and any correlation structure before interpreting coefficients.
+
+```{r}
+eps_mod <- glm(Y.bounded ~ -1 + H.A1L + H.A0L +  #Using two H covariates 
+                 
+                 offset(qlogis(init.Pred)),  #initial g compute 
+               family = "binomial",
+               data = ObsData)
+
+# -1 + H.A1L + H.A0L , without intercept 
+# qlogis(0.2) ==-1.39, inverse logistic function 
+# plogis(-1.39) ==0.2  
+# Y.bounded is standardized Y
+
+# length(offset(qlogis(ObsData$init.Pred)))= 5735, residuals
+
+epsilon <- coef(eps_mod)  
+epsilon 
+epsilon["H.A1L"]
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Focus on coefficient direction and scale, uncertainty intervals, fit statistics, and diagnostics. Statistical significance alone does not establish practical importance or model adequacy.
+
+
+`Note that, if init.Pred includes negative values, NaNs would be produced after applying qlogis().  y.bounded is from 0 to 1. `
+
+ 
+
+#### Step 6: Update
+
+<!-- generated-learning-note -->
+This subsection explains **Step 6: Update** and shows how it contributes to the overall Doubly robust estimators_TMLE_Superlearner workflow.
+
+
+We can use epsilon["H.A1L"] and epsilon["H.A0L"] to update
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block extracts inferential or predictive results from fitted objects. Match each estimate, interval, contrast, or diagnostic to the quantity it represents.
+
+```{r}
+
+ObsData$Pred.Y1.update <- plogis(qlogis(ObsData$Pred.Y1) +  
+                                   epsilon["H.A1L"]*ObsData$H.A1L) #adjusted by ps weighting 
+
+ObsData$Pred.Y0.update <- plogis(qlogis(ObsData$Pred.Y0) + 
+                                   epsilon["H.A0L"]*ObsData$H.A0L)
+
+summary(ObsData$Pred.Y1.update)
+summary(ObsData$Pred.Y0.update)  
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Interpret estimates on the scale reported by the function, and use intervals or other uncertainty measures when drawing conclusions.
+
+
+ 
+
+#### Step 7: Effect estimate
+
+<!-- generated-learning-note -->
+This section develops **Step 7: Effect estimate**. Read the model specification together with its assumptions and the scale of each reported effect.
+
+
+Now that the updated predictions of our outcome models are calculated, we can calculate the ATE.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+ATE.TMLE.bounded.vector <- ObsData$Pred.Y1.update -  
+                           ObsData$Pred.Y0.update
+
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block calculates descriptive summaries. Check the denominator, grouping variables, units, and treatment of missing values.
+
+```{r}
+ATE.TMLE.bounded <- mean(ATE.TMLE.bounded.vector, 
+                         na.rm = TRUE) 
+ATE.TMLE.bounded 
+# close to the g formula result
+# Mean   : 0.00713
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Use the displayed values to understand center, spread, frequency, and missingness; investigate any implausible or unexpected result.
+
+ 
+
+#### Step 8: Rescale effect estimate
+
+<!-- generated-learning-note -->
+This section develops **Step 8: Rescale effect estimate**. Read the model specification together with its assumptions and the scale of each reported effect.
+
+
+We make sure to transform back to our original scale.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+ATE.TMLE <- (max.Y-min.Y)*ATE.TMLE.bounded   
+ATE.TMLE 
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+ 
+
+#### Step 9: Confidence interval estimation
+
+<!-- generated-learning-note -->
+This subsection explains **Step 9: Confidence interval estimation** and shows how it contributes to the overall Doubly robust estimators_TMLE_Superlearner workflow.
+
+
+Since the machine learning algorithms were used only in intermediary steps, rather than estimating our parameter of interest directly, 95% confidence intervals can be calculated directly. 
+ 
+
+<!-- generated-learning-note -->
+**Purpose.** This block defines a reusable function. Separate its inputs, calculations, and returned value before applying it to new data.
+
+```{r}
+ci.estimate <- function(data = ObsData, H.AL.components = 1){
+  min.Y <- min(data$Y)
+  max.Y <- max(data$Y)
+  # transform predicted outcomes back to original scale
+  if (H.AL.components == 2){
+    data$Pred.Y1.update.rescaled <- 
+      (max.Y- min.Y)*data$Pred.Y1.update + min.Y
+    data$Pred.Y0.update.rescaled <- 
+      (max.Y- min.Y)*data$Pred.Y0.update + min.Y
+  } 
+  if (H.AL.components == 1) {
+    data$Pred.Y1.update.rescaled <- 
+      (max.Y- min.Y)*data$Pred.Y1.update1 + min.Y
+    data$Pred.Y0.update.rescaled <- 
+      (max.Y- min.Y)*data$Pred.Y0.update1 + min.Y
+  }
+  EY1_TMLE1 <- mean(data$Pred.Y1.update.rescaled, 
+                    na.rm = TRUE)
+  EY0_TMLE1 <- mean(data$Pred.Y0.update.rescaled, 
+                    na.rm = TRUE)
+  # ATE efficient influence curve
+  D1 <- data$A/data$PS.SL*
+    (data$Y - data$Pred.Y1.update.rescaled) + 
+    data$Pred.Y1.update.rescaled - EY1_TMLE1
+  D0 <- (1 - data$A)/(1 - data$PS.SL)*
+    (data$Y - data$Pred.Y0.update.rescaled) + 
+    data$Pred.Y0.update.rescaled - EY0_TMLE1
+  EIC <- D1 - D0
+  # ATE variance
+  n <- nrow(data)
+  varHat.IC <- var(EIC, na.rm = TRUE)/n
+  # ATE 95% CI
+  if (H.AL.components == 2) {
+    ATE.TMLE.CI <- c(ATE.TMLE - 1.96*sqrt(varHat.IC), 
+                   ATE.TMLE + 1.96*sqrt(varHat.IC))
+  }
+  if (H.AL.components == 1) {
+    ATE.TMLE.CI <- c(ATE.TMLE1 - 1.96*sqrt(varHat.IC), 
+                   ATE.TMLE1 + 1.96*sqrt(varHat.IC))
+  }
+  return(ATE.TMLE.CI) 
+}
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Test the function with simple inputs whose expected answer is known before relying on it in a larger workflow.
+
+
+`effect confidence interval`
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+CI2 <- ci.estimate(data = ObsData, H.AL.components = 2) 
+CI2
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+## Interpreting the Results
+
+Check nuisance models, overlap, weights, balance, diagnostics, estimand alignment, and sensitivity to modeling choices. Treat the output as evidence generated under the stated data, coding choices, and assumptions. Before using the workflow in practice, replace example inputs with validated data and confirm that the method targets the intended scientific question.
+
+## Key Takeaways
+
+- **Connect method to purpose.** Identify the question and target quantity before choosing code or a model.
+- **Read code and output together.** Confirm what each object, estimate, interval, table, or plot represents.
+- **Check assumptions and diagnostics.** A successful computation is not by itself evidence that the result is reliable.
+- **Adapt deliberately.** When applying the example elsewhere, document changes to data definitions, parameters, and analytical choices.

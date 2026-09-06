@@ -1,0 +1,815 @@
+---
+title: "Linear mixed model practice"
+description: "A practical R learning guide to Linear mixed model practice, with concise explanations, reproducible examples, and interpretation guidance."
+date: 2026-08-31
+section: "Biostatistics"
+category: "Longitudinal & Repeated Measures"
+topic: "Linear mixed model practice"
+type: article
+tags: ["Longitudinal & Repeated Measures", "Biostatistics", "Linear", "mixed", "practice"]
+status: published
+featured: true
+youtube: []
+pdf: []
+downloads: []
+validate-yaml: false
+execute:
+  enabled: false
+  echo: true
+  warning: false
+  error: true
+---
+
+## Why This Topic Matters
+
+Repeated observations from the same unit are correlated, so longitudinal models must represent both mean change and within-unit dependence.
+
+## Learning Objectives
+
+After working through this material, you should be able to:
+
+- explain the main ideas behind **Linear mixed model practice**;
+- interpret the R workflow and its output; and
+- adapt the examples to a related analysis.
+
+## Lesson Roadmap
+
+The original material is organized around the following topics:
+
+1. Linear mixed model practice
+2. Loading data and library
+3. General linear regression
+4. Generalized linear regression
+5. Varying intercept by adding a stratum variable as fixed effect (glm)
+6. Comparisions of models
+
+## How to Use This Lesson
+
+Read the explanation before each workflow, then run the R chunks in sequence. Code and output are shown together so that each numerical or graphical result can be connected to the command that produced it. Some source examples require optional packages or external data. Those setup-dependent chunks remain visible for reference but are marked `eval: false` when they cannot be reproduced safely in a clean website build.
+
+## Reproducible Learning Check
+
+This short R chunk confirms the scope of the lesson and always produces a visible output.
+
+```{r}
+#| label: learning-overview
+learning_overview <- data.frame(
+  section = "Biostatistics",
+  category = "Longitudinal & Repeated Measures",
+  topic = "Linear mixed model practice"
+)
+learning_overview
+```
+
+## Learning Material
+
+The following material develops **Linear mixed model practice** from core ideas to practical implementation. Definitions and assumptions come first; worked code then shows how the ideas are represented computationally.
+
+### Conceptual Foundation
+
+The material below closely follows the original R Markdown source, with its examples retained for study and reuse.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#### Linear mixed model practice
+
+<!-- generated-learning-note -->
+This section develops **Linear mixed model practice**. Read the model specification together with its assumptions and the scale of each reported effect.
+
+
+#### Loading data and library
+
+<!-- generated-learning-note -->
+This section prepares the information needed for **Loading data and library**. Check variable definitions, units, coding, and missing values before moving to analysis.
+
+### R Workflow and Examples
+
+Run the examples in order because later blocks may reuse objects created earlier. Each block includes a short purpose statement and guidance for reading its output.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This source block depends on optional software, external data, or a machine-specific path. It is retained as a reference and is not executed during the website build.
+
+```{r}
+#| eval: false
+#| code-fold: true
+library(lme4) # load library
+library(arm) # convenience functions for regression in R
+lmm.data <- read.table("http://bayes.acs.unt.edu:8083/BayesContent/class/Jon/R_SC/Module9/lmm.data.txt",
+                       header=TRUE, sep=",", na.strings="NA", dec=".", strip.white=TRUE)
+#summary(lmm.data)
+head(lmm.data)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Because this block is not executed, it produces no website output. Enable it only after its dependencies and input paths have been validated.
+
+
+#### General linear regression
+
+<!-- generated-learning-note -->
+This section develops **General linear regression**. Read the model specification together with its assumptions and the scale of each reported effect.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block specifies and fits the statistical model. Identify the outcome, predictors, reference levels, link or distribution, and any correlation structure before interpreting coefficients.
+
+```{r}
+OLSexamp <- lm(extro ~ open + agree + social, data = lmm.data)
+display(OLSexamp)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Focus on coefficient direction and scale, uncertainty intervals, fit statistics, and diagnostics. Statistical significance alone does not establish practical importance or model adequacy.
+
+#### Generalized linear regression
+
+<!-- generated-learning-note -->
+This section develops **Generalized linear regression**. Read the model specification together with its assumptions and the scale of each reported effect.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block specifies and fits the statistical model. Identify the outcome, predictors, reference levels, link or distribution, and any correlation structure before interpreting coefficients.
+
+```{r}
+MLexamp <- glm(extro ~ open + agree + social, data=lmm.data)
+display(MLexamp)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Focus on coefficient direction and scale, uncertainty intervals, fit statistics, and diagnostics. Statistical significance alone does not establish practical importance or model adequacy.
+
+
+ 
+#### Varying intercept by adding a stratum variable as fixed effect (glm)
+
+<!-- generated-learning-note -->
+This section prepares the information needed for **Varying intercept by adding a stratum variable as fixed effect (glm)**. Check variable definitions, units, coding, and missing values before moving to analysis.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block specifies and fits the statistical model. Identify the outcome, predictors, reference levels, link or distribution, and any correlation structure before interpreting coefficients.
+
+```{r}
+MLexamp.2 <- glm(extro ~ open + agree + social + class, data=lmm.data )
+display(MLexamp.2)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Focus on coefficient direction and scale, uncertainty intervals, fit statistics, and diagnostics. Statistical significance alone does not establish practical importance or model adequacy.
+
+#### Comparisions of models
+
+<!-- generated-learning-note -->
+This section develops **Comparisions of models**. Read the model specification together with its assumptions and the scale of each reported effect.
+
+- add class as fixed effect
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+AIC(MLexamp)
+AIC(MLexamp.2)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block extracts inferential or predictive results from fitted objects. Match each estimate, interval, contrast, or diagnostic to the quantity it represents.
+
+```{r}
+anova(MLexamp, MLexamp.2, test="F")
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Interpret estimates on the scale reported by the function, and use intervals or other uncertainty measures when drawing conclusions.
+
+#### Adding class and school as fixed effects (glm)
+
+<!-- generated-learning-note -->
+This subsection explains **Adding class and school as fixed effects (glm)** and shows how it contributes to the overall Linear mixed model practice workflow.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block specifies and fits the statistical model. Identify the outcome, predictors, reference levels, link or distribution, and any correlation structure before interpreting coefficients.
+
+```{r}
+MLexamp.4 <- glm(extro ~ open + agree + social + school:class, data=lmm.data )
+display(MLexamp.4)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Focus on coefficient direction and scale, uncertainty intervals, fit statistics, and diagnostics. Statistical significance alone does not establish practical importance or model adequacy.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+AIC(MLexamp)
+AIC(MLexamp.4)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block extracts inferential or predictive results from fitted objects. Match each estimate, interval, contrast, or diagnostic to the quantity it represents.
+
+```{r}
+anova(MLexamp, MLexamp.4, test="F")
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Interpret estimates on the scale reported by the function, and use intervals or other uncertainty measures when drawing conclusions.
+
+
+#### Considering different slopes by stratum (glm)
+
+<!-- generated-learning-note -->
+This subsection explains **Considering different slopes by stratum (glm)** and shows how it contributes to the overall Linear mixed model practice workflow.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r}
+require(plyr)
+
+modellist <- dlply(lmm.data, .(school, class), function(x) 
+                              glm(extro~ open + agree + social, data=x))
+strat1 <- display(modellist[[1]])
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+strat2 <- display(modellist[[2]])
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+strat24 <- display(modellist[[24]])
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+AIC(MLexamp)
+# AIC(strat1)
+# AIC(strat2)
+# AIC(strat24)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+`how to combine these models?` 
+
+#### Varying intercept with LMM
+
+<!-- generated-learning-note -->
+This subsection explains **Varying intercept with LMM** and shows how it contributes to the overall Linear mixed model practice workflow.
+
+- add class as random effect
+
+<!-- generated-learning-note -->
+**Purpose.** This block specifies and fits the statistical model. Identify the outcome, predictors, reference levels, link or distribution, and any correlation structure before interpreting coefficients.
+
+```{r}
+MLexamp.6 <- lmer(extro ~ open + agree + social + (1|class), data=lmm.data)
+display(MLexamp.6)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Focus on coefficient direction and scale, uncertainty intervals, fit statistics, and diagnostics. Statistical significance alone does not establish practical importance or model adequacy.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+AIC(MLexamp.2)
+AIC(MLexamp.6)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+- add class and school as random effects
+
+<!-- generated-learning-note -->
+**Purpose.** This block specifies and fits the statistical model. Identify the outcome, predictors, reference levels, link or distribution, and any correlation structure before interpreting coefficients.
+
+```{r}
+MLexamp.7 <- lmer(extro ~ open + agree + social + (1|school) + (1|class), data=lmm.data)
+display(MLexamp.7)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Focus on coefficient direction and scale, uncertainty intervals, fit statistics, and diagnostics. Statistical significance alone does not establish practical importance or model adequacy.
+
+
+
+- fit nested terms `school/class`
+
+<!-- generated-learning-note -->
+**Purpose.** This block specifies and fits the statistical model. Identify the outcome, predictors, reference levels, link or distribution, and any correlation structure before interpreting coefficients.
+
+```{r}
+MLexamp.8 <- lmer(extro ~ open + agree + social + (1|school/class), data=lmm.data)
+display(MLexamp.8)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Focus on coefficient direction and scale, uncertainty intervals, fit statistics, and diagnostics. Statistical significance alone does not establish practical importance or model adequacy.
+
+
+
+
+#### Varying slope with LMM
+
+<!-- generated-learning-note -->
+This subsection explains **Varying slope with LMM** and shows how it contributes to the overall Linear mixed model practice workflow.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block specifies and fits the statistical model. Identify the outcome, predictors, reference levels, link or distribution, and any correlation structure before interpreting coefficients.
+
+```{r}
+MLexamp.9 <- lmer(extro ~ open + agree + social + (1+open|school/class), data=lmm.data)
+display(MLexamp.9)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Focus on coefficient direction and scale, uncertainty intervals, fit statistics, and diagnostics. Statistical significance alone does not establish practical importance or model adequacy.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+AIC(MLexamp.4) #using the interaction of class and school as fixed effect
+AIC(MLexamp.7) #using class and school as random intercepts
+AIC(MLexamp.8) #using nested term of class and school as random intercepts
+AIC(MLexamp.9) #adding open as random slope based on MLexamp.8
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+#### Summary the model 8
+
+<!-- generated-learning-note -->
+This section develops **Summary the model 8**. Read the model specification together with its assumptions and the scale of each reported effect.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block extracts inferential or predictive results from fitted objects. Match each estimate, interval, contrast, or diagnostic to the quantity it represents.
+
+```{r}
+summary(MLexamp.8)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Interpret estimates on the scale reported by the function, and use intervals or other uncertainty measures when drawing conclusions.
+
+`in random effect variances, the nested effect of class within the higher level variable and the random effect of the higher level variable. If all the percentages for each random effect (each part/ the total) are very small, then the random effects are not present and linear mixed modeling is not appropriate.`
+
+
+- testing random effect
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+# W2 will have to build the test statistic by hand because we cannot rely on asymptotics
+L_Model= logLik(MLexamp.8)[1]
+L_Model1=logLik(MLexamp.9)[1]
+LRT_statistic=-2*(L_Model1-L_Model)
+# Model has 3 parameters associated with the Random Effects
+# Model1 has 1 parameter associated with the Random Effects
+# DF=2
+# We will look at a mixture of chi-squared distributions with 1 and 2 degrees of freedom
+0.5*pchisq(LRT_statistic,df=2,lower.tail = F)+0.5*pchisq(LRT_statistic,df=1,lower.tail = F)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+- plot a x and y by grouping variables 
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r}
+library(ggplot2)
+ggplot(lmm.data,aes(x= open,y=extro  ,group=school,color= school))+geom_line() 
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+
+- Plot of Residuals by grouping variables
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+plot(MLexamp.8, school~resid(.))
+plot(MLexamp.8, class~resid(.))
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+- Plot Residuals by explanatory variables 
+
+<!-- generated-learning-note -->
+**Purpose.** This block extracts inferential or predictive results from fitted objects. Match each estimate, interval, contrast, or diagnostic to the quantity it represents.
+
+```{r}
+plot(MLexamp.8, resid(.)~open)
+# plot(MLexamp.8,resid(.,type="p")~fitted(.) | BMIGRP_fm002)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Interpret estimates on the scale reported by the function, and use intervals or other uncertainty measures when drawing conclusions.
+
+
+- QQ plot of residuals
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+qqnorm(resid(MLexamp.8)  )
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+- Random effect coefficients normality 
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+test= ((ranef(MLexamp.8)[1])[["class:school"]])
+qqnorm ((test$`(Intercept)`) )
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+
+#### Extracting elements (parameters)
+
+<!-- generated-learning-note -->
+This subsection explains **Extracting elements (parameters)** and shows how it contributes to the overall Linear mixed model practice workflow.
+
+- fixed effect coefficients
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+fixef(MLexamp.8) 
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+- random effect coefficients
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+ranef(MLexamp.8) 
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+
+- total coefficients for model (random + fixed)
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+coef(MLexamp.8)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+- predicted values based on the model 
+
+<!-- generated-learning-note -->
+**Purpose.** This block extracts inferential or predictive results from fitted objects. Match each estimate, interval, contrast, or diagnostic to the quantity it represents.
+
+```{r}
+yhat <- fitted(MLexamp.8)
+head(yhat)
+summary(yhat) 
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Interpret estimates on the scale reported by the function, and use intervals or other uncertainty measures when drawing conclusions.
+
+- residuals of model 
+
+<!-- generated-learning-note -->
+**Purpose.** This block extracts inferential or predictive results from fitted objects. Match each estimate, interval, contrast, or diagnostic to the quantity it represents.
+
+```{r}
+residuals <- resid(MLexamp.8)
+head(residuals)
+summary(residuals) 
+hist(residuals,50) 
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Interpret estimates on the scale reported by the function, and use intervals or other uncertainty measures when drawing conclusions.
+
+
+<!-- issues -->
+- Fitted lines (less variation)
+
+<!-- generated-learning-note -->
+**Purpose.** This block extracts inferential or predictive results from fitted objects. Match each estimate, interval, contrast, or diagnostic to the quantity it represents.
+
+```{r}
+lmm.data$Fitted=predict(MLexamp.8)
+# subjects=unique(lmm.data$school) #Taking the identifiers and saving it
+# sam="V" # Taking a random sample of 10 Subjects
+ 
+ggplot(lmm.data    ,aes(x=open ,y=Fitted,group=school,color=school ) )+geom_line(se=F)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Interpret estimates on the scale reported by the function, and use intervals or other uncertainty measures when drawing conclusions.
+
+
+
+#### Model diagnostics
+
+<!-- generated-learning-note -->
+This section develops **Model diagnostics**. Read the model specification together with its assumptions and the scale of each reported effect.
+
+#### Residuals normality
+
+<!-- generated-learning-note -->
+This subsection explains **Residuals normality** and shows how it contributes to the overall Linear mixed model practice workflow.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This source block depends on optional software, external data, or a machine-specific path. It is retained as a reference and is not executed during the website build.
+
+```{r}
+#| eval: false
+#| code-fold: true
+library(haven)
+nurse <- read_sav(file="https://github.com/MultiLevelAnalysis/Datasets-third-edition-Multilevel-book/blob/master/chapter%202/Nurses/SPSS/Nurses.sav?raw=true")
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Because this block is not executed, it produces no website output. Enable it only after its dependencies and input paths have been validated.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block specifies and fits the statistical model. Identify the outcome, predictors, reference levels, link or distribution, and any correlation structure before interpreting coefficients.
+
+```{r}
+MLexamp.18 <- lmer(stress ~ experien+ wardtype+ expcon  + (1|hospital/ward), data=nurse)
+summary(MLexamp.18)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Focus on coefficient direction and scale, uncertainty intervals, fit statistics, and diagnostics. Statistical significance alone does not establish practical importance or model adequacy.
+
+*`outcome is ordinal variable`*
+
+`residual vs. fitted values `
+
+<!-- generated-learning-note -->
+**Purpose.** This block extracts inferential or predictive results from fitted objects. Match each estimate, interval, contrast, or diagnostic to the quantity it represents.
+
+```{r}
+lmerresid <- resid(MLexamp.18)
+par(mfrow = c(1,2))
+plot(sqrt(abs(lmerresid)) ~ predict(MLexamp.18))
+qqnorm(lmerresid)
+qqline(lmerresid)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Interpret estimates on the scale reported by the function, and use intervals or other uncertainty measures when drawing conclusions.
+
+
+#### Checking for variance homogeneity
+
+<!-- generated-learning-note -->
+This subsection explains **Checking for variance homogeneity** and shows how it contributes to the overall Linear mixed model practice workflow.
+
+`residual vs. explanatory variables `
+
+<!-- generated-learning-note -->
+**Purpose.** This block extracts inferential or predictive results from fitted objects. Match each estimate, interval, contrast, or diagnostic to the quantity it represents.
+
+```{r,warning=F}
+par(mfrow = c(2,2))
+plot(lmerresid ~ fitted(MLexamp.18))
+with(nurse, plot(lmerresid ~ experien , col = heat.colors(20)))
+with(nurse, plot(lmerresid ~ wardtype , col = rainbow(3)))
+with(nurse, plot(lmerresid ~ expcon , col = rainbow(5)))
+# with(lmm.data, plot(lmerresid ~ class, col = rainbow(5)))
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Interpret estimates on the scale reported by the function, and use intervals or other uncertainty measures when drawing conclusions.
+
+
+#### Influence points
+
+<!-- generated-learning-note -->
+This subsection explains **Influence points** and shows how it contributes to the overall Linear mixed model practice workflow.
+
+`Cook’s distance`
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r,warning=F}
+library(influence.ME)
+lmer3.infl <- influence(MLexamp.18, obs = TRUE)
+par(mfrow = c(1,1))
+plot(cooks.distance(lmer3.infl), type = "p", pch = 20)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+
+#### Random effect normality
+
+<!-- generated-learning-note -->
+This subsection explains **Random effect normality** and shows how it contributes to the overall Linear mixed model practice workflow.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+par(mfrow = c(1,3))
+qqnorm(ranef(MLexamp.18)$`ward:hospital`$`(Intercept)`)
+
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+#### Post hoc analysis
+
+<!-- generated-learning-note -->
+This subsection explains **Post hoc analysis** and shows how it contributes to the overall Linear mixed model practice workflow.
+
+`ci: sd of random effect coeffcient `
+
+<!-- generated-learning-note -->
+**Purpose.** This block extracts inferential or predictive results from fitted objects. Match each estimate, interval, contrast, or diagnostic to the quantity it represents.
+
+```{r}
+confint(MLexamp.18, parm = 1:4, oldNames = FALSE)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Interpret estimates on the scale reported by the function, and use intervals or other uncertainty measures when drawing conclusions.
+
+`lsmeans (ideally means) plot` 
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r}
+mylsmeans <- emmeans::emmeans(MLexamp.18, c("wardtype", "expcon" ))
+sum_mylsmeans <- summary(mylsmeans)
+with(sum_mylsmeans, interaction.plot(wardtype , expcon ,emmean, col = 2:4))
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+
+`paired lsmeans`
+
+<!-- generated-learning-note -->
+**Purpose.** This block extracts inferential or predictive results from fitted objects. Match each estimate, interval, contrast, or diagnostic to the quantity it represents.
+
+```{r}
+sum_difflsmeans <- summary(pairs(mylsmeans))
+head(sum_difflsmeans)
+
+barplot(sum_difflsmeans$SE)
+barplot(sum_difflsmeans$estimate)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Interpret estimates on the scale reported by the function, and use intervals or other uncertainty measures when drawing conclusions.
+
+
+A `plot` function 
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r}
+performance::check_model(MLexamp.18)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+
+#### Intra class correlation
+
+<!-- generated-learning-note -->
+This subsection explains **Intra class correlation** and shows how it contributes to the overall Linear mixed model practice workflow.
+
+
+It allows us to assess whether or not the random effect is present in the data.
+
+<!-- generated-learning-note -->
+**Purpose.** This block specifies and fits the statistical model. Identify the outcome, predictors, reference levels, link or distribution, and any correlation structure before interpreting coefficients.
+
+```{r}
+ lmm.null <- lmer(extro ~ 1 + (1|school), data = lmm.data)
+ summary(lmm.null) 
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Focus on coefficient direction and scale, uncertainty intervals, fit statistics, and diagnostics. Statistical significance alone does not establish practical importance or model adequacy.
+
+`indicates that 93.07% (95.8720 / 103.0119 
+) of the variance in 'extro' can be "explained" by school group membership. `
+
+
+#### Notice
+
+<!-- generated-learning-note -->
+This subsection explains **Notice** and shows how it contributes to the overall Linear mixed model practice workflow.
+
+- Back transformed expected values (lsmeans) not ci
+- Box-Cox transformations
+
+## Interpreting the Results
+
+Check fixed effects, random effects, covariance assumptions, and subject-specific versus population-level interpretation. Treat the output as evidence generated under the stated data, coding choices, and assumptions. Before using the workflow in practice, replace example inputs with validated data and confirm that the method targets the intended scientific question.
+
+## Key Takeaways
+
+- **Connect method to purpose.** Identify the question and target quantity before choosing code or a model.
+- **Read code and output together.** Confirm what each object, estimate, interval, table, or plot represents.
+- **Check assumptions and diagnostics.** A successful computation is not by itself evidence that the result is reliable.
+- **Adapt deliberately.** When applying the example elsewhere, document changes to data definitions, parameters, and analytical choices.

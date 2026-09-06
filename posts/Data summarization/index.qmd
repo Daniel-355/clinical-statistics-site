@@ -1,0 +1,252 @@
+---
+title: "Data summarization"
+description: "A practical R learning guide to Data summarization, with concise explanations, reproducible examples, and interpretation guidance."
+date: 2026-08-31
+section: "Data Management & Programming"
+category: "Data Cleaning & Quality Control"
+topic: "Data summarization"
+type: article
+tags: ["Data Cleaning & Quality Control", "Data Management & Programming", "Data", "summarization"]
+status: published
+featured: true
+youtube: []
+pdf: []
+downloads: []
+validate-yaml: false
+execute:
+  echo: true
+  warning: false
+  error: true
+---
+
+## Why This Topic Matters
+
+Data cleaning and quality control make analytical results traceable and reduce errors caused by inconsistent or implausible values.
+
+## Learning Objectives
+
+After working through this material, you should be able to:
+
+- explain the main ideas behind **Data summarization**;
+- interpret the R workflow and its output; and
+- adapt the examples to a related analysis.
+
+## Lesson Roadmap
+
+The original material is organized around the following topics:
+
+1. How to do aggregation/ summarization
+2. Summarization after grouping
+3. Summarization with upgroup
+4. Mutate new variables after grouping
+5. Recode and generate new variables, then value label
+
+## How to Use This Lesson
+
+Read the explanation before each workflow, then run the R chunks in sequence. Code and output are shown together so that each numerical or graphical result can be connected to the command that produced it. Some source examples require optional packages or external data. Those setup-dependent chunks remain visible for reference but are marked `eval: false` when they cannot be reproduced safely in a clean website build.
+
+## Reproducible Learning Check
+
+This short R chunk confirms the scope of the lesson and always produces a visible output.
+
+```{r}
+#| label: learning-overview
+learning_overview <- data.frame(
+  section = "Data Management & Programming",
+  category = "Data Cleaning & Quality Control",
+  topic = "Data summarization"
+)
+learning_overview
+```
+
+## Learning Material
+
+The following material develops **Data summarization** from core ideas to practical implementation. Definitions and assumptions come first; worked code then shows how the ideas are represented computationally.
+
+### Conceptual Foundation
+
+The material below closely follows the original R Markdown source, with its examples retained for study and reuse.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#### How to do aggregation/ summarization
+
+<!-- generated-learning-note -->
+This subsection explains **How to do aggregation/ summarization** and shows how it contributes to the overall Data summarization workflow.
+
+#### Summarization after grouping
+
+<!-- generated-learning-note -->
+This subsection explains **Summarization after grouping** and shows how it contributes to the overall Data summarization workflow.
+
+### R Workflow and Examples
+
+Run the examples in order because later blocks may reuse objects created earlier. Each block includes a short purpose statement and guidance for reading its output.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r echo=TRUE,  message=FALSE}
+library(tidyverse)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+
+```{r echo=TRUE-2,  include=FALSE}
+library(tidyverse)
+```
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block prepares the analysis data. Follow each transformation carefully because filtering, recoding, grouping, and reshaping determine the observations used downstream.
+
+```{r}
+iris %>% 
+  group_by(Species) %>% 
+  summarize(Support = mean(Sepal.Length)) %>%    # average
+  arrange(-Support)                         # sort
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the data before and after the transformation. Confirm that row counts, group sizes, missingness, and variable values changed as intended.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block prepares the analysis data. Follow each transformation carefully because filtering, recoding, grouping, and reshaping determine the observations used downstream.
+
+```{r}
+iris %>% 
+  group_by(Species) %>% 
+summarize(mean_s = mean(Sepal.Width), 
+            meas_p = mean(Petal.Length), 
+            diff = mean(Sepal.Width-Petal.Length)) %>% 
+  arrange(-diff) 
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the data before and after the transformation. Confirm that row counts, group sizes, missingness, and variable values changed as intended.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block prepares the analysis data. Follow each transformation carefully because filtering, recoding, grouping, and reshaping determine the observations used downstream.
+
+```{r}
+iris %>% 
+  group_by(Species) %>% 
+summarize(n = n(), 
+            meas_p = mean(Petal.Length), 
+            sd = sd(Petal.Length))  
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the data before and after the transformation. Confirm that row counts, group sizes, missingness, and variable values changed as intended.
+
+#### Summarization with upgroup
+
+<!-- generated-learning-note -->
+This subsection explains **Summarization with upgroup** and shows how it contributes to the overall Data summarization workflow.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block prepares the analysis data. Follow each transformation carefully because filtering, recoding, grouping, and reshaping determine the observations used downstream.
+
+```{r}
+iris %>% 
+  ungroup( ) %>% 
+summarize(n = n(), 
+            meas_p = mean(Petal.Length), 
+            sd = sd(Petal.Length))  
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the data before and after the transformation. Confirm that row counts, group sizes, missingness, and variable values changed as intended.
+
+#### Mutate new variables after grouping
+
+<!-- generated-learning-note -->
+This section prepares the information needed for **Mutate new variables after grouping**. Check variable definitions, units, coding, and missing values before moving to analysis.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block prepares the analysis data. Follow each transformation carefully because filtering, recoding, grouping, and reshaping determine the observations used downstream.
+
+```{r}
+iris %>% 
+  group_by(Species) %>% 
+mutate(n = n(), 
+            meas_p = mean(Petal.Length), 
+            sd = sd(Petal.Length))  
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the data before and after the transformation. Confirm that row counts, group sizes, missingness, and variable values changed as intended.
+
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block prepares the analysis data. Follow each transformation carefully because filtering, recoding, grouping, and reshaping determine the observations used downstream.
+
+```{r}
+iris %>% 
+  group_by(Species) %>% 
+mutate(n = n(), 
+            meas_p = mean(Petal.Length, na.rm = T), 
+            sd = sd(Petal.Length))  %>% 
+  summarize (n_mean = paste ("sample size:",mean(n)), 
+            meas_p = mean(Petal.Length), 
+            sd = sd(Petal.Length))
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the data before and after the transformation. Confirm that row counts, group sizes, missingness, and variable values changed as intended.
+
+
+#### Recode and generate new variables, then value label
+
+<!-- generated-learning-note -->
+This section prepares the information needed for **Recode and generate new variables, then value label**. Check variable definitions, units, coding, and missing values before moving to analysis.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block prepares the analysis data. Follow each transformation carefully because filtering, recoding, grouping, and reshaping determine the observations used downstream.
+
+```{r}
+irisifelse <- iris %>% 
+mutate(Species2 = ifelse(Species == "setosa", NA, Species))
+# relabel values
+irisifelse$Species2 <- factor(irisifelse$Species2,labels = c( "versi","virg"))
+irisifelse
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the data before and after the transformation. Confirm that row counts, group sizes, missingness, and variable values changed as intended.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+str(irisifelse)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+## Interpreting the Results
+
+Use summaries and visual checks to confirm ranges, distributions, duplicates, and missing-data patterns. Treat the output as evidence generated under the stated data, coding choices, and assumptions. Before using the workflow in practice, replace example inputs with validated data and confirm that the method targets the intended scientific question.
+
+## Key Takeaways
+
+- **Connect method to purpose.** Identify the question and target quantity before choosing code or a model.
+- **Read code and output together.** Confirm what each object, estimate, interval, table, or plot represents.
+- **Check assumptions and diagnostics.** A successful computation is not by itself evidence that the result is reliable.
+- **Adapt deliberately.** When applying the example elsewhere, document changes to data definitions, parameters, and analytical choices.

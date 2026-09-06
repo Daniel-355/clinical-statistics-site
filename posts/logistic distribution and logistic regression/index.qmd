@@ -1,0 +1,249 @@
+---
+title: "Logistic distribution and logistic regression"
+description: "A practical R learning guide to Logistic distribution and logistic regression, with concise explanations, reproducible examples, and interpretation guidance."
+date: 2026-08-31
+section: "Biostatistics"
+category: "Statistical Models"
+topic: "Logistic distribution and logistic regression"
+type: article
+tags: ["Statistical Models", "Biostatistics", "Logistic", "distribution", "regression"]
+status: published
+featured: true
+youtube: []
+pdf: []
+downloads: []
+validate-yaml: false
+execute:
+  echo: true
+  warning: false
+  error: true
+---
+
+## Why This Topic Matters
+
+A statistical model is a structured approximation that links observed data to an estimand or prediction target.
+
+## Learning Objectives
+
+After working through this material, you should be able to:
+
+- explain the main ideas behind **Logistic distribution and logistic regression**;
+- interpret the R workflow and its output; and
+- adapt the examples to a related analysis.
+
+## Lesson Roadmap
+
+The original material is organized around the following topics:
+
+1. Logistic distribution and logistic regression
+2. Generalized linear model, [GLM](https://en.wikipedia.org/wiki/Generalizedlinearmodel#:~:text=The%20link%20function%20provides%20the,is%20informed%20by%20several%20considerations.)
+3. Logistic distribution
+4. Logistic regression,
+
+## How to Use This Lesson
+
+Read the explanation before each workflow, then run the R chunks in sequence. Code and output are shown together so that each numerical or graphical result can be connected to the command that produced it. Some source examples require optional packages or external data. Those setup-dependent chunks remain visible for reference but are marked `eval: false` when they cannot be reproduced safely in a clean website build.
+
+## Reproducible Learning Check
+
+This short R chunk confirms the scope of the lesson and always produces a visible output.
+
+```{r}
+#| label: learning-overview
+learning_overview <- data.frame(
+  section = "Biostatistics",
+  category = "Statistical Models",
+  topic = "Logistic distribution and logistic regression"
+)
+learning_overview
+```
+
+## Learning Material
+
+The following material develops **Logistic distribution and logistic regression** from core ideas to practical implementation. Definitions and assumptions come first; worked code then shows how the ideas are represented computationally.
+
+### Conceptual Foundation
+
+The material below closely follows the original R Markdown source, with its examples retained for study and reuse.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#### Logistic distribution and logistic regression
+
+<!-- generated-learning-note -->
+This section develops **Logistic distribution and logistic regression**. Read the model specification together with its assumptions and the scale of each reported effect.
+
+
+#### Generalized linear model, [GLM](https://en.wikipedia.org/wiki/Generalizedlinearmodel#:~:text=The%20link%20function%20provides%20the,is%20informed%20by%20several%20considerations.)
+
+<!-- generated-learning-note -->
+This section develops **Generalized linear model, [GLM](https://en.wikipedia.org/wiki/Generalizedlinearmodel#:~:text=The%20link%20function%20provides%20the,is%20informed%20by%20several%20considerations.)**. Read the model specification together with its assumptions and the scale of each reported effect.
+
+
+
+Generalized linear models cover all these situations by allowing for response variables that have arbitrary distributions (rather than simply normal distributions), and for an arbitrary function of the response variable (the link function) to vary linearly with the predictors (rather than assuming that the response itself must vary linearly). 
+
+- link function
+
+The link function provides the relationship between the linear predictor and the mean of the distribution function. There are many commonly used link functions, and their choice is informed by several considerations. There is always a well-defined canonical link function which is derived from the exponential of the response's density function. However, in some cases it makes sense to try to `match the domain of the link function to the range of the distribution function's mean`, or use a non-canonical link function for algorithmic purposes, for example Bayesian probit regression.
+
+For the most common distributions, the mean $\mu$ is one of the parameters in the standard form of the distribution's density function, and then $b(\mu)$ is the function as defined above that maps the density function into its canonical form. When using the canonical link function, $b(\mu)=\theta=\mathbf{X} \boldsymbol{\beta}$. 
+
+####### Logistic distribution 
+
+The Logistic distribution with location $=\mu$ and scale $=\sigma$ has distribution function
+
+$$
+F(x)=\frac{1}{1+e^{-(x-\mu) / \sigma}}
+$$
+`plogis(x)`= (1+ tanh(x/2))/2, and it is called a sigmoid function in contexts such as neural networks. it is called sigmoid function.
+
+### R Workflow and Examples
+
+Run the examples in order because later blocks may reuse objects created earlier. Each block includes a short purpose statement and guidance for reading its output.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+# # numbers from  
+# x<-seq(-5,5,0.1)
+#  
+# # calculate the distribution function
+# # based on the parameters
+# pdf1<- plogis(x)
+# sigm<- (1+ tanh(x/2))/2
+# 
+# # Plotting the PDF 
+# plot(x,pdf1,type = "l")
+# lines(x,sigm,col=3 )
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+
+and density, pdf
+
+$$
+f(x)=\frac{1}{\sigma} \frac{e^{(x-\mu) / \sigma}}{\left(1+e^{(x-\mu) / \sigma}\right)^2}
+$$
+
+It is a long-tailed distribution with mean $\mu$ and variance $\pi^2 / 3 \sigma^2$.
+
+- PDF
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+# numbers from  
+x<-seq(-5,5,0.1)
+ 
+# calculate the distribution function
+# based on the parameters
+pdf1<- dlogis(x)
+ 
+# Plotting the PDF 
+plot(x,pdf1,type = "l")
+
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+
+- CDF/sigmoid
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+# numbers from  
+x<-seq(-5,5,0.1)
+ 
+# calculate the distribution function
+# based on the parameters
+cdf1<- plogis(x)
+ 
+# Plotting the PDF 
+plot(x,cdf1,type = "l")
+
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+
+
+####### Logistic regression, 
+
+<!-- using CDF of logistic distribution/ sigmoid $\operatorname{logit}(p)=\log p /(1-p)$ -->
+
+- link function
+
+$$
+\mathbf{X} \boldsymbol{\beta}=\ln \left(\frac{\mu}{n-\mu}\right)=\ln \left(\frac{np}{n-np}\right)=\ln \left(\frac{p}{1-p}\right)
+$$
+
+- CDF, the $p$ of Y
+
+$$
+\begin{aligned}
+p=\pi(\mathbf{Y}) & =\frac{\exp \left(\beta_0+\beta_1 X_1+\ldots+\beta_k X_k\right)}{1+\exp \left(\beta_0+\beta_1 X_1+\ldots+\beta_k X_k\right)} \\
+& =\frac{\exp (\mathbf{X} \beta)}{1+\exp (\mathbf{X} \beta)} \\
+& =\frac{1}{1+\exp (-\mathbf{X} \beta)}
+\end{aligned}
+$$
+
+- logit function
+
+$$
+\operatorname{logit}(P)=\log p /(1-p)
+$$
+
+
+logit function
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+# numbers from  
+x<-seq(0,1,0.1)
+ 
+# calculate the distribution function
+# based on the parameters
+p<- plogis(x) #cdf
+q<- 1-p
+pdf=log(p/q)
+
+# Plotting the PDF 
+plot(x,p,type = "l")
+
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+They behave a linear relationship.
+
+## Interpreting the Results
+
+Interpret coefficients with their coding and scale, examine uncertainty, and use diagnostics to evaluate assumptions. Treat the output as evidence generated under the stated data, coding choices, and assumptions. Before using the workflow in practice, replace example inputs with validated data and confirm that the method targets the intended scientific question.
+
+## Key Takeaways
+
+- **Connect method to purpose.** Identify the question and target quantity before choosing code or a model.
+- **Read code and output together.** Confirm what each object, estimate, interval, table, or plot represents.
+- **Check assumptions and diagnostics.** A successful computation is not by itself evidence that the result is reliable.
+- **Adapt deliberately.** When applying the example elsewhere, document changes to data definitions, parameters, and analytical choices.

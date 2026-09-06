@@ -1,0 +1,134 @@
+---
+title: "Logistic distribution and logistic regression"
+output: html_document
+date: '2024-01-31'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#### Logistic distribution and logistic regression 
+
+#### Generalized linear model, [GLM](https://en.wikipedia.org/wiki/Generalized_linear_model#:~:text=The%20link%20function%20provides%20the,is%20informed%20by%20several%20considerations.)
+
+
+Generalized linear models cover all these situations by allowing for response variables that have arbitrary distributions (rather than simply normal distributions), and for an arbitrary function of the response variable (the link function) to vary linearly with the predictors (rather than assuming that the response itself must vary linearly). 
+
+- link function
+
+The link function provides the relationship between the linear predictor and the mean of the distribution function. There are many commonly used link functions, and their choice is informed by several considerations. There is always a well-defined canonical link function which is derived from the exponential of the response's density function. However, in some cases it makes sense to try to `match the domain of the link function to the range of the distribution function's mean`, or use a non-canonical link function for algorithmic purposes, for example Bayesian probit regression.
+
+For the most common distributions, the mean $\mu$ is one of the parameters in the standard form of the distribution's density function, and then $b(\mu)$ is the function as defined above that maps the density function into its canonical form. When using the canonical link function, $b(\mu)=\theta=\mathbf{X} \boldsymbol{\beta}$. 
+
+##### Logistic distribution 
+
+The Logistic distribution with location $=\mu$ and scale $=\sigma$ has distribution function
+
+$$
+F(x)=\frac{1}{1+e^{-(x-\mu) / \sigma}}
+$$
+`plogis(x)`= (1+ tanh(x/2))/2, and it is called a sigmoid function in contexts such as neural networks. it is called sigmoid function.  
+
+```{r}
+# # numbers from  
+# x<-seq(-5,5,0.1)
+#  
+# # calculate the distribution function
+# # based on the parameters
+# pdf1<- plogis(x)
+# sigm<- (1+ tanh(x/2))/2
+# 
+# # Plotting the PDF 
+# plot(x,pdf1,type = "l")
+# lines(x,sigm,col=3 )
+```
+
+
+and density, pdf
+
+$$
+f(x)=\frac{1}{\sigma} \frac{e^{(x-\mu) / \sigma}}{\left(1+e^{(x-\mu) / \sigma}\right)^2}
+$$
+
+It is a long-tailed distribution with mean $\mu$ and variance $\pi^2 / 3 \sigma^2$.
+
+- PDF
+
+```{r}
+# numbers from  
+x<-seq(-5,5,0.1)
+ 
+# calculate the distribution function
+# based on the parameters
+pdf1<- dlogis(x)
+ 
+# Plotting the PDF 
+plot(x,pdf1,type = "l")
+
+```
+
+
+- CDF/sigmoid
+
+```{r}
+# numbers from  
+x<-seq(-5,5,0.1)
+ 
+# calculate the distribution function
+# based on the parameters
+cdf1<- plogis(x)
+ 
+# Plotting the PDF 
+plot(x,cdf1,type = "l")
+
+```
+
+
+
+##### Logistic regression, 
+
+<!-- using CDF of logistic distribution/ sigmoid $\operatorname{logit}(p)=\log p /(1-p)$ -->
+
+- link function
+
+$$
+\mathbf{X} \boldsymbol{\beta}=\ln \left(\frac{\mu}{n-\mu}\right)=\ln \left(\frac{np}{n-np}\right)=\ln \left(\frac{p}{1-p}\right)
+$$
+
+- CDF, the $p$ of Y
+
+$$
+\begin{aligned}
+p=\pi(\mathbf{Y}) & =\frac{\exp \left(\beta_0+\beta_1 X_1+\ldots+\beta_k X_k\right)}{1+\exp \left(\beta_0+\beta_1 X_1+\ldots+\beta_k X_k\right)} \\
+& =\frac{\exp (\mathbf{X} \beta)}{1+\exp (\mathbf{X} \beta)} \\
+& =\frac{1}{1+\exp (-\mathbf{X} \beta)}
+\end{aligned}
+$$
+
+- logit function
+
+$$
+\operatorname{logit}(P)=\log p /(1-p)
+$$
+
+
+logit function
+```{r}
+# numbers from  
+x<-seq(0,1,0.1)
+ 
+# calculate the distribution function
+# based on the parameters
+p<- plogis(x) #cdf
+q<- 1-p
+pdf=log(p/q)
+
+# Plotting the PDF 
+plot(x,p,type = "l")
+
+```
+
+They behave a linear relationship.
+
+

@@ -1,0 +1,374 @@
+---
+title: "O'Brien-Fleming and Alpha-Spending Methods"
+description: "A practical R learning guide to O'Brien-Fleming and Alpha-Spending Methods, with concise explanations, reproducible examples, and interpretation guidance."
+date: 2026-08-31
+section: "Biostatistics"
+category: "Multiplicity & Type I Error"
+topic: "O'Brien-Fleming and Alpha-Spending Methods"
+type: article
+tags: ["Multiplicity & Type I Error", "Biostatistics", "O", "Brien-Fleming", "Alpha-Spending"]
+status: published
+featured: true
+youtube: []
+pdf: []
+downloads: []
+validate-yaml: false
+execute:
+  echo: true
+  warning: false
+  error: true
+---
+
+## Why This Topic Matters
+
+Multiplicity procedures control false-positive risk when several hypotheses or repeated looks at the data are planned.
+
+## Learning Objectives
+
+After working through this material, you should be able to:
+
+- explain the main ideas behind **O'Brien-Fleming and Alpha-Spending Methods**;
+- interpret the R workflow and its output; and
+- adapt the examples to a related analysis.
+
+## Lesson Roadmap
+
+The original material is organized around the following topics:
+
+1. Overview
+2. Classical O'Brien-Fleming Method
+3. Alpha-Spending Method
+4. Main Difference
+
+## How to Use This Lesson
+
+Read the explanation before each workflow, then run the R chunks in sequence. Code and output are shown together so that each numerical or graphical result can be connected to the command that produced it. Some source examples require optional packages or external data. Those setup-dependent chunks remain visible for reference but are marked `eval: false` when they cannot be reproduced safely in a clean website build.
+
+## Reproducible Learning Check
+
+This short R chunk confirms the scope of the lesson and always produces a visible output.
+
+```{r}
+#| label: learning-overview
+learning_overview <- data.frame(
+  section = "Biostatistics",
+  category = "Multiplicity & Type I Error",
+  topic = "O'Brien-Fleming and Alpha-Spending Methods"
+)
+learning_overview
+```
+
+## Learning Material
+
+The following material develops **O'Brien-Fleming and Alpha-Spending Methods** from core ideas to practical implementation. Definitions and assumptions come first; worked code then shows how the ideas are represented computationally.
+
+### Conceptual Foundation
+
+The material below closely follows the original R Markdown source, with its examples retained for study and reuse.
+
+#### Overview
+
+<!-- generated-learning-note -->
+This subsection explains **Overview** and shows how it contributes to the overall O'Brien-Fleming and Alpha-Spending Methods workflow.
+
+
+Both classical O'Brien-Fleming and alpha-spending methods are used to control the overall Type I error when a clinical trial includes interim analyses.
+
+#### Classical O'Brien-Fleming Method
+
+<!-- generated-learning-note -->
+This section develops **Classical O'Brien-Fleming Method**. Read the model specification together with its assumptions and the scale of each reported effect.
+
+
+The main steps are:
+
+1. Specify the overall alpha level, number of analyses, and information fractions.
+
+2. Construct the joint correlation matrix of the sequential Z-statistics.
+
+3. Define the efficacy boundary at analysis (k) as:
+
+$$
+b_k = \frac{c}{\sqrt{t_k}},
+$$
+
+where (t_k) is the information fraction and (c) is a common boundary constant.
+
+4. Numerically solve for (c) so that the probability of crossing any efficacy boundary under the null hypothesis equals the overall alpha:
+
+$$
+P_{H_0}
+\left(
+Z_1 \ge b_1
+\text{ or }
+Z_2 \ge b_2
+\text{ or } \cdots \text{ or }
+Z_K \ge b_K
+\right)
+=
+\alpha.
+$$
+
+5. Convert the resulting Z boundaries into nominal p-value boundaries.
+
+In simple terms, the classical O'Brien-Fleming method starts by defining the shape of the sequential boundaries.
+
+### R Workflow and Examples
+
+Run the examples in order because later blocks may reuse objects created earlier. Each block includes a short purpose statement and guidance for reading its output.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This source block depends on optional software, external data, or a machine-specific path. It is retained as a reference and is not executed during the website build.
+
+```{r}
+#| eval: false
+#| code-fold: true
+# ============================================================
+# Calculate the O'Brien-Fleming constant c
+# Two analyses: 50% information and 100% information
+# Overall one-sided alpha = 0.025
+# ============================================================
+
+# Install once if needed:
+# install.packages("mvtnorm")
+
+library(mvtnorm)
+
+# Overall one-sided Type I error
+alpha <- 0.025
+
+# Information fractions
+t1 <- 0.50
+t2 <- 1.00
+
+# Correlation between the two Z statistics
+rho <- sqrt(t1 / t2)
+
+# Covariance/correlation matrix under H0
+sigma_z <- matrix(
+  c(
+    1,   rho,
+    rho, 1
+  ),
+  nrow = 2,
+  byrow = TRUE
+)
+
+# ------------------------------------------------------------
+# For a given value of c, calculate the total probability
+# of crossing at least one efficacy boundary under H0
+# ------------------------------------------------------------
+
+crossing_probability <- function(c) {
+  
+  # O'Brien-Fleming Z boundaries
+  boundary <- c(
+    c / sqrt(t1),
+    c / sqrt(t2)
+  )
+  
+  # Probability of NOT crossing either boundary:
+  # P(Z1 < b1 and Z2 < b2)
+  probability_no_crossing <- as.numeric(
+    pmvnorm(
+      lower = c(-Inf, -Inf),
+      upper = boundary,
+      mean = c(0, 0),
+      sigma = sigma_z
+    )
+  )
+  
+  # Probability of crossing at least one boundary
+  1 - probability_no_crossing
+}
+
+# ------------------------------------------------------------
+# Solve for c such that crossing probability = alpha
+# ------------------------------------------------------------
+
+objective_function <- function(c) {
+  crossing_probability(c) - alpha
+}
+
+solution <- uniroot(
+  f = objective_function,
+  interval = c(1.5, 2.5)
+)
+
+c_value <- solution$root
+
+# Calculate the two Z boundaries
+z_boundary_interim <- c_value / sqrt(t1)
+z_boundary_final   <- c_value / sqrt(t2)
+
+# Nominal one-sided p-value boundaries
+p_boundary_interim <- 1 - pnorm(z_boundary_interim)
+p_boundary_final   <- 1 - pnorm(z_boundary_final)
+
+# Display results
+results <- data.frame(
+  Analysis = c("Interim analysis", "Final analysis"),
+  Information_Fraction = c(t1, t2),
+  Z_Boundary = c(z_boundary_interim, z_boundary_final),
+  Nominal_One_Sided_P = c(
+    p_boundary_interim,
+    p_boundary_final
+  )
+)
+
+cat("O'Brien-Fleming constant c =", round(c_value, 4), "\n\n")
+
+print(results, digits = 5)
+
+cat(
+  "\nOverall crossing probability under H0 =",
+  round(crossing_probability(c_value), 5),
+  "\n"
+)
+
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Because this block is not executed, it produces no website output. Enable it only after its dependencies and input paths have been validated.
+
+
+
+#### Alpha-Spending Method
+
+<!-- generated-learning-note -->
+This section develops **Alpha-Spending Method**. Read the model specification together with its assumptions and the scale of each reported effect.
+
+
+The main steps are:
+
+1. Specify the overall alpha level and an alpha-spending function.
+
+2. At each information fraction (t_k), calculate the cumulative alpha available:
+
+$$
+\alpha(t_k).
+$$
+
+3. Determine the first interim boundary directly from the cumulative alpha available at the first analysis.
+
+4. For each later analysis, numerically solve for the Z boundary so that the cumulative probability of crossing any boundary up to that analysis equals the cumulative alpha spent:
+
+$$
+P_{H_0}
+\left(
+Z_1 \ge b_1
+\text{ or } \cdots \text{ or }
+Z_k \ge b_k
+\right)
+=
+\alpha(t_k).
+$$
+
+5. Verify that the cumulative Type I error at the final analysis equals the prespecified overall alpha.
+
+In simple terms, the alpha-spending method first specifies how alpha is accumulated and spent over information time, and then calculates the corresponding boundaries.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r}
+library(mvtnorm)
+
+# Overall one-sided alpha
+alpha_total <- 0.025
+
+# Interim information fraction
+t1 <- 0.50
+
+z_final <- qnorm(1 - alpha_total)
+
+z_interim <- z_final / sqrt(t1)
+
+alpha_spent <- 1 - pnorm(z_interim)
+
+alpha_spent
+
+# Cumulative alpha spent at interim
+alpha_interim <- alpha_spent
+
+# Interim Z boundary
+z1 <- qnorm(1 - alpha_interim)
+
+# Correlation between interim and final Z statistics
+rho <- sqrt(t1)
+
+sigma_z <- matrix(
+  c(
+    1,   rho,
+    rho, 1
+  ),
+  nrow = 2,
+  byrow = TRUE
+)
+
+# Find the final Z boundary
+objective <- function(z2) {
+  
+  probability_no_crossing <- as.numeric(
+    pmvnorm(
+      lower = c(-Inf, -Inf),
+      upper = c(z1, z2),
+      mean = c(0, 0),
+      sigma = sigma_z
+    )
+  )
+  
+  overall_crossing_probability <-
+    1 - probability_no_crossing
+  
+  overall_crossing_probability - alpha_total
+}
+
+solution <- uniroot(
+  objective,
+  interval = c(1.5, 2.5)
+)
+
+z2 <- solution$root
+p2 <- 1 - pnorm(z2)
+
+cat("Interim Z boundary:", round(z1, 4), "\n")
+cat("Interim nominal p boundary:", alpha_interim, "\n\n")
+
+cat("Final Z boundary:", round(z2, 4), "\n")
+cat("Final nominal p boundary:", round(p2, 5), "\n")
+
+
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+
+
+#### Main Difference
+
+<!-- generated-learning-note -->
+This subsection explains **Main Difference** and shows how it contributes to the overall O'Brien-Fleming and Alpha-Spending Methods workflow.
+
+
+The classical O'Brien-Fleming method starts from a predefined boundary shape:
+
+$$
+b_k = \frac{c}{\sqrt{t_k}}.
+$$
+
+The alpha-spending method starts from a function that specifies how much cumulative alpha may be spent at each information fraction. Alpha spending is generally more flexible because the boundaries can be recalculated using the actual information fractions when interim analyses occur earlier or later than originally planned. Original plan was 50%, actual analysis at 55%: With alpha-spending, boundaries can be recalculated based on the actual 55% point using the preset function; with a classic fixed-boundary design, the situation must be handled according to pre-specified rules for deviations. In simple terms, freeze the interim data, determine the actual information fraction, calculate the boundary using the prespecified rule, and then perform the unblinded interim analysis.
+
+## Interpreting the Results
+
+Verify the testing family, alpha allocation, decision boundaries, and adjusted inferential quantities. Treat the output as evidence generated under the stated data, coding choices, and assumptions. Before using the workflow in practice, replace example inputs with validated data and confirm that the method targets the intended scientific question.
+
+## Key Takeaways
+
+- **Connect method to purpose.** Identify the question and target quantity before choosing code or a model.
+- **Read code and output together.** Confirm what each object, estimate, interval, table, or plot represents.
+- **Check assumptions and diagnostics.** A successful computation is not by itself evidence that the result is reliable.
+- **Adapt deliberately.** When applying the example elsewhere, document changes to data definitions, parameters, and analytical choices.

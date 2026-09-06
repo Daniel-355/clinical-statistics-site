@@ -1,0 +1,890 @@
+---
+title: "Standard Operating Procedure for Epidemiologic Survival Analysis"
+description: "A practical R learning guide to Standard Operating Procedure for Epidemiologic Survival Analysis, with concise explanations, reproducible examples, and interpretation guidance."
+date: 2026-08-31
+section: "Epidemiology & Real-World Evidence"
+category: "Epidemiologic Study Designs"
+topic: "Standard Operating Procedure for Epidemiologic Survival Analysis"
+type: article
+tags: ["Epidemiologic Study Designs", "Epidemiology & Real-World Evidence", "Standard", "Operating", "Procedure"]
+status: published
+featured: true
+youtube: []
+pdf: []
+downloads: []
+validate-yaml: false
+execute:
+  echo: true
+  warning: false
+  error: true
+---
+
+## Why This Topic Matters
+
+Epidemiologic design determines how populations, exposures, outcomes, follow-up, and comparisons support a target scientific question.
+
+## Learning Objectives
+
+After working through this material, you should be able to:
+
+- explain the main ideas behind **Standard Operating Procedure for Epidemiologic Survival Analysis**;
+- interpret the R workflow and its output; and
+- adapt the examples to a related analysis.
+
+## Lesson Roadmap
+
+The original material is organized around the following topics:
+
+1. 1. Purpose
+2. 2. Research Question and Target Effect
+3. 3. Study Design and Data Source
+4. 4. Study Population and Analytic Cohort
+5. 5. Exposure, Outcome, Time Zero, Follow-up, and Censoring
+6. 5.1 Exposure
+
+## How to Use This Lesson
+
+Read the explanation before each workflow, then run the R chunks in sequence. Code and output are shown together so that each numerical or graphical result can be connected to the command that produced it. Some source examples require optional packages or external data. Those setup-dependent chunks remain visible for reference but are marked `eval: false` when they cannot be reproduced safely in a clean website build.
+
+## Reproducible Learning Check
+
+This short R chunk confirms the scope of the lesson and always produces a visible output.
+
+```{r}
+#| label: learning-overview
+learning_overview <- data.frame(
+  section = "Epidemiology & Real-World Evidence",
+  category = "Epidemiologic Study Designs",
+  topic = "Standard Operating Procedure for Epidemiologic Survival Analysis"
+)
+learning_overview
+```
+
+## Learning Material
+
+The following material develops **Standard Operating Procedure for Epidemiologic Survival Analysis** from core ideas to practical implementation. Definitions and assumptions come first; worked code then shows how the ideas are represented computationally.
+
+### Conceptual Foundation
+
+The material below closely follows the original R Markdown source, with its examples retained for study and reuse.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+```
+
+#### 1. Purpose
+
+<!-- generated-learning-note -->
+This subsection explains **1. Purpose** and shows how it contributes to the overall Standard Operating Procedure for Epidemiologic Survival Analysis workflow.
+
+
+This SOP provides a standard and reusable framework for survival analysis in observational epidemiologic studies, including prospective and retrospective cohort studies, registry studies, EHR studies, claims-based studies, and other real-world data studies.
+
+The objective is to estimate an exposure-outcome association or effect while appropriately addressing time zero, follow-up, censoring, confounding, missing data, model assumptions, and sensitivity to alternative analytic assumptions.
+
+#### 2. Research Question and Target Effect
+
+<!-- generated-learning-note -->
+This subsection explains **2. Research Question and Target Effect** and shows how it contributes to the overall Standard Operating Procedure for Epidemiologic Survival Analysis workflow.
+
+
+The primary research question should be stated before analysis.
+
+**General form:**
+
+> Among [target population], is [exposure] associated with or causally related to the risk of [time-to-event outcome] during [follow-up period]?
+
+Prespecify:
+
+- target population,
+- exposure and reference condition,
+- outcome,
+- time zero,
+- follow-up period,
+- censoring rules,
+- primary effect measure,
+- and covariate-adjustment strategy.
+
+The primary relative effect measure will usually be the **hazard ratio (HR)** with a **95% confidence interval (CI)**.
+
+If causal interpretation is intended, specify the target effect, such as a total effect, conditional effect, or marginal population-level effect.
+
+#### 3. Study Design and Data Source
+
+<!-- generated-learning-note -->
+This section prepares the information needed for **3. Study Design and Data Source**. Check variable definitions, units, coding, and missing values before moving to analysis.
+
+
+Describe:
+
+- study design,
+- source population,
+- data source,
+- study period,
+- data availability,
+- and relevant linkage procedures.
+
+Common sources include population cohorts, epidemiologic surveys, EHR databases, claims databases, disease registries, and linked administrative data.
+
+#### 4. Study Population and Analytic Cohort
+
+<!-- generated-learning-note -->
+This subsection explains **4. Study Population and Analytic Cohort** and shows how it contributes to the overall Standard Operating Procedure for Epidemiologic Survival Analysis workflow.
+
+
+Define inclusion and exclusion criteria before outcome modeling.
+
+Typical criteria may include:
+
+- eligible age range,
+- availability of exposure information,
+- availability of baseline covariates,
+- absence of the study outcome at baseline when incident disease is studied,
+- and eligibility for follow-up.
+
+Document cohort derivation using a flow diagram when appropriate.
+
+#### 5. Exposure, Outcome, Time Zero, Follow-up, and Censoring
+
+<!-- generated-learning-note -->
+This subsection explains **5. Exposure, Outcome, Time Zero, Follow-up, and Censoring** and shows how it contributes to the overall Standard Operating Procedure for Epidemiologic Survival Analysis workflow.
+
+
+#### 5.1 Exposure
+
+<!-- generated-learning-note -->
+This subsection explains **5.1 Exposure** and shows how it contributes to the overall Standard Operating Procedure for Epidemiologic Survival Analysis workflow.
+
+
+Specify:
+
+- exposure definition,
+- data source,
+- ascertainment window,
+- reference category,
+- coding,
+- and whether exposure is fixed or time-varying.
+
+#### 5.2 Outcome
+
+<!-- generated-learning-note -->
+This subsection explains **5.2 Outcome** and shows how it contributes to the overall Standard Operating Procedure for Epidemiologic Survival Analysis workflow.
+
+
+Specify:
+
+- event definition,
+- event date,
+- source of outcome information,
+- validation/adjudication method if applicable,
+- and whether the analysis is time-to-first-event or recurrent-event.
+
+#### 5.3 Time Zero
+
+<!-- generated-learning-note -->
+This subsection explains **5.3 Time Zero** and shows how it contributes to the overall Standard Operating Procedure for Epidemiologic Survival Analysis workflow.
+
+
+Time zero is the date at which follow-up begins.
+
+Exposure status, eligibility criteria, and baseline confounders should be aligned relative to time zero.
+
+Incorrect alignment may introduce immortal-time bias, prevalent-user bias, reverse temporality, or other selection bias.
+
+#### 5.4 Follow-up and Censoring
+
+<!-- generated-learning-note -->
+This subsection explains **5.4 Follow-up and Censoring** and shows how it contributes to the overall Standard Operating Procedure for Epidemiologic Survival Analysis workflow.
+
+
+Follow-up will end at the earliest of:
+
+1. occurrence of the outcome,
+2. death when not part of the outcome,
+3. loss to follow-up,
+4. disenrollment or loss of data availability,
+5. administrative study end,
+6. or another prespecified censoring event.
+
+Censoring rules should be defined before the primary analysis.
+
+#### 6. Confounder Selection and Covariate Adjustment
+
+<!-- generated-learning-note -->
+This subsection explains **6. Confounder Selection and Covariate Adjustment** and shows how it contributes to the overall Standard Operating Procedure for Epidemiologic Survival Analysis workflow.
+
+
+Potential confounders should be identified using:
+
+- subject-matter knowledge,
+- prior epidemiologic evidence,
+- temporal ordering,
+- and causal reasoning or DAGs.
+
+A variable should not be included solely because it is statistically significant, differs between exposure groups, or improves model fit.
+
+The primary covariate set should preferably be prespecified.
+
+#### 6.1 Baseline Confounders
+
+<!-- generated-learning-note -->
+This subsection explains **6.1 Baseline Confounders** and shows how it contributes to the overall Standard Operating Procedure for Epidemiologic Survival Analysis workflow.
+
+
+Typical baseline confounders may include age, sex, smoking, BMI, blood pressure, diabetes, hypertension, cholesterol, physical activity, socioeconomic factors, healthcare utilization, and relevant comorbidities.
+
+#### 6.2 Post-Exposure Variables
+
+<!-- generated-learning-note -->
+This section prepares the information needed for **6.2 Post-Exposure Variables**. Check variable definitions, units, coding, and missing values before moving to analysis.
+
+
+Variables occurring after exposure should not automatically be included in the primary adjustment model.
+
+If the objective is the **total effect** of the exposure, mediators or downstream variables should generally not be adjusted for.
+
+For example:
+
+\[
+Diabetes \rightarrow Diabetes\ Treatment \rightarrow CVD
+\]
+
+If the study objective is the total effect of diabetes on CVD, post-diabetes treatment would generally not be included as a baseline confounder.
+
+If the scientific objective concerns an effect under a fixed or hypothetical treatment condition, that target effect should be defined separately and may require methods beyond ordinary regression adjustment.
+
+#### 7. Data Quality Assessment
+
+<!-- generated-learning-note -->
+This section prepares the information needed for **7. Data Quality Assessment**. Check variable definitions, units, coding, and missing values before moving to analysis.
+
+
+Before modeling, assess:
+
+- duplicate participants,
+- missing data,
+- implausible values,
+- inconsistent dates,
+- temporal inconsistencies,
+- exposure misclassification,
+- outcome misclassification,
+- completeness of follow-up,
+- and number of observed events.
+
+### R Workflow and Examples
+
+Run the examples in order because later blocks may reuse objects created earlier. Each block includes a short purpose statement and guidance for reading its output.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block extracts inferential or predictive results from fitted objects. Match each estimate, interval, contrast, or diagnostic to the quantity it represents.
+
+```{r data-quality-example, eval=FALSE}
+sum(duplicated(analysis_data$id))
+colSums(is.na(analysis_data))
+summary(analysis_data)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Interpret estimates on the scale reported by the function, and use intervals or other uncertainty measures when drawing conclusions.
+
+
+#### 8. Descriptive Analysis
+
+<!-- generated-learning-note -->
+This subsection explains **8. Descriptive Analysis** and shows how it contributes to the overall Standard Operating Procedure for Epidemiologic Survival Analysis workflow.
+
+
+Baseline characteristics will be summarized by exposure group.
+
+Continuous variables:
+
+- mean and standard deviation, or
+- median and interquartile range.
+
+Categorical variables:
+
+- number and percentage.
+
+Standardized mean differences (SMDs) may be reported to describe baseline imbalance.
+
+An absolute SMD below approximately 0.10 may indicate acceptable measured balance, but SMD should not determine whether a variable is a true confounder.
+
+Also summarize:
+
+- number of participants,
+- number of events,
+- person-time,
+- median follow-up,
+- and crude incidence rate.
+
+#### 9. Kaplan-Meier Analysis
+
+<!-- generated-learning-note -->
+This subsection explains **9. Kaplan-Meier Analysis** and shows how it contributes to the overall Standard Operating Procedure for Epidemiologic Survival Analysis workflow.
+
+
+Kaplan-Meier curves will be used to describe event-free survival by exposure group when standard survival methods are appropriate.
+
+Report, when useful:
+
+- survival probabilities at prespecified time points,
+- median survival if estimable,
+- number at risk,
+- and 95% CIs.
+
+The log-rank test may be reported descriptively, but the adjusted survival model will generally serve as the primary inferential analysis.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r km-example, eval=FALSE}
+library(survival)
+
+km_fit <- survfit(
+  Surv(followup_time, event) ~ exposure,
+  data = analysis_data
+)
+
+plot(km_fit)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+
+#### 10. Primary Cox Proportional Hazards Analysis
+
+<!-- generated-learning-note -->
+This subsection explains **10. Primary Cox Proportional Hazards Analysis** and shows how it contributes to the overall Standard Operating Procedure for Epidemiologic Survival Analysis workflow.
+
+
+#### 10.1 Crude Model
+
+<!-- generated-learning-note -->
+This section develops **10.1 Crude Model**. Read the model specification together with its assumptions and the scale of each reported effect.
+
+
+First estimate the unadjusted exposure-outcome association.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block specifies and fits the statistical model. Identify the outcome, predictors, reference levels, link or distribution, and any correlation structure before interpreting coefficients.
+
+```{r crude-cox, eval=FALSE}
+fit_crude <- coxph(
+  Surv(followup_time, event) ~ exposure,
+  data = analysis_data
+)
+
+summary(fit_crude)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Focus on coefficient direction and scale, uncertainty intervals, fit statistics, and diagnostics. Statistical significance alone does not establish practical importance or model adequacy.
+
+
+#### 10.2 Adjusted Model
+
+<!-- generated-learning-note -->
+This section develops **10.2 Adjusted Model**. Read the model specification together with its assumptions and the scale of each reported effect.
+
+
+The primary model will adjust for the prespecified confounder set.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block specifies and fits the statistical model. Identify the outcome, predictors, reference levels, link or distribution, and any correlation structure before interpreting coefficients.
+
+```{r adjusted-cox, eval=FALSE}
+fit_primary <- coxph(
+  Surv(followup_time, event) ~
+    exposure +
+    age +
+    sex +
+    bmi +
+    smoking +
+    hypertension,
+  data = analysis_data
+)
+
+summary(fit_primary)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Focus on coefficient direction and scale, uncertainty intervals, fit statistics, and diagnostics. Statistical significance alone does not establish practical importance or model adequacy.
+
+
+Report the exposure HR, 95% CI, and P-value when appropriate.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block extracts inferential or predictive results from fitted objects. Match each estimate, interval, contrast, or diagnostic to the quantity it represents.
+
+```{r hr-ci, eval=FALSE}
+exp(
+  cbind(
+    HR = coef(fit_primary),
+    confint(fit_primary)
+  )
+)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Interpret estimates on the scale reported by the function, and use intervals or other uncertainty measures when drawing conclusions.
+
+
+#### 10.3 Conditional vs Marginal Effect
+
+<!-- generated-learning-note -->
+This subsection explains **10.3 Conditional vs Marginal Effect** and shows how it contributes to the overall Standard Operating Procedure for Epidemiologic Survival Analysis workflow.
+
+
+A Cox regression coefficient is generally a **conditional hazard ratio**, conditional on the covariates included in the model.
+
+If the scientific objective is instead a **marginal population-level effect**, methods such as standardization, g-computation, or propensity-score weighting may be more appropriate.
+
+#### 11. Model Assumptions and Diagnostics
+
+<!-- generated-learning-note -->
+This section establishes the concepts and assumptions needed to understand **11. Model Assumptions and Diagnostics** in the context of Standard Operating Procedure for Epidemiologic Survival Analysis.
+
+
+#### 11.1 Proportional Hazards Assumption
+
+<!-- generated-learning-note -->
+This section establishes the concepts and assumptions needed to understand **11.1 Proportional Hazards Assumption** in the context of Standard Operating Procedure for Epidemiologic Survival Analysis.
+
+
+Evaluate the proportional hazards assumption using:
+
+- Schoenfeld residuals,
+- `cox.zph()`,
+- graphical assessment,
+- and scientific judgment.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r ph-check, eval=FALSE}
+ph_test <- cox.zph(fit_primary)
+ph_test
+plot(ph_test)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+If substantial non-proportional hazards are present, consider:
+
+- time-varying coefficients,
+- exposure-by-time interaction,
+- stratified Cox models,
+- time-specific HRs,
+- or restricted mean survival time (RMST).
+
+#### 11.2 Functional Form of Continuous Covariates
+
+<!-- generated-learning-note -->
+This subsection explains **11.2 Functional Form of Continuous Covariates** and shows how it contributes to the overall Standard Operating Procedure for Epidemiologic Survival Analysis workflow.
+
+
+Evaluate the functional form of continuous variables when appropriate.
+
+Possible approaches include restricted cubic splines, fractional polynomials, or clinically justified transformations.
+
+Arbitrary categorization of continuous variables should generally be avoided.
+
+#### 11.3 Model Stability
+
+<!-- generated-learning-note -->
+This section develops **11.3 Model Stability**. Read the model specification together with its assumptions and the scale of each reported effect.
+
+
+Assess when relevant:
+
+- sparse categories,
+- influential observations,
+- multicollinearity,
+- convergence,
+- and adequacy of the number of events relative to model complexity.
+
+#### 12. Missing Data
+
+<!-- generated-learning-note -->
+This section prepares the information needed for **12. Missing Data**. Check variable definitions, units, coding, and missing values before moving to analysis.
+
+
+Summarize missingness overall, by exposure group, and for key covariates.
+
+The primary missing-data strategy should be prespecified.
+
+Common approaches include:
+
+- complete-case analysis when missingness is minimal and defensible,
+- multiple imputation,
+- or another justified method.
+
+If multiple imputation is used, the imputation model should include variables related to exposure, outcome, missingness, and relevant auxiliary predictors.
+
+Sensitivity analyses should be considered when missing-data assumptions may materially influence conclusions.
+
+#### 13. Propensity-Score Analysis
+
+<!-- generated-learning-note -->
+This subsection explains **13. Propensity-Score Analysis** and shows how it contributes to the overall Standard Operating Procedure for Epidemiologic Survival Analysis workflow.
+
+
+Propensity-score methods may be used as a secondary or sensitivity analysis.
+
+The propensity score is the probability of exposure conditional on measured baseline covariates.
+
+Possible methods include:
+
+- IPTW,
+- stabilized IPTW,
+- matching,
+- stratification,
+- and overlap weighting.
+
+Assess:
+
+- propensity-score overlap,
+- positivity,
+- extreme weights,
+- post-weighting covariate balance,
+- and effective sample size.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block specifies and fits the statistical model. Identify the outcome, predictors, reference levels, link or distribution, and any correlation structure before interpreting coefficients.
+
+```{r ps-example, eval=FALSE}
+ps_model <- glm(
+  exposure ~ age + sex + bmi + smoking + hypertension,
+  family = binomial(),
+  data = analysis_data
+)
+
+analysis_data$ps <- predict(ps_model, type = "response")
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Focus on coefficient direction and scale, uncertainty intervals, fit statistics, and diagnostics. Statistical significance alone does not establish practical importance or model adequacy.
+
+
+For weighted Cox models, robust variance estimation should generally be used.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block specifies and fits the statistical model. Identify the outcome, predictors, reference levels, link or distribution, and any correlation structure before interpreting coefficients.
+
+```{r weighted-cox-example, eval=FALSE}
+fit_iptw <- coxph(
+  Surv(followup_time, event) ~ exposure,
+  data = analysis_data,
+  weights = iptw,
+  robust = TRUE
+)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Focus on coefficient direction and scale, uncertainty intervals, fit statistics, and diagnostics. Statistical significance alone does not establish practical importance or model adequacy.
+
+
+Good measured balance does not rule out residual or unmeasured confounding.
+
+#### 14. Competing Risks
+
+<!-- generated-learning-note -->
+This subsection explains **14. Competing Risks** and shows how it contributes to the overall Standard Operating Procedure for Epidemiologic Survival Analysis workflow.
+
+
+If a competing event prevents occurrence of the primary outcome, competing-risk methods should be considered.
+
+Depending on the scientific question:
+
+- **cause-specific Cox regression** may be used for etiologic questions,
+- **Fine-Gray subdistribution hazards models** may be used for cumulative-incidence or prognostic questions.
+
+When competing risks are important, cumulative incidence functions should generally be reported.
+
+#### 15. Effect Modification and Subgroup Analysis
+
+<!-- generated-learning-note -->
+This subsection explains **15. Effect Modification and Subgroup Analysis** and shows how it contributes to the overall Standard Operating Procedure for Epidemiologic Survival Analysis workflow.
+
+
+Potential effect modifiers should be prespecified based on scientific rationale.
+
+Examples include age, sex, disease severity, major comorbidities, or clinically important risk strata.
+
+Effect modification should preferably be evaluated using an interaction term.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block specifies and fits the statistical model. Identify the outcome, predictors, reference levels, link or distribution, and any correlation structure before interpreting coefficients.
+
+```{r interaction-example, eval=FALSE}
+fit_interaction <- coxph(
+  Surv(followup_time, event) ~
+    exposure * sex +
+    age +
+    bmi +
+    smoking,
+  data = analysis_data
+)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Focus on coefficient direction and scale, uncertainty intervals, fit statistics, and diagnostics. Statistical significance alone does not establish practical importance or model adequacy.
+
+
+Report subgroup-specific HRs, 95% CIs, and interaction P-value when relevant.
+
+Exploratory subgroup findings should be interpreted cautiously.
+
+#### 16. Sensitivity Analyses
+
+<!-- generated-learning-note -->
+This subsection explains **16. Sensitivity Analyses** and shows how it contributes to the overall Standard Operating Procedure for Epidemiologic Survival Analysis workflow.
+
+
+Sensitivity analyses should evaluate the robustness of the primary estimate to reasonable alternative assumptions.
+
+Common analyses include:
+
+1. alternative covariate adjustment sets;
+2. alternative exposure definitions;
+3. alternative outcome definitions;
+4. lagged exposure analyses;
+5. restriction of the analytic cohort;
+6. multiple imputation;
+7. propensity-score weighting or matching;
+8. weight trimming or truncation;
+9. inverse probability of censoring weighting;
+10. alternative censoring rules;
+11. competing-risk analyses;
+12. alternative handling of post-exposure variables;
+13. assessment of unmeasured confounding when appropriate.
+
+Primary and sensitivity estimates should be compared with respect to direction, magnitude, precision, and clinical interpretation.
+
+#### 17. Statistical Inference
+
+<!-- generated-learning-note -->
+This subsection explains **17. Statistical Inference** and shows how it contributes to the overall Standard Operating Procedure for Epidemiologic Survival Analysis workflow.
+
+
+Unless otherwise specified:
+
+- tests will be two-sided,
+- alpha = 0.05,
+- and 95% confidence intervals will be reported.
+
+The primary analysis should be clearly distinguished from secondary and exploratory analyses.
+
+Formal multiplicity adjustment is not always required in observational epidemiologic studies, but extensive testing across many outcomes, exposures, or subgroups should be acknowledged.
+
+#### 18. Tables and Figures
+
+<!-- generated-learning-note -->
+This section uses **18. Tables and Figures** to make patterns visible. Confirm what each axis, group, scale, and annotation represents.
+
+
+Recommended outputs include:
+
+#### Table 1
+
+<!-- generated-learning-note -->
+This subsection explains **Table 1** and shows how it contributes to the overall Standard Operating Procedure for Epidemiologic Survival Analysis workflow.
+
+Baseline characteristics by exposure group.
+
+#### Table 2
+
+<!-- generated-learning-note -->
+This subsection explains **Table 2** and shows how it contributes to the overall Standard Operating Procedure for Epidemiologic Survival Analysis workflow.
+
+Number of participants, events, person-time, follow-up, and incidence rates.
+
+#### Table 3
+
+<!-- generated-learning-note -->
+This subsection explains **Table 3** and shows how it contributes to the overall Standard Operating Procedure for Epidemiologic Survival Analysis workflow.
+
+Crude and adjusted survival-model estimates.
+
+| Analysis | HR | 95% CI | P-value |
+|---|---:|---:|---:|
+| Crude Cox | | | |
+| Primary adjusted Cox | | | |
+| IPTW analysis | | | |
+| Sensitivity analysis | | | |
+
+#### Figures
+
+<!-- generated-learning-note -->
+This section uses **Figures** to make patterns visible. Confirm what each axis, group, scale, and annotation represents.
+
+
+Recommended figures include:
+
+1. cohort flow diagram;
+2. Kaplan-Meier or cumulative-incidence curves;
+3. forest plot of primary and sensitivity analyses;
+4. covariate-balance plot when propensity-score methods are used.
+
+#### 19. Interpretation and Limitations
+
+<!-- generated-learning-note -->
+This section focuses on **19. Interpretation and Limitations**. Emphasize effect size, uncertainty, diagnostics, and scientific relevance rather than a single threshold.
+
+
+Results should be interpreted with emphasis on:
+
+- magnitude of the estimate,
+- confidence interval,
+- epidemiologic and clinical relevance,
+- consistency across sensitivity analyses,
+- and underlying assumptions.
+
+An adjusted observational estimate should not automatically be interpreted as causal.
+
+Potential limitations include:
+
+- unmeasured confounding,
+- residual confounding,
+- exposure misclassification,
+- outcome misclassification,
+- measurement error,
+- uncertain temporal ordering,
+- reverse causation,
+- selection bias,
+- informative censoring,
+- missing data,
+- positivity or overlap problems,
+- model misspecification,
+- and limited generalizability.
+
+#### 20. Quality Control and Reproducibility
+
+<!-- generated-learning-note -->
+This subsection explains **20. Quality Control and Reproducibility** and shows how it contributes to the overall Standard Operating Procedure for Epidemiologic Survival Analysis workflow.
+
+
+Analysis code should be reproducible and independently reviewed when feasible.
+
+Key variables requiring validation include:
+
+- participant ID,
+- exposure,
+- index date,
+- event indicator,
+- event date,
+- follow-up time,
+- censoring reason,
+- and major confounders.
+
+Material deviations from the prespecified analysis should be documented with the original plan, revised method, rationale, timing of the change, and potential impact on interpretation.
+
+#### Appendix A. Minimal Analysis Workflow
+
+<!-- generated-learning-note -->
+This subsection explains **Appendix A. Minimal Analysis Workflow** and shows how it contributes to the overall Standard Operating Procedure for Epidemiologic Survival Analysis workflow.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r workflow, eval=FALSE}
+library(dplyr)
+library(survival)
+
+# Define analytic cohort
+analysis_data <- raw_data %>%
+  filter(eligible == 1, followup_time >= 0)
+
+# Event summary
+analysis_data %>%
+  group_by(exposure) %>%
+  summarise(
+    n = n(),
+    events = sum(event == 1, na.rm = TRUE),
+    person_time = sum(followup_time, na.rm = TRUE),
+    incidence_rate = events / person_time
+  )
+
+# Kaplan-Meier
+km_fit <- survfit(
+  Surv(followup_time, event) ~ exposure,
+  data = analysis_data
+)
+
+# Crude Cox
+fit_crude <- coxph(
+  Surv(followup_time, event) ~ exposure,
+  data = analysis_data
+)
+
+# Adjusted Cox
+fit_primary <- coxph(
+  Surv(followup_time, event) ~
+    exposure + age + sex + bmi + smoking + hypertension,
+  data = analysis_data
+)
+
+# HR and 95% CI
+exp(cbind(HR = coef(fit_primary), confint(fit_primary)))
+
+# PH assumption
+ph_test <- cox.zph(fit_primary)
+print(ph_test)
+plot(ph_test)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+
+#### Appendix B. Pre-Analysis Checklist
+
+<!-- generated-learning-note -->
+This subsection explains **Appendix B. Pre-Analysis Checklist** and shows how it contributes to the overall Standard Operating Procedure for Epidemiologic Survival Analysis workflow.
+
+
+Before final analysis, confirm:
+
+- [ ] Research question is finalized
+- [ ] Target population is defined
+- [ ] Exposure definition is finalized
+- [ ] Reference group is defined
+- [ ] Outcome definition is finalized
+- [ ] Time zero is defined
+- [ ] Follow-up rules are defined
+- [ ] Censoring rules are defined
+- [ ] Primary effect measure is specified
+- [ ] Primary confounder set is prespecified
+- [ ] Post-exposure variables are classified
+- [ ] Missing-data strategy is specified
+- [ ] PH-assumption strategy is specified
+- [ ] Competing-risk strategy is specified if relevant
+- [ ] Sensitivity analyses are prespecified
+- [ ] Subgroup/effect-modification analyses are prespecified
+- [ ] Data cutoff date is finalized
+- [ ] Final table and figure shells are prepared
+
+## Interpreting the Results
+
+Identify the source population, time zero, eligibility criteria, measurement process, and target effect before interpreting estimates. Treat the output as evidence generated under the stated data, coding choices, and assumptions. Before using the workflow in practice, replace example inputs with validated data and confirm that the method targets the intended scientific question.
+
+## Key Takeaways
+
+- **Connect method to purpose.** Identify the question and target quantity before choosing code or a model.
+- **Read code and output together.** Confirm what each object, estimate, interval, table, or plot represents.
+- **Check assumptions and diagnostics.** A successful computation is not by itself evidence that the result is reliable.
+- **Adapt deliberately.** When applying the example elsewhere, document changes to data definitions, parameters, and analytical choices.

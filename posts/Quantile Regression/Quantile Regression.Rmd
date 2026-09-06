@@ -1,0 +1,15 @@
+---
+title: "Quantile Regression"
+output: html_document
+date: '2024-02-02'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Quantile Regression
+
+Standard regression estimates the mean of the conditional distribution (conditioned on the values of the predictors) of the response variable. Quantile regression is a method for estimating conditional quantiles, including the median.  
+
+

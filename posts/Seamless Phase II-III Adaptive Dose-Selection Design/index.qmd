@@ -1,0 +1,1074 @@
+---
+title: "Seamless Phase II/III Adaptive Dose-Selection Design"
+description: "A practical R learning guide to Seamless Phase II/III Adaptive Dose-Selection Design, with concise explanations, reproducible examples, and interpretation guidance."
+date: 2026-08-31
+section: "Biostatistics"
+category: "Adaptive & Bayesian Methods"
+topic: "Seamless Phase II/III Adaptive Dose-Selection Design"
+type: article
+tags: ["Adaptive & Bayesian Methods", "Biostatistics", "Seamless", "Phase", "II"]
+status: published
+featured: true
+youtube: []
+pdf: []
+downloads: []
+validate-yaml: false
+execute:
+  echo: true
+  warning: false
+  error: true
+---
+
+## Why This Topic Matters
+
+Adaptive and Bayesian methods update evidence as data accumulate and express uncertainty through probability distributions or decision rules.
+
+## Learning Objectives
+
+After working through this material, you should be able to:
+
+- explain the main ideas behind **Seamless Phase II/III Adaptive Dose-Selection Design**;
+- interpret the R workflow and its output; and
+- adapt the examples to a related analysis.
+
+## Lesson Roadmap
+
+The original material is organized around the following topics:
+
+1. Overview
+2. 1. Design Parameters
+3. 2. True Response Rates
+4. 3. True Toxicity Rates
+5. 4. Stage 1: Dose Finding and Dose Selection
+6. 5. Stage 1 Summary
+
+## How to Use This Lesson
+
+Read the explanation before each workflow, then run the R chunks in sequence. Code and output are shown together so that each numerical or graphical result can be connected to the command that produced it. Some source examples require optional packages or external data. Those setup-dependent chunks remain visible for reference but are marked `eval: false` when they cannot be reproduced safely in a clean website build.
+
+## Reproducible Learning Check
+
+This short R chunk confirms the scope of the lesson and always produces a visible output.
+
+```{r}
+#| label: learning-overview
+learning_overview <- data.frame(
+  section = "Biostatistics",
+  category = "Adaptive & Bayesian Methods",
+  topic = "Seamless Phase II/III Adaptive Dose-Selection Design"
+)
+learning_overview
+```
+
+## Learning Material
+
+The following material develops **Seamless Phase II/III Adaptive Dose-Selection Design** from core ideas to practical implementation. Definitions and assumptions come first; worked code then shows how the ideas are represented computationally.
+
+### Conceptual Foundation
+
+The material below closely follows the original R Markdown source, with its examples retained for study and reuse.
+
+#### Overview
+
+<!-- generated-learning-note -->
+This subsection explains **Overview** and shows how it contributes to the overall Seamless Phase II/III Adaptive Dose-Selection Design workflow.
+
+
+This example demonstrates a simplified **Seamless Phase II/III Adaptive Dose-Selection Design**.
+
+The trial consists of two stages:
+
+* **Stage 1:** Compare Control, 50 mg, 100 mg, and 200 mg.
+* Select one dose based on both efficacy and toxicity.
+* **Stage 2:** Continue only the selected dose and Control.
+* **Final analysis:** Combine evidence from Stage 1 and Stage 2 using an inverse-normal combination test.
+
+The confirmatory hypothesis is:
+
+$$
+H_0: p_{\text{selected}} \leq p_{\text{control}}
+$$
+
+versus
+
+$$
+H_1: p_{\text{selected}} > p_{\text{control}}
+$$
+
+A one-sided significance level of
+
+$$
+\alpha = 0.025
+$$
+
+is used.
+
+#### 1. Design Parameters
+
+<!-- generated-learning-note -->
+This subsection explains **1. Design Parameters** and shows how it contributes to the overall Seamless Phase II/III Adaptive Dose-Selection Design workflow.
+
+### R Workflow and Examples
+
+Run the examples in order because later blocks may reuse objects created earlier. Each block includes a short purpose statement and guidance for reading its output.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+set.seed(123)
+
+alpha <- 0.025
+
+doses <- c(
+  "50mg",
+  "100mg",
+  "200mg"
+)
+
+n_doses <- length(doses)
+
+# Stage 1 sample size per arm
+n_stage1_per_arm <- 100
+
+# Stage 2 sample size per arm
+n_stage2_per_arm <- 150
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+#### 2. True Response Rates
+
+<!-- generated-learning-note -->
+This subsection explains **2. True Response Rates** and shows how it contributes to the overall Seamless Phase II/III Adaptive Dose-Selection Design workflow.
+
+
+These probabilities are used only to generate simulated trial data.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+response_prob <- c(
+  "Control" = 0.40,
+  "50mg"    = 0.48,
+  "100mg"   = 0.60,
+  "200mg"   = 0.65
+)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+#### 3. True Toxicity Rates
+
+<!-- generated-learning-note -->
+This subsection explains **3. True Toxicity Rates** and shows how it contributes to the overall Seamless Phase II/III Adaptive Dose-Selection Design workflow.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+tox_prob <- c(
+  "Control" = 0.05,
+  "50mg"    = 0.07,
+  "100mg"   = 0.10,
+  "200mg"   = 0.30
+)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+#### 4. Stage 1: Dose Finding and Dose Selection
+
+<!-- generated-learning-note -->
+This subsection explains **4. Stage 1: Dose Finding and Dose Selection** and shows how it contributes to the overall Seamless Phase II/III Adaptive Dose-Selection Design workflow.
+
+
+Stage 1 includes four treatment groups:
+
+* Control
+* 50 mg
+* 100 mg
+* 200 mg
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block generates controlled example data. Simulation makes the data-generating assumptions explicit and provides a known setting in which to study the method.
+
+```{r}
+stage1_arms <- c(
+  "Control",
+  doses
+)
+
+stage1_data <- data.frame()
+
+for (arm in stage1_arms) {
+  
+  response <- rbinom(
+    n_stage1_per_arm,
+    1,
+    response_prob[arm]
+  )
+  
+  toxicity <- rbinom(
+    n_stage1_per_arm,
+    1,
+    tox_prob[arm]
+  )
+  
+  tmp <- data.frame(
+    stage = 1,
+    treatment = arm,
+    response = response,
+    toxicity = toxicity
+  )
+  
+  stage1_data <- rbind(
+    stage1_data,
+    tmp
+  )
+}
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the generated sample with the parameters used to create it. Differences reflect random variation unless the code intentionally introduces bias or structure.
+
+
+#### 5. Stage 1 Summary
+
+<!-- generated-learning-note -->
+This section focuses on **5. Stage 1 Summary**. Emphasize effect size, uncertainty, diagnostics, and scientific relevance rather than a single threshold.
+
+
+Calculate the observed response rate and toxicity rate for each treatment group.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block calculates descriptive summaries. Check the denominator, grouping variables, units, and treatment of missing values.
+
+```{r}
+stage1_summary <- aggregate(
+  cbind(response, toxicity) ~ treatment,
+  data = stage1_data,
+  mean
+)
+
+print(stage1_summary)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Use the displayed values to understand center, spread, frequency, and missingness; investigate any implausible or unexpected result.
+
+
+#### 6. Control Response Rate
+
+<!-- generated-learning-note -->
+This subsection explains **6. Control Response Rate** and shows how it contributes to the overall Seamless Phase II/III Adaptive Dose-Selection Design workflow.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block prepares the analysis data. Follow each transformation carefully because filtering, recoding, grouping, and reshaping determine the observations used downstream.
+
+```{r}
+control_stage1 <- subset(
+  stage1_data,
+  treatment == "Control"
+)
+
+rate_control_stage1 <- mean(
+  control_stage1$response
+)
+
+rate_control_stage1
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the data before and after the transformation. Confirm that row counts, group sizes, missingness, and variable values changed as intended.
+
+
+#### 7. Stage 1 Dose-Level Efficacy Tests
+
+<!-- generated-learning-note -->
+This subsection explains **7. Stage 1 Dose-Level Efficacy Tests** and shows how it contributes to the overall Seamless Phase II/III Adaptive Dose-Selection Design workflow.
+
+
+For each dose, test:
+
+$$
+H_0: p_{\text{dose}} \leq p_{\text{control}}
+$$
+
+versus
+
+$$
+H_1: p_{\text{dose}} > p_{\text{control}}
+$$
+
+A one-sided two-sample proportion test is used.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block prepares the analysis data. Follow each transformation carefully because filtering, recoding, grouping, and reshaping determine the observations used downstream.
+
+```{r}
+dose_results <- data.frame()
+
+for (d in doses) {
+  
+  dat_dose <- subset(
+    stage1_data,
+    treatment == d
+  )
+  
+  rate_response <- mean(
+    dat_dose$response
+  )
+  
+  rate_toxicity <- mean(
+    dat_dose$toxicity
+  )
+  
+  test <- prop.test(
+    
+    x = c(
+      sum(dat_dose$response),
+      sum(control_stage1$response)
+    ),
+    
+    n = c(
+      nrow(dat_dose),
+      nrow(control_stage1)
+    ),
+    
+    alternative = "greater",
+    correct = FALSE
+  )
+  
+  dose_results <- rbind(
+    
+    dose_results,
+    
+    data.frame(
+      dose = d,
+      response_rate = rate_response,
+      toxicity_rate = rate_toxicity,
+      p_value_raw = test$p.value
+    )
+  )
+}
+
+print(dose_results)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the data before and after the transformation. Confirm that row counts, group sizes, missingness, and variable values changed as intended.
+
+
+#### 8. Prespecified Dose-Selection Rule
+
+<!-- generated-learning-note -->
+This subsection explains **8. Prespecified Dose-Selection Rule** and shows how it contributes to the overall Seamless Phase II/III Adaptive Dose-Selection Design workflow.
+
+
+A dose is considered acceptable if:
+
+$$
+\text{Response Rate} >
+\text{Control Response Rate}
+$$
+
+and
+
+$$
+\text{Toxicity Rate} < 0.20
+$$
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block prepares the analysis data. Follow each transformation carefully because filtering, recoding, grouping, and reshaping determine the observations used downstream.
+
+```{r}
+acceptable <- subset(
+  dose_results,
+  response_rate > rate_control_stage1 &
+    toxicity_rate < 0.20
+)
+
+print(acceptable)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the data before and after the transformation. Confirm that row counts, group sizes, missingness, and variable values changed as intended.
+
+
+If no dose meets both criteria, the trial stops for futility or safety.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+if (nrow(acceptable) == 0) {
+  
+  stop(
+    "No acceptable dose. Trial stops for futility/safety."
+  )
+}
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+#### 9. Select the Best Dose
+
+<!-- generated-learning-note -->
+This subsection explains **9. Select the Best Dose** and shows how it contributes to the overall Seamless Phase II/III Adaptive Dose-Selection Design workflow.
+
+
+Among acceptable doses:
+
+1. Select the dose with the highest observed response rate.
+2. If there is a tie, select the dose with the lower toxicity rate.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+acceptable <- acceptable[
+  order(
+    -acceptable$response_rate,
+    acceptable$toxicity_rate
+  ),
+]
+
+selected_dose <- acceptable$dose[1]
+
+cat(
+  "\n====================================\n"
+)
+
+cat(
+  "Selected dose:",
+  selected_dose,
+  "\n"
+)
+
+cat(
+  "====================================\n"
+)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+#### 10. Stage 1 P-Value for the Selected Dose
+
+<!-- generated-learning-note -->
+This subsection explains **10. Stage 1 P-Value for the Selected Dose** and shows how it contributes to the overall Seamless Phase II/III Adaptive Dose-Selection Design workflow.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+p1_raw <- dose_results$p_value_raw[
+  dose_results$dose == selected_dose
+]
+
+p1_raw
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+#### 11. Stage 1 Multiplicity Adjustment
+
+<!-- generated-learning-note -->
+This subsection explains **11. Stage 1 Multiplicity Adjustment** and shows how it contributes to the overall Seamless Phase II/III Adaptive Dose-Selection Design workflow.
+
+
+Because three doses were examined before selecting one, a simple Bonferroni adjustment is applied:
+
+$$
+p_{1,\text{adjusted}}
+=
+
+\min(1, 3p_1)
+$$
+
+More generally:
+
+$$
+p_{1,\text{adjusted}}
+=
+
+\min(1, Kp_1)
+$$
+
+where (K) is the number of candidate doses.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+p1_adjusted <- min(
+  1,
+  n_doses * p1_raw
+)
+
+cat(
+  "\nStage 1 raw p-value =",
+  round(p1_raw, 5),
+  "\n"
+)
+
+cat(
+  "Stage 1 multiplicity-adjusted p-value =",
+  round(p1_adjusted, 5),
+  "\n"
+)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+#### 12. Stage 2: Confirmatory Stage
+
+<!-- generated-learning-note -->
+This subsection explains **12. Stage 2: Confirmatory Stage** and shows how it contributes to the overall Seamless Phase II/III Adaptive Dose-Selection Design workflow.
+
+
+Only the selected dose and Control continue into Stage 2.
+
+Stage 2 uses newly enrolled patients.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block generates controlled example data. Simulation makes the data-generating assumptions explicit and provides a known setting in which to study the method.
+
+```{r}
+response_selected_stage2 <- rbinom(
+  n_stage2_per_arm,
+  1,
+  response_prob[selected_dose]
+)
+
+response_control_stage2 <- rbinom(
+  n_stage2_per_arm,
+  1,
+  response_prob["Control"]
+)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the generated sample with the parameters used to create it. Differences reflect random variation unless the code intentionally introduces bias or structure.
+
+
+Create the Stage 2 dataset.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+stage2_data <- data.frame(
+  
+  stage = 2,
+  
+  treatment = c(
+    rep(
+      selected_dose,
+      n_stage2_per_arm
+    ),
+    
+    rep(
+      "Control",
+      n_stage2_per_arm
+    )
+  ),
+  
+  response = c(
+    response_selected_stage2,
+    response_control_stage2
+  )
+)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+#### 13. Stage 2 Response Rates
+
+<!-- generated-learning-note -->
+This subsection explains **13. Stage 2 Response Rates** and shows how it contributes to the overall Seamless Phase II/III Adaptive Dose-Selection Design workflow.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block calculates descriptive summaries. Check the denominator, grouping variables, units, and treatment of missing values.
+
+```{r}
+stage2_summary <- aggregate(
+  response ~ treatment,
+  data = stage2_data,
+  mean
+)
+
+print(stage2_summary)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Use the displayed values to understand center, spread, frequency, and missingness; investigate any implausible or unexpected result.
+
+
+#### 14. Stage 2 Confirmatory Test
+
+<!-- generated-learning-note -->
+This subsection explains **14. Stage 2 Confirmatory Test** and shows how it contributes to the overall Seamless Phase II/III Adaptive Dose-Selection Design workflow.
+
+
+The Stage 2 hypothesis is:
+
+$$
+H_0:
+p_{\text{selected}}
+\leq
+p_{\text{control}}
+$$
+
+versus
+
+$$
+H_1:
+p_{\text{selected}}
+>
+p_{\text{control}}
+$$
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+test_stage2 <- prop.test(
+  
+  x = c(
+    sum(response_selected_stage2),
+    sum(response_control_stage2)
+  ),
+  
+  n = c(
+    n_stage2_per_arm,
+    n_stage2_per_arm
+  ),
+  
+  alternative = "greater",
+  correct = FALSE
+)
+
+p2 <- test_stage2$p.value
+
+cat(
+  "\nStage 2 p-value =",
+  round(p2, 5),
+  "\n"
+)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+#### 15. Final Seamless Analysis
+
+<!-- generated-learning-note -->
+This subsection explains **15. Final Seamless Analysis** and shows how it contributes to the overall Seamless Phase II/III Adaptive Dose-Selection Design workflow.
+
+
+Rather than simply pooling Stage 1 and Stage 2 data, evidence from both stages is combined using an **inverse-normal combination test**.
+
+First, convert the stage-specific p-values into Z statistics:
+
+$$
+Z_1
+=
+\Phi^{-1}
+\left(
+1-p_{1,\text{adjusted}}
+\right)
+$$
+
+and
+
+$$
+Z_2
+=
+
+\Phi^{-1}
+\left(
+1-p_2
+\right)
+$$
+
+where (\Phi^{-1}) is the standard normal quantile function.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+z1 <- qnorm(
+  1 - p1_adjusted
+)
+
+z2 <- qnorm(
+  1 - p2
+)
+
+z1
+z2
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+#### 16. Information-Based Weights
+
+<!-- generated-learning-note -->
+This subsection explains **16. Information-Based Weights** and shows how it contributes to the overall Seamless Phase II/III Adaptive Dose-Selection Design workflow.
+
+
+Stage 1 contributes:
+
+$$
+100 + 100 = 200
+$$
+
+patients from the selected-dose and Control groups.
+
+Stage 2 contributes:
+
+$$
+150 + 150 = 300
+$$
+
+patients.
+
+Weights are defined as:
+
+$$
+w_1
+=
+\sqrt{
+\frac{I_1}
+{I_1 + I_2}
+}
+$$
+
+and
+
+$$
+w_2
+=
+\sqrt{
+\frac{I_2}
+{I_1 + I_2}
+}
+$$
+
+so that:
+
+$$
+w_1^2 + w_2^2 = 1
+$$
+
+In this simplified example, sample size is used as a proxy for statistical information.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+info_stage1 <-
+  2 * n_stage1_per_arm
+
+info_stage2 <-
+  2 * n_stage2_per_arm
+
+w1 <- sqrt(
+  info_stage1 /
+    (info_stage1 + info_stage2)
+)
+
+w2 <- sqrt(
+  info_stage2 /
+    (info_stage1 + info_stage2)
+)
+
+cat(
+  "\nStage 1 weight =",
+  round(w1, 3),
+  "\n"
+)
+
+cat(
+  "Stage 2 weight =",
+  round(w2, 3),
+  "\n"
+)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+#### 17. Inverse-Normal Combination Statistic
+
+<!-- generated-learning-note -->
+This subsection explains **17. Inverse-Normal Combination Statistic** and shows how it contributes to the overall Seamless Phase II/III Adaptive Dose-Selection Design workflow.
+
+
+The combined test statistic is:
+
+$$
+Z_{\text{comb}}
+=
+w_1 Z_1
++
+w_2 Z_2
+$$
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+z_comb <- (
+  w1 * z1 +
+    w2 * z2
+)
+
+z_comb
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+#### 18. Combined P-Value
+
+<!-- generated-learning-note -->
+This subsection explains **18. Combined P-Value** and shows how it contributes to the overall Seamless Phase II/III Adaptive Dose-Selection Design workflow.
+
+
+The final one-sided combined p-value is:
+
+$$
+p_{\text{comb}}
+=
+1-\Phi
+\left(
+Z_{\text{comb}}
+\right)
+$$
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+p_comb <- 1 - pnorm(
+  z_comb
+)
+
+p_comb
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+#### 19. Final Decision
+
+<!-- generated-learning-note -->
+This subsection explains **19. Final Decision** and shows how it contributes to the overall Seamless Phase II/III Adaptive Dose-Selection Design workflow.
+
+
+The trial is considered successful if:
+
+$$
+p_{\text{comb}} < 0.025
+$$
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+if (p_comb < alpha) {
+  
+  decision <- paste(
+    "SUCCESS:",
+    selected_dose,
+    "demonstrated superiority to Control."
+  )
+  
+} else {
+  
+  decision <- paste(
+    "NOT SUCCESSFUL:",
+    selected_dose,
+    "did not demonstrate superiority to Control."
+  )
+}
+
+cat(
+  "\nFinal Decision:",
+  decision,
+  "\n"
+)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+#### 20. Final Summary
+
+<!-- generated-learning-note -->
+This section focuses on **20. Final Summary**. Emphasize effect size, uncertainty, diagnostics, and scientific relevance rather than a single threshold.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+cat(
+  "\n====================================\n"
+)
+
+cat(
+  "Seamless Phase II/III Trial Summary\n"
+)
+
+cat(
+  "====================================\n"
+)
+
+cat(
+  "Selected dose:",
+  selected_dose,
+  "\n"
+)
+
+cat(
+  "Stage 1 adjusted p-value:",
+  round(p1_adjusted, 5),
+  "\n"
+)
+
+cat(
+  "Stage 2 p-value:",
+  round(p2, 5),
+  "\n"
+)
+
+cat(
+  "Stage 1 weight:",
+  round(w1, 3),
+  "\n"
+)
+
+cat(
+  "Stage 2 weight:",
+  round(w2, 3),
+  "\n"
+)
+
+cat(
+  "Combined Z statistic:",
+  round(z_comb, 3),
+  "\n"
+)
+
+cat(
+  "Combined p-value:",
+  round(p_comb, 5),
+  "\n"
+)
+
+cat(
+  "Final decision:",
+  decision,
+  "\n"
+)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+#### Interpretation
+
+<!-- generated-learning-note -->
+This section focuses on **Interpretation**. Emphasize effect size, uncertainty, diagnostics, and scientific relevance rather than a single threshold.
+
+
+This simplified seamless design illustrates the following workflow:
+
+$$
+\text{Stage 1 Dose Finding}
+\rightarrow
+\text{Dose Selection}
+\rightarrow
+\text{Stage 2 Confirmation}
+\rightarrow
+\text{Combination Test}
+$$
+
+Stage 1 data contribute to the final confirmatory analysis rather than being discarded.
+
+However, because the selected dose is chosen based on interim data, the final analysis cannot simply treat the selected dose as if it had been prespecified from the beginning.
+
+Multiplicity and adaptive selection must therefore be addressed.
+
+In this example:
+
+* Bonferroni adjustment is used for the Stage 1 dose-selection multiplicity;
+* an inverse-normal combination test combines Stage 1 and Stage 2 evidence;
+* a one-sided overall significance level of 0.025 is used.
+
+For a real confirmatory seamless Phase II/III trial, the adaptation rules, multiplicity procedure, combination-test weights, stopping rules, and final testing strategy should be prespecified. Extensive simulation would generally be required to evaluate operating characteristics such as Type I error, power, dose-selection probability, estimation bias, and expected sample size.
+
+## Interpreting the Results
+
+Inspect priors, likelihoods, posterior summaries, convergence, simulations, and operating characteristics. Treat the output as evidence generated under the stated data, coding choices, and assumptions. Before using the workflow in practice, replace example inputs with validated data and confirm that the method targets the intended scientific question.
+
+## Key Takeaways
+
+- **Connect method to purpose.** Identify the question and target quantity before choosing code or a model.
+- **Read code and output together.** Confirm what each object, estimate, interval, table, or plot represents.
+- **Check assumptions and diagnostics.** A successful computation is not by itself evidence that the result is reliable.
+- **Adapt deliberately.** When applying the example elsewhere, document changes to data definitions, parameters, and analytical choices.

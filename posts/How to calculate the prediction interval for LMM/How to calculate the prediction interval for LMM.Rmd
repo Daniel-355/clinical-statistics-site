@@ -1,0 +1,173 @@
+---
+title: "How to calculate the prediction interval for LMM"
+output: html_document
+date: '2023-05-12'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## How to calculate the prediction interval for LMM
+
+Using ggpredict function
+```{r}
+library(nlme)
+library(ggeffects)
+library(tidyverse)
+ 
+m <- fm2 <- lme(distance ~ age + Sex, data = Orthodont, random = ~ 1|Subject) 
+
+ggpredict(m, "age",interval = "confidence") %>% plot(rawdata = T, dot.alpha = 0.2)
+
+ggpredict(m, "age", type = "re",interval = "prediction") %>% plot(rawdata = T, dot.alpha = 0.2)
+
+outcome1=ggpredict(m, terms = "age [15:40]")
+head(outcome1)
+
+outcome2=ggpredict(m, "age", type = "re",interval = "prediction")
+head(outcome2)
+
+# read ggpredict docment
+```
+Using predictInterval function
+```{r}
+# Lsmeans gives a Confidence Interval, and predictInterval gives a prediction interval. 
+
+library(lsmeans)
+library(lme4)
+library(nlme)
+
+# fit model
+n1 <- lmer(distance ~ age + Sex+(1|Subject), data = Orthodont ) 
+n2 <-  lme(distance ~ age + Sex, data = Orthodont, random = ~ 1|Subject) 
+
+summary(n1)
+summary(n2)
+
+# lsmeans, confidence interval 
+lsmeans(n1,   list (pairwise ~ Sex ), at = list(age=11))  
+lsmeans(n2,   list (pairwise ~ Sex ), at = list(age=11))  
+lsmeans(n1,   "age")  
+ 
+# first method: predictInterval
+library(merTools)
+new.data <- data.frame(age=11, Subject='M01',Sex="Male")
+pI <- predictInterval(n1,newdata=new.data, which='fixed',level=0.95)
+pI  # no applicable method for 'getME' applied to an object of class "lme"
+
+# 1 predictInterval, using the original data xs, then aggregate, the overall effect
+pI <- predictInterval(n1,newdata=Orthodont ,level=0.95)
+pred.data <- data.frame(Orthodont,pred=pI[1],pred_low=pI[3],pred_up=pI[2])
+mean((pred.data$distance-pred.data$fit)^2)
+
+# 2 fixed effect
+pI <- predictInterval(n1,newdata=Orthodont, which='fixed',level=0.95)
+pred.data <- data.frame(Orthodont,pred=pI[1],pred_low=pI[3],pred_up=pI[2])
+mean((pred.data$distance-pred.data$fit)^2)
+
+# 3 random effect 
+pI <- predictInterval(n1,newdata=Orthodont, which='random',level=0.95)
+pred.data <- data.frame(Orthodont,pred=pI[1],pred_low=pI[3],pred_up=pI[2])
+mean((pred.data$distance-pred.data$fit)^2)
+
+############## random and fixed effects
+m1 <- lmer(Reaction ~ Days + (1 | Subject), sleepstudy)
+
+intFit <- predictInterval(m1, newdata = sleepstudy ) # bounded values
+head(intFit)
+
+intFit2 <- predictInterval(m1, newdata = sleepstudy ,which = "random") # bounded values
+head(intFit2)
+
+intFit3 <- predictInterval(m1, newdata = sleepstudy ,which = "fixed") # bounded values
+head(intFit3)
+```
+
+Using Simulation
+```{r}
+
+# second method: Simulation. This has result similar to predictInterval
+sim <- simulate(n1, nsim = 1, newdata=new.data) #based on distribution with random error, like MCMC
+
+s <- numeric()
+
+for (i in 1:500) {
+  s[i] <- simulate(n1, nsim = 1, newdata=new.data)[1]
+}
+s <- unlist(s)
+hist(s)
+quantile(s,0.025)
+quantile(s,0.975)
+
+# third method:
+#   calculate mean and std, then calculate percentile by using normal distribution
+
+intFit4 <- predictInterval(n1, newdata = new.data,level=0.95 ) # bounded values
+head(intFit4) #using the overall effect
+
+```
+
+
+For general linear regression
+```{r}
+library(ggplot2)
+library(nlraa)
+library(nlme)
+library(mgcv)
+
+data(Oats, package = "nlme")
+## A subset for simplicity
+Oats.I <- subset(Oats, subset = Block == "I")
+plot(Oats.I)
+
+# fitting a linear model
+fm1 <- lm(yield ~ nitro, data = Oats.I)
+fm1.prd <- predict(fm1, interval = "conf")
+Oats.IA <- cbind(Oats.I, fm1.prd)
+
+## Make a plot
+ggplot(data = Oats.IA, aes(x = nitro, y = yield)) + 
+  geom_point() + 
+  geom_line(aes(y = fit)) + 
+  geom_ribbon(aes(ymin = lwr, ymax = upr), fill = "purple", alpha = 0.4)
+
+# bootstrapped confidence bands
+fm1.boot <- boot_lm(fm1, fitted, R=200)  #randomly sampling data 
+fm1.boot.prd <- summary_simulate(t(fm1.boot$t))
+Oats.IAB <- cbind(Oats.I, fm1.boot.prd)
+
+## Make a plot
+ggplot(data = Oats.IAB, aes(x = nitro, y = yield)) + 
+  geom_ribbon(aes(ymin = Q2.5, ymax = Q97.5), fill = "deepskyblue", alpha = 0.6) + 
+  geom_line(aes(y = Estimate), color = "white", size = 1.5) +
+  # geom_point() + 
+  ggtitle("95% Bootstrapped Confidence Bands")
+
+```
+
+For nonlinear
+```{r}
+library(boot)
+# Nonlinear Example: Loblolly, then using bootstrap or simulation  
+Lob <- subset(Loblolly, Seed %in% c("301", "303", "305", "307", "309"))
+
+fnlm1 <- nls(height ~ SSasymp(age, Asym, R0, lrc), data = Lob)
+
+# bootstrapped confidence bands
+fm1.boot <- boot(fnlm1, fitted, R=200)  #randomly sampling data 
+fm1.boot.prd <- summary_simulate(t(fm1.boot$t))
+Oats.IAB <- cbind(Lob, fm1.boot.prd)
+
+## Plot of observed and fitted
+## Make a plot
+ggplot(data = Oats.IAB, aes(x = age, y = height)) + 
+  geom_line(aes(y = Estimate), color = "white", size = 0.6) +
+  # geom_point() + 
+    geom_ribbon(aes(ymin = Q2.5, ymax = Q97.5), fill = "black", alpha = 1.5) +
+  ggtitle("95% Bootstrapped Confidence Bands")
+
+```
+
+[Bootstrapping](https://astrostatistics.psu.edu/su09/lecturenotes/simul.html) uses the original, initial sample as the population from which to resample, whereas Monte Carlo simulation is based on setting up a data generation process (parameters).
+

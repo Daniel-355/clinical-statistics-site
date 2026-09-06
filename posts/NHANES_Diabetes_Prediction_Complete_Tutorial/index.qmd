@@ -1,0 +1,3235 @@
+---
+title: "NHANES Diabetes Prediction: Complete Clinical Prediction Modeling Workflow in R"
+description: "A practical R learning guide to NHANES Diabetes Prediction: Complete Clinical Prediction Modeling Workflow in R, with concise explanations, reproducible examples, and interpretation guidance."
+date: 2026-08-31
+section: "Epidemiology & Real-World Evidence"
+category: "Exposure, Outcome & Covariate Assessment"
+topic: "NHANES Diabetes Prediction: Complete Clinical Prediction Modeling Workflow in R"
+type: article
+tags: ["Exposure, Outcome & Covariate Assessment", "Epidemiology & Real-World Evidence", "NHANES", "Diabetes", "Prediction"]
+status: published
+featured: true
+youtube: []
+pdf: []
+downloads: []
+validate-yaml: false
+execute:
+  echo: true
+  warning: false
+  error: true
+---
+
+## Why This Topic Matters
+
+Variable definitions determine what the analysis actually measures and whether adjustment supports the intended comparison.
+
+## Learning Objectives
+
+After working through this material, you should be able to:
+
+- explain the main ideas behind **NHANES Diabetes Prediction: Complete Clinical Prediction Modeling Workflow in R**;
+- interpret the R workflow and its output; and
+- adapt the examples to a related analysis.
+
+## Lesson Roadmap
+
+The original material is organized around the following topics:
+
+1. Overview
+2. 1. Setup
+3. 1.1 Install required packages
+4. 1.2 Load packages
+5. 1.3 Reproducibility settings
+6. 2. Research Question
+
+## How to Use This Lesson
+
+Read the explanation before each workflow, then run the R chunks in sequence. Code and output are shown together so that each numerical or graphical result can be connected to the command that produced it. Some source examples require optional packages or external data. Those setup-dependent chunks remain visible for reference but are marked `eval: false` when they cannot be reproduced safely in a clean website build.
+
+## Reproducible Learning Check
+
+This short R chunk confirms the scope of the lesson and always produces a visible output.
+
+```{r}
+#| label: learning-overview
+learning_overview <- data.frame(
+  section = "Epidemiology & Real-World Evidence",
+  category = "Exposure, Outcome & Covariate Assessment",
+  topic = "NHANES Diabetes Prediction: Complete Clinical Prediction Modeling Workflow in R"
+)
+learning_overview
+```
+
+## Learning Material
+
+The following material develops **NHANES Diabetes Prediction: Complete Clinical Prediction Modeling Workflow in R** from core ideas to practical implementation. Definitions and assumptions come first; worked code then shows how the ideas are represented computationally.
+
+### Conceptual Foundation
+
+The material below closely follows the original R Markdown source, with its examples retained for study and reuse.
+
+#### Overview
+
+<!-- generated-learning-note -->
+This subsection explains **Overview** and shows how it contributes to the overall NHANES Diabetes Prediction: Complete Clinical Prediction Modeling Workflow in R workflow.
+
+
+This tutorial develops a complete clinical prediction-modeling workflow using the `NHANES` R package and diabetes as the binary outcome.
+
+The workflow covers:
+
+1. Research question and target population
+2. Data import and data dictionary
+3. Duplicate, type, coding, range, and logical checks
+4. Missing-data assessment
+5. Outlier and influential-observation assessment
+6. Exploratory data analysis (EDA)
+7. Continuous-variable handling and nonlinear effects
+8. Multicollinearity assessment
+9. Multiple imputation
+10. Logistic regression model development
+11. Interaction assessment
+12. Model-selection approaches
+13. Penalized regression with LASSO
+14. Apparent model performance
+15. Bootstrap internal validation
+16. Discrimination
+17. Calibration
+18. Brier score
+19. Decision-curve analysis
+20. Threshold-based classification performance
+21. Sensitivity analyses
+22. Subgroup performance
+23. Temporal validation using NHANES survey cycles
+24. Recalibration
+25. Individual prediction
+26. Nomogram
+27. Recommended reporting framework
+
+> **Important:** `NHANES::NHANES` is a teaching dataset derived from NHANES. This example predicts **prevalent diabetes at the time of survey**, not future incident diabetes. For a publication-quality NHANES analysis, use the original CDC NHANES files and account for the complex survey design, weights, strata, and PSU variables.
+
+#### 1. Setup
+
+<!-- generated-learning-note -->
+This subsection explains **1. Setup** and shows how it contributes to the overall NHANES Diabetes Prediction: Complete Clinical Prediction Modeling Workflow in R workflow.
+
+
+#### 1.1 Install required packages
+
+<!-- generated-learning-note -->
+This subsection explains **1.1 Install required packages** and shows how it contributes to the overall NHANES Diabetes Prediction: Complete Clinical Prediction Modeling Workflow in R workflow.
+
+
+The following chunk installs any missing packages. It only needs internet access the first time a package is installed.
+
+### R Workflow and Examples
+
+Run the examples in order because later blocks may reuse objects created earlier. Each block includes a short purpose statement and guidance for reading its output.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This source block depends on optional software, external data, or a machine-specific path. It is retained as a reference and is not executed during the website build.
+
+```{r install-packages, message=FALSE, warning=FALSE}
+#| eval: false
+#| code-fold: true
+required_packages <- c(
+  "NHANES",
+  "tidyverse",
+  "gtsummary",
+  "naniar",
+  "mice",
+  "car",
+  "rms",
+  "pROC",
+  "glmnet",
+  "broom"
+)
+
+missing_packages <- required_packages[
+  !required_packages %in% rownames(installed.packages())
+]
+
+if (length(missing_packages) > 0) {
+  install.packages(missing_packages)
+}
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Because this block is not executed, it produces no website output. Enable it only after its dependencies and input paths have been validated.
+
+
+#### 1.2 Load packages
+
+<!-- generated-learning-note -->
+This subsection explains **1.2 Load packages** and shows how it contributes to the overall NHANES Diabetes Prediction: Complete Clinical Prediction Modeling Workflow in R workflow.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r load-packages, message=FALSE, warning=FALSE}
+library(NHANES)
+library(tidyverse)
+library(gtsummary)
+library(naniar)
+library(mice)
+library(car)
+library(rms)
+library(pROC)
+library(glmnet)
+library(broom)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+
+#### 1.3 Reproducibility settings
+
+<!-- generated-learning-note -->
+This subsection explains **1.3 Reproducibility settings** and shows how it contributes to the overall NHANES Diabetes Prediction: Complete Clinical Prediction Modeling Workflow in R workflow.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r reproducibility}
+set.seed(2026)
+options(stringsAsFactors = FALSE)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+#### 2. Research Question
+
+<!-- generated-learning-note -->
+This subsection explains **2. Research Question** and shows how it contributes to the overall NHANES Diabetes Prediction: Complete Clinical Prediction Modeling Workflow in R workflow.
+
+
+We want to predict whether an adult participant has diabetes using demographic, anthropometric, blood-pressure, lipid, and lifestyle information.
+
+The binary outcome is
+
+\[
+Y_i =
+\begin{cases}
+1, & \text{Diabetes = Yes} \\
+0, & \text{Diabetes = No}
+\end{cases}
+\]
+
+The candidate predictor set is
+
+\[
+\text{Age} + \text{BMI} + \text{BPSysAve} + \text{TotChol} +
+\text{Gender} + \text{Race1} + \text{PhysActive} + \text{Smoke100}.
+\]
+
+We deliberately **do not use `DiabetesAge`**, because it is downstream of diabetes diagnosis and would create outcome leakage.
+
+#### 3. Load and Inspect the NHANES Data
+
+<!-- generated-learning-note -->
+This section prepares the information needed for **3. Load and Inspect the NHANES Data**. Check variable definitions, units, coding, and missing values before moving to analysis.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block imports or selects the data used in the example. Verify the file location, column types, coding, and missing values when substituting your own data.
+
+```{r load-data}
+data("NHANES")
+
+cat("Rows:", nrow(NHANES), "\n")
+cat("Columns:", ncol(NHANES), "\n")
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Inspect dimensions, names, types, and several rows of the imported data. Unexpected structure at this stage will propagate into every later result.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r inspect-data}
+glimpse(NHANES)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+Check the variables that will be used:
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r check-required-vars}
+required_vars <- c(
+  "ID", "SurveyYr", "Diabetes", "Age", "Gender", "Race1",
+  "BMI", "BPSysAve", "BPDiaAve", "TotChol", "DirectChol",
+  "PhysActive", "Smoke100", "Education", "Poverty", "SleepHrsNight"
+)
+
+missing_vars <- setdiff(required_vars, names(NHANES))
+
+if (length(missing_vars) > 0) {
+  stop(
+    "The following expected NHANES variables are missing: ",
+    paste(missing_vars, collapse = ", ")
+  )
+}
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+#### 4. Create the Initial Analysis Dataset
+
+<!-- generated-learning-note -->
+This section prepares the information needed for **4. Create the Initial Analysis Dataset**. Check variable definitions, units, coding, and missing values before moving to analysis.
+
+
+We restrict the example to adults aged 20 years or older and participants with a defined diabetes outcome.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block prepares the analysis data. Follow each transformation carefully because filtering, recoding, grouping, and reshaping determine the observations used downstream.
+
+```{r create-analysis-data}
+nhanes0 <- NHANES %>%
+  select(all_of(required_vars))
+
+nhanes1 <- nhanes0 %>%
+  filter(
+    Age >= 20,
+    Diabetes %in% c("Yes", "No")
+  ) %>%
+  mutate(
+    Diabetes_num = if_else(Diabetes == "Yes", 1L, 0L)
+  )
+
+cat("Adult analytical cohort N =", nrow(nhanes1), "\n")
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the data before and after the transformation. Confirm that row counts, group sizes, missingness, and variable values changed as intended.
+
+
+Check outcome coding:
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block calculates descriptive summaries. Check the denominator, grouping variables, units, and treatment of missing values.
+
+```{r outcome-check}
+table(nhanes1$Diabetes, nhanes1$Diabetes_num, useNA = "ifany")
+prop.table(table(nhanes1$Diabetes))
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Use the displayed values to understand center, spread, frequency, and missingness; investigate any implausible or unexpected result.
+
+
+#### 5. Basic Data-Quality Checks
+
+<!-- generated-learning-note -->
+This section prepares the information needed for **5. Basic Data-Quality Checks**. Check variable definitions, units, coding, and missing values before moving to analysis.
+
+
+#### 5.1 Duplicate subject IDs
+
+<!-- generated-learning-note -->
+This subsection explains **5.1 Duplicate subject IDs** and shows how it contributes to the overall NHANES Diabetes Prediction: Complete Clinical Prediction Modeling Workflow in R workflow.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block prepares the analysis data. Follow each transformation carefully because filtering, recoding, grouping, and reshaping determine the observations used downstream.
+
+```{r duplicate-check}
+duplicate_ids <- nhanes1 %>%
+  count(ID) %>%
+  filter(n > 1)
+
+duplicate_ids
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the data before and after the transformation. Confirm that row counts, group sizes, missingness, and variable values changed as intended.
+
+
+A duplicate ID should never be deleted automatically. It may represent a true duplicate, repeated measurement, merge error, or multiple records per participant.
+
+#### 5.2 Variable classes
+
+<!-- generated-learning-note -->
+This section prepares the information needed for **5.2 Variable classes**. Check variable definitions, units, coding, and missing values before moving to analysis.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r classes}
+sapply(nhanes1, class)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+#### 5.3 Categorical coding
+
+<!-- generated-learning-note -->
+This subsection explains **5.3 Categorical coding** and shows how it contributes to the overall NHANES Diabetes Prediction: Complete Clinical Prediction Modeling Workflow in R workflow.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r categorical-levels}
+list(
+  Diabetes = levels(nhanes1$Diabetes),
+  SurveyYr = levels(nhanes1$SurveyYr),
+  Gender = levels(nhanes1$Gender),
+  Race1 = levels(nhanes1$Race1),
+  PhysActive = levels(nhanes1$PhysActive),
+  Smoke100 = levels(nhanes1$Smoke100),
+  Education = levels(nhanes1$Education)
+)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+#### 5.4 Continuous-variable ranges
+
+<!-- generated-learning-note -->
+This section prepares the information needed for **5.4 Continuous-variable ranges**. Check variable definitions, units, coding, and missing values before moving to analysis.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block prepares the analysis data. Follow each transformation carefully because filtering, recoding, grouping, and reshaping determine the observations used downstream.
+
+```{r range-check}
+range_summary <- nhanes1 %>%
+  summarise(
+    across(
+      c(Age, BMI, BPSysAve, BPDiaAve, TotChol, DirectChol, Poverty, SleepHrsNight),
+      list(
+        min = ~ min(.x, na.rm = TRUE),
+        max = ~ max(.x, na.rm = TRUE)
+      )
+    )
+  )
+
+range_summary
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the data before and after the transformation. Confirm that row counts, group sizes, missingness, and variable values changed as intended.
+
+
+#### 5.5 Flag potentially impossible values
+
+<!-- generated-learning-note -->
+This subsection explains **5.5 Flag potentially impossible values** and shows how it contributes to the overall NHANES Diabetes Prediction: Complete Clinical Prediction Modeling Workflow in R workflow.
+
+
+The following rules are **screening rules**, not automatic deletion rules.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block prepares the analysis data. Follow each transformation carefully because filtering, recoding, grouping, and reshaping determine the observations used downstream.
+
+```{r impossible-values}
+flagged_values <- nhanes1 %>%
+  filter(
+    Age < 20 | Age > 100 |
+      (!is.na(BMI) & BMI <= 0) |
+      (!is.na(BPSysAve) & BPSysAve <= 0) |
+      (!is.na(BPDiaAve) & BPDiaAve < 0) |
+      (!is.na(TotChol) & TotChol <= 0)
+  )
+
+flagged_values %>%
+  select(ID, Age, BMI, BPSysAve, BPDiaAve, TotChol) %>%
+  head(20)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the data before and after the transformation. Confirm that row counts, group sizes, missingness, and variable values changed as intended.
+
+
+#### 6. Missing-Data Assessment
+
+<!-- generated-learning-note -->
+This section prepares the information needed for **6. Missing-Data Assessment**. Check variable definitions, units, coding, and missing values before moving to analysis.
+
+
+#### 6.1 Missing percentage by variable
+
+<!-- generated-learning-note -->
+This section prepares the information needed for **6.1 Missing percentage by variable**. Check variable definitions, units, coding, and missing values before moving to analysis.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block prepares the analysis data. Follow each transformation carefully because filtering, recoding, grouping, and reshaping determine the observations used downstream.
+
+```{r missing-summary}
+missing_summary <- nhanes1 %>%
+  summarise(
+    across(
+      everything(),
+      ~ mean(is.na(.x)) * 100
+    )
+  ) %>%
+  pivot_longer(
+    cols = everything(),
+    names_to = "Variable",
+    values_to = "Missing_Percent"
+  ) %>%
+  arrange(desc(Missing_Percent))
+
+missing_summary
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the data before and after the transformation. Confirm that row counts, group sizes, missingness, and variable values changed as intended.
+
+
+#### 6.2 Missingness visualization
+
+<!-- generated-learning-note -->
+This section uses **6.2 Missingness visualization** to make patterns visible. Confirm what each axis, group, scale, and annotation represents.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r missing-plot, fig.height=5, fig.width=9}
+vis_miss(nhanes1)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r missing-variable-plot, fig.height=5, fig.width=8}
+gg_miss_var(nhanes1)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+#### 6.3 Missing-data pattern for modeling variables
+
+<!-- generated-learning-note -->
+This section prepares the information needed for **6.3 Missing-data pattern for modeling variables**. Check variable definitions, units, coding, and missing values before moving to analysis.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block prepares the analysis data. Follow each transformation carefully because filtering, recoding, grouping, and reshaping determine the observations used downstream.
+
+```{r md-pattern}
+model_vars_for_missing <- nhanes1 %>%
+  select(
+    Diabetes_num,
+    Age,
+    BMI,
+    BPSysAve,
+    TotChol,
+    Gender,
+    Race1,
+    PhysActive,
+    Smoke100
+  )
+
+md.pattern(model_vars_for_missing)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the data before and after the transformation. Confirm that row counts, group sizes, missingness, and variable values changed as intended.
+
+
+#### 7. Descriptive Analysis and EDA
+
+<!-- generated-learning-note -->
+This subsection explains **7. Descriptive Analysis and EDA** and shows how it contributes to the overall NHANES Diabetes Prediction: Complete Clinical Prediction Modeling Workflow in R workflow.
+
+
+#### 7.1 Table 1 by diabetes status
+
+<!-- generated-learning-note -->
+This subsection explains **7.1 Table 1 by diabetes status** and shows how it contributes to the overall NHANES Diabetes Prediction: Complete Clinical Prediction Modeling Workflow in R workflow.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block prepares the analysis data. Follow each transformation carefully because filtering, recoding, grouping, and reshaping determine the observations used downstream.
+
+```{r table1}
+nhanes1 %>%
+  select(
+    Diabetes,
+    Age,
+    Gender,
+    Race1,
+    BMI,
+    BPSysAve,
+    TotChol,
+    PhysActive,
+    Smoke100
+  ) %>%
+  tbl_summary(
+    by = Diabetes,
+    statistic = list(
+      all_continuous() ~ "{mean} ({sd}); median {median} [{p25}, {p75}]",
+      all_categorical() ~ "{n} ({p}%)"
+    ),
+    missing = "ifany"
+  )
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the data before and after the transformation. Confirm that row counts, group sizes, missingness, and variable values changed as intended.
+
+
+For prediction modeling, a variable should not be excluded simply because its univariable P-value is greater than 0.05.
+
+#### 7.2 Distribution of age
+
+<!-- generated-learning-note -->
+This subsection explains **7.2 Distribution of age** and shows how it contributes to the overall NHANES Diabetes Prediction: Complete Clinical Prediction Modeling Workflow in R workflow.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r age-hist, fig.height=4, fig.width=7}
+ggplot(nhanes1, aes(x = Age)) +
+  geom_histogram(bins = 30) +
+  labs(
+    title = "Distribution of Age",
+    x = "Age (years)",
+    y = "Count"
+  )
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+#### 7.3 Distribution of BMI
+
+<!-- generated-learning-note -->
+This subsection explains **7.3 Distribution of BMI** and shows how it contributes to the overall NHANES Diabetes Prediction: Complete Clinical Prediction Modeling Workflow in R workflow.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r bmi-hist, fig.height=4, fig.width=7}
+ggplot(nhanes1, aes(x = BMI)) +
+  geom_histogram(bins = 30) +
+  labs(
+    title = "Distribution of BMI",
+    x = "BMI",
+    y = "Count"
+  )
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+#### 7.4 Distribution of systolic blood pressure
+
+<!-- generated-learning-note -->
+This subsection explains **7.4 Distribution of systolic blood pressure** and shows how it contributes to the overall NHANES Diabetes Prediction: Complete Clinical Prediction Modeling Workflow in R workflow.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r sbp-hist, fig.height=4, fig.width=7}
+ggplot(nhanes1, aes(x = BPSysAve)) +
+  geom_histogram(bins = 30) +
+  labs(
+    title = "Distribution of Average Systolic Blood Pressure",
+    x = "Average systolic BP",
+    y = "Count"
+  )
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+#### 7.5 Diabetes versus BMI
+
+<!-- generated-learning-note -->
+This subsection explains **7.5 Diabetes versus BMI** and shows how it contributes to the overall NHANES Diabetes Prediction: Complete Clinical Prediction Modeling Workflow in R workflow.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r diabetes-bmi-box, fig.height=4, fig.width=6}
+ggplot(nhanes1, aes(x = Diabetes, y = BMI)) +
+  geom_boxplot() +
+  labs(
+    title = "BMI by Diabetes Status",
+    x = "Diabetes",
+    y = "BMI"
+  )
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+#### 7.6 Diabetes versus age
+
+<!-- generated-learning-note -->
+This subsection explains **7.6 Diabetes versus age** and shows how it contributes to the overall NHANES Diabetes Prediction: Complete Clinical Prediction Modeling Workflow in R workflow.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r diabetes-age-box, fig.height=4, fig.width=6}
+ggplot(nhanes1, aes(x = Diabetes, y = Age)) +
+  geom_boxplot() +
+  labs(
+    title = "Age by Diabetes Status",
+    x = "Diabetes",
+    y = "Age"
+  )
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+#### 8. Outlier Assessment
+
+<!-- generated-learning-note -->
+This subsection explains **8. Outlier Assessment** and shows how it contributes to the overall NHANES Diabetes Prediction: Complete Clinical Prediction Modeling Workflow in R workflow.
+
+
+#### 8.1 IQR flagging for BMI
+
+<!-- generated-learning-note -->
+This subsection explains **8.1 IQR flagging for BMI** and shows how it contributes to the overall NHANES Diabetes Prediction: Complete Clinical Prediction Modeling Workflow in R workflow.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block prepares the analysis data. Follow each transformation carefully because filtering, recoding, grouping, and reshaping determine the observations used downstream.
+
+```{r bmi-iqr}
+q1_bmi <- quantile(nhanes1$BMI, 0.25, na.rm = TRUE)
+q3_bmi <- quantile(nhanes1$BMI, 0.75, na.rm = TRUE)
+iqr_bmi <- q3_bmi - q1_bmi
+
+bmi_lower <- q1_bmi - 1.5 * iqr_bmi
+bmi_upper <- q3_bmi + 1.5 * iqr_bmi
+
+bmi_outliers <- nhanes1 %>%
+  filter(
+    !is.na(BMI),
+    BMI < bmi_lower | BMI > bmi_upper
+  ) %>%
+  select(ID, Age, Gender, BMI, Diabetes)
+
+head(bmi_outliers, 20)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the data before and after the transformation. Confirm that row counts, group sizes, missingness, and variable values changed as intended.
+
+
+A statistical outlier is not automatically a data error. Clinically plausible extreme values should generally be retained unless there is evidence of measurement or data-entry error.
+
+#### 9. Correlation and Multicollinearity Screening
+
+<!-- generated-learning-note -->
+This subsection explains **9. Correlation and Multicollinearity Screening** and shows how it contributes to the overall NHANES Diabetes Prediction: Complete Clinical Prediction Modeling Workflow in R workflow.
+
+
+#### 9.1 Correlation matrix among continuous variables
+
+<!-- generated-learning-note -->
+This section prepares the information needed for **9.1 Correlation matrix among continuous variables**. Check variable definitions, units, coding, and missing values before moving to analysis.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block prepares the analysis data. Follow each transformation carefully because filtering, recoding, grouping, and reshaping determine the observations used downstream.
+
+```{r correlation-matrix}
+cor_data <- nhanes1 %>%
+  select(
+    Age,
+    BMI,
+    BPSysAve,
+    BPDiaAve,
+    TotChol,
+    DirectChol
+  )
+
+round(
+  cor(cor_data, use = "pairwise.complete.obs"),
+  2
+)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the data before and after the transformation. Confirm that row counts, group sizes, missingness, and variable values changed as intended.
+
+
+#### 10. Construct the Modeling Dataset
+
+<!-- generated-learning-note -->
+This section prepares the information needed for **10. Construct the Modeling Dataset**. Check variable definitions, units, coding, and missing values before moving to analysis.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block prepares the analysis data. Follow each transformation carefully because filtering, recoding, grouping, and reshaping determine the observations used downstream.
+
+```{r modeling-dataset}
+model_data <- nhanes1 %>%
+  select(
+    ID,
+    SurveyYr,
+    Diabetes,
+    Diabetes_num,
+    Age,
+    BMI,
+    BPSysAve,
+    TotChol,
+    Gender,
+    Race1,
+    PhysActive,
+    Smoke100
+  )
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the data before and after the transformation. Confirm that row counts, group sizes, missingness, and variable values changed as intended.
+
+
+#### 11. Complete-Case Dataset for Sensitivity Analysis
+
+<!-- generated-learning-note -->
+This section prepares the information needed for **11. Complete-Case Dataset for Sensitivity Analysis**. Check variable definitions, units, coding, and missing values before moving to analysis.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r complete-case-data}
+model_cc <- model_data %>%
+  drop_na(
+    Age,
+    BMI,
+    BPSysAve,
+    TotChol,
+    Gender,
+    Race1,
+    PhysActive,
+    Smoke100
+  )
+
+cat("Original modeling N =", nrow(model_data), "\n")
+cat("Complete-case N =", nrow(model_cc), "\n")
+cat(
+  "Complete-case retention =",
+  round(100 * nrow(model_cc) / nrow(model_data), 1),
+  "%\n"
+)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+#### 11.1 Compare complete versus incomplete cases
+
+<!-- generated-learning-note -->
+This subsection explains **11.1 Compare complete versus incomplete cases** and shows how it contributes to the overall NHANES Diabetes Prediction: Complete Clinical Prediction Modeling Workflow in R workflow.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block prepares the analysis data. Follow each transformation carefully because filtering, recoding, grouping, and reshaping determine the observations used downstream.
+
+```{r complete-vs-missing}
+model_data <- model_data %>%
+  mutate(
+    CompleteCase = if_else(
+      complete.cases(
+        Age,
+        BMI,
+        BPSysAve,
+        TotChol,
+        Gender,
+        Race1,
+        PhysActive,
+        Smoke100
+      ),
+      "Complete",
+      "Missing"
+    )
+  )
+
+model_data %>%
+  group_by(CompleteCase) %>%
+  summarise(
+    N = n(),
+    Mean_Age = mean(Age, na.rm = TRUE),
+    Mean_BMI = mean(BMI, na.rm = TRUE),
+    Diabetes_Rate = mean(Diabetes_num, na.rm = TRUE),
+    .groups = "drop"
+  )
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the data before and after the transformation. Confirm that row counts, group sizes, missingness, and variable values changed as intended.
+
+
+#### 12. Multiple Imputation with MICE
+
+<!-- generated-learning-note -->
+This subsection explains **12. Multiple Imputation with MICE** and shows how it contributes to the overall NHANES Diabetes Prediction: Complete Clinical Prediction Modeling Workflow in R workflow.
+
+
+#### 12.1 Prepare the imputation dataset
+
+<!-- generated-learning-note -->
+This section prepares the information needed for **12.1 Prepare the imputation dataset**. Check variable definitions, units, coding, and missing values before moving to analysis.
+
+
+The outcome is included in the imputation model because it can help predict missing predictor values. The outcome itself is not imputed here.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block prepares the analysis data. Follow each transformation carefully because filtering, recoding, grouping, and reshaping determine the observations used downstream.
+
+```{r mi-data}
+mi_data <- model_data %>%
+  select(
+    Diabetes_num,
+    Age,
+    BMI,
+    BPSysAve,
+    TotChol,
+    Gender,
+    Race1,
+    PhysActive,
+    Smoke100
+  )
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the data before and after the transformation. Confirm that row counts, group sizes, missingness, and variable values changed as intended.
+
+
+#### 12.2 Inspect default MICE methods
+
+<!-- generated-learning-note -->
+This section develops **12.2 Inspect default MICE methods**. Read the model specification together with its assumptions and the scale of each reported effect.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r mice-initialization}
+ini <- mice(
+  mi_data,
+  maxit = 0,
+  printFlag = FALSE
+)
+
+method <- ini$method
+predictor_matrix <- ini$predictorMatrix
+
+method
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+Prevent imputation of the observed outcome:
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r mice-method-adjustment}
+method["Diabetes_num"] <- ""
+predictor_matrix[, "Diabetes_num"] <- 1
+predictor_matrix["Diabetes_num", ] <- 0
+
+method
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+#### 12.3 Run multiple imputation
+
+<!-- generated-learning-note -->
+This subsection explains **12.3 Run multiple imputation** and shows how it contributes to the overall NHANES Diabetes Prediction: Complete Clinical Prediction Modeling Workflow in R workflow.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r run-mice}
+set.seed(2026)
+
+imp <- mice(
+  mi_data,
+  m = 20,
+  maxit = 20,
+  method = method,
+  predictorMatrix = predictor_matrix,
+  seed = 2026,
+  printFlag = FALSE
+)
+
+imp
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+#### 12.4 Inspect convergence
+
+<!-- generated-learning-note -->
+This subsection explains **12.4 Inspect convergence** and shows how it contributes to the overall NHANES Diabetes Prediction: Complete Clinical Prediction Modeling Workflow in R workflow.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r mice-convergence, fig.height=6, fig.width=9}
+plot(imp)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+#### 12.5 Compare observed and imputed BMI distributions
+
+<!-- generated-learning-note -->
+This subsection explains **12.5 Compare observed and imputed BMI distributions** and shows how it contributes to the overall NHANES Diabetes Prediction: Complete Clinical Prediction Modeling Workflow in R workflow.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r mice-density-bmi, fig.height=5, fig.width=8}
+densityplot(imp, ~ BMI)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+#### 13. Fit the Prespecified Logistic Model Across Imputed Datasets
+
+<!-- generated-learning-note -->
+This section prepares the information needed for **13. Fit the Prespecified Logistic Model Across Imputed Datasets**. Check variable definitions, units, coding, and missing values before moving to analysis.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block specifies and fits the statistical model. Identify the outcome, predictors, reference levels, link or distribution, and any correlation structure before interpreting coefficients.
+
+```{r fit-mi-model}
+fit_mi <- with(
+  imp,
+  glm(
+    Diabetes_num ~
+      Age +
+      BMI +
+      BPSysAve +
+      TotChol +
+      Gender +
+      Race1 +
+      PhysActive +
+      Smoke100,
+    family = binomial()
+  )
+)
+
+pooled_fit <- pool(fit_mi)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Focus on coefficient direction and scale, uncertainty intervals, fit statistics, and diagnostics. Statistical significance alone does not establish practical importance or model adequacy.
+
+
+Pooled odds ratios:
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block extracts inferential or predictive results from fitted objects. Match each estimate, interval, contrast, or diagnostic to the quantity it represents.
+
+```{r pooled-or}
+summary(
+  pooled_fit,
+  conf.int = TRUE,
+  exponentiate = TRUE
+)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Interpret estimates on the scale reported by the function, and use intervals or other uncertainty measures when drawing conclusions.
+
+
+> **Important statistical distinction:** The pooled coefficients are useful for regression inference. A fully rigorous prediction-validation workflow with missing data should repeat imputation **inside each resampling iteration**. The remainder of this tutorial uses one completed dataset for transparent teaching of model diagnostics and validation. That simplification should not be mistaken for the strictest publication-level MI + bootstrap procedure.
+
+#### 14. Create a Completed Dataset for the Remaining Demonstration
+
+<!-- generated-learning-note -->
+This section prepares the information needed for **14. Create a Completed Dataset for the Remaining Demonstration**. Check variable definitions, units, coding, and missing values before moving to analysis.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block extracts inferential or predictive results from fitted objects. Match each estimate, interval, contrast, or diagnostic to the quantity it represents.
+
+```{r completed-data}
+model_complete <- complete(imp, action = 1)
+
+summary(model_complete)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Interpret estimates on the scale reported by the function, and use intervals or other uncertainty measures when drawing conclusions.
+
+
+#### 15. Fit a Full Logistic Regression Model
+
+<!-- generated-learning-note -->
+This section develops **15. Fit a Full Logistic Regression Model**. Read the model specification together with its assumptions and the scale of each reported effect.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block specifies and fits the statistical model. Identify the outcome, predictors, reference levels, link or distribution, and any correlation structure before interpreting coefficients.
+
+```{r full-glm}
+fit_full <- glm(
+  Diabetes_num ~
+    Age +
+    BMI +
+    BPSysAve +
+    TotChol +
+    Gender +
+    Race1 +
+    PhysActive +
+    Smoke100,
+  data = model_complete,
+  family = binomial()
+)
+
+summary(fit_full)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Focus on coefficient direction and scale, uncertainty intervals, fit statistics, and diagnostics. Statistical significance alone does not establish practical importance or model adequacy.
+
+
+Odds ratios and confidence intervals:
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r full-glm-or}
+broom::tidy(
+  fit_full,
+  exponentiate = TRUE,
+  conf.int = TRUE
+)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+
+For a prediction model, statistical significance is not the main criterion for retaining a prespecified predictor.
+
+#### 16. Multicollinearity Assessment
+
+<!-- generated-learning-note -->
+This subsection explains **16. Multicollinearity Assessment** and shows how it contributes to the overall NHANES Diabetes Prediction: Complete Clinical Prediction Modeling Workflow in R workflow.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r vif}
+vif_result <- car::vif(fit_full)
+vif_result
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+
+If `vif()` returns generalized VIF values for multi-level factors, the commonly reviewed quantity is
+
+\[
+GVIF^{1/(2df)}.
+\]
+
+#### 17. Assess Nonlinear Predictor Effects with Restricted Cubic Splines
+
+<!-- generated-learning-note -->
+This subsection explains **17. Assess Nonlinear Predictor Effects with Restricted Cubic Splines** and shows how it contributes to the overall NHANES Diabetes Prediction: Complete Clinical Prediction Modeling Workflow in R workflow.
+
+
+#### 17.1 Prepare the rms environment
+
+<!-- generated-learning-note -->
+This section prepares the information needed for **17.1 Prepare the rms environment**. Check variable definitions, units, coding, and missing values before moving to analysis.
+
+
+```{r rms-setup}
+dd <- datadist(model_complete)
+options(datadist = "dd")
+```
+
+#### 17.2 Linear logistic model using lrm()
+
+<!-- generated-learning-note -->
+This section develops **17.2 Linear logistic model using lrm()**. Read the model specification together with its assumptions and the scale of each reported effect.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r lrm-linear}
+fit_linear <- lrm(
+  Diabetes_num ~
+    Age +
+    BMI +
+    BPSysAve +
+    TotChol +
+    Gender +
+    Race1 +
+    PhysActive +
+    Smoke100,
+  data = model_complete,
+  x = TRUE,
+  y = TRUE
+)
+
+fit_linear
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+#### 17.3 Restricted cubic spline model
+
+<!-- generated-learning-note -->
+This section develops **17.3 Restricted cubic spline model**. Read the model specification together with its assumptions and the scale of each reported effect.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r lrm-spline}
+fit_spline <- lrm(
+  Diabetes_num ~
+    rcs(Age, 4) +
+    rcs(BMI, 4) +
+    rcs(BPSysAve, 4) +
+    rcs(TotChol, 4) +
+    Gender +
+    Race1 +
+    PhysActive +
+    Smoke100,
+  data = model_complete,
+  x = TRUE,
+  y = TRUE
+)
+
+fit_spline
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+#### 17.4 Test overall and nonlinear effects
+
+<!-- generated-learning-note -->
+This subsection explains **17.4 Test overall and nonlinear effects** and shows how it contributes to the overall NHANES Diabetes Prediction: Complete Clinical Prediction Modeling Workflow in R workflow.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block extracts inferential or predictive results from fitted objects. Match each estimate, interval, contrast, or diagnostic to the quantity it represents.
+
+```{r spline-anova}
+anova(fit_spline)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Interpret estimates on the scale reported by the function, and use intervals or other uncertainty measures when drawing conclusions.
+
+
+The `Nonlinear` rows test whether a purely linear representation is inadequate for the corresponding continuous predictor.
+
+#### 17.5 Plot age effect
+
+<!-- generated-learning-note -->
+This section uses **17.5 Plot age effect** to make patterns visible. Confirm what each axis, group, scale, and annotation represents.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block extracts inferential or predictive results from fitted objects. Match each estimate, interval, contrast, or diagnostic to the quantity it represents.
+
+```{r spline-age, fig.height=5, fig.width=7}
+plot(
+  Predict(
+    fit_spline,
+    Age,
+    fun = plogis
+  ),
+  xlab = "Age",
+  ylab = "Predicted probability"
+)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Interpret estimates on the scale reported by the function, and use intervals or other uncertainty measures when drawing conclusions.
+
+
+#### 17.6 Plot BMI effect
+
+<!-- generated-learning-note -->
+This section uses **17.6 Plot BMI effect** to make patterns visible. Confirm what each axis, group, scale, and annotation represents.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block extracts inferential or predictive results from fitted objects. Match each estimate, interval, contrast, or diagnostic to the quantity it represents.
+
+```{r spline-bmi, fig.height=5, fig.width=7}
+plot(
+  Predict(
+    fit_spline,
+    BMI,
+    fun = plogis
+  ),
+  xlab = "BMI",
+  ylab = "Predicted probability"
+)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Interpret estimates on the scale reported by the function, and use intervals or other uncertainty measures when drawing conclusions.
+
+
+#### 17.7 Compare model AIC
+
+<!-- generated-learning-note -->
+This section develops **17.7 Compare model AIC**. Read the model specification together with its assumptions and the scale of each reported effect.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r compare-aic}
+AIC(fit_linear, fit_spline)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+A lower AIC indicates a better tradeoff between likelihood fit and model complexity, but AIC should not be the only model-selection criterion.
+
+#### 18. Example Interaction Assessment
+
+<!-- generated-learning-note -->
+This subsection explains **18. Example Interaction Assessment** and shows how it contributes to the overall NHANES Diabetes Prediction: Complete Clinical Prediction Modeling Workflow in R workflow.
+
+
+Suppose there is a clinically plausible question about whether the BMI association differs with age.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block specifies and fits the statistical model. Identify the outcome, predictors, reference levels, link or distribution, and any correlation structure before interpreting coefficients.
+
+```{r interaction-model}
+fit_interaction <- glm(
+  Diabetes_num ~
+    Age * BMI +
+    BPSysAve +
+    TotChol +
+    Gender +
+    Race1 +
+    PhysActive +
+    Smoke100,
+  data = model_complete,
+  family = binomial()
+)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Focus on coefficient direction and scale, uncertainty intervals, fit statistics, and diagnostics. Statistical significance alone does not establish practical importance or model adequacy.
+
+
+Likelihood-ratio comparison:
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block extracts inferential or predictive results from fitted objects. Match each estimate, interval, contrast, or diagnostic to the quantity it represents.
+
+```{r interaction-lrt}
+anova(
+  fit_full,
+  fit_interaction,
+  test = "LRT"
+)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Interpret estimates on the scale reported by the function, and use intervals or other uncertainty measures when drawing conclusions.
+
+
+Interactions should ideally be prespecified or clinically motivated rather than discovered by indiscriminately testing every possible pair.
+
+#### 19. Traditional Stepwise Selection: Demonstration Only
+
+<!-- generated-learning-note -->
+This subsection explains **19. Traditional Stepwise Selection: Demonstration Only** and shows how it contributes to the overall NHANES Diabetes Prediction: Complete Clinical Prediction Modeling Workflow in R workflow.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block extracts inferential or predictive results from fitted objects. Match each estimate, interval, contrast, or diagnostic to the quantity it represents.
+
+```{r stepwise}
+fit_step <- step(
+  fit_full,
+  direction = "backward",
+  trace = FALSE
+)
+
+formula(fit_step)
+summary(fit_step)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Interpret estimates on the scale reported by the function, and use intervals or other uncertainty measures when drawing conclusions.
+
+
+Stepwise selection is shown because it is common in practice, but it is generally not preferred for modern clinical prediction modeling because it can produce unstable variable selection, biased coefficients, and optimistic performance.
+
+#### 20. Penalized Regression with LASSO
+
+<!-- generated-learning-note -->
+This section develops **20. Penalized Regression with LASSO**. Read the model specification together with its assumptions and the scale of each reported effect.
+
+
+#### 20.1 Create model matrix
+
+<!-- generated-learning-note -->
+This section develops **20.1 Create model matrix**. Read the model specification together with its assumptions and the scale of each reported effect.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r lasso-matrix}
+x <- model.matrix(
+  Diabetes_num ~
+    Age +
+    BMI +
+    BPSysAve +
+    TotChol +
+    Gender +
+    Race1 +
+    PhysActive +
+    Smoke100,
+  data = model_complete
+)[, -1, drop = FALSE]
+
+y <- model_complete$Diabetes_num
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+#### 20.2 Cross-validated LASSO
+
+<!-- generated-learning-note -->
+This subsection explains **20.2 Cross-validated LASSO** and shows how it contributes to the overall NHANES Diabetes Prediction: Complete Clinical Prediction Modeling Workflow in R workflow.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r lasso-cv}
+set.seed(2026)
+
+cv_lasso <- cv.glmnet(
+  x = x,
+  y = y,
+  family = "binomial",
+  alpha = 1,
+  nfolds = 10,
+  type.measure = "deviance"
+)
+
+cv_lasso$lambda.min
+cv_lasso$lambda.1se
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r lasso-plot, fig.height=5, fig.width=7}
+plot(cv_lasso)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+#### 20.3 LASSO coefficients
+
+<!-- generated-learning-note -->
+This subsection explains **20.3 LASSO coefficients** and shows how it contributes to the overall NHANES Diabetes Prediction: Complete Clinical Prediction Modeling Workflow in R workflow.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r lasso-coefs-min}
+coef(cv_lasso, s = "lambda.min")
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r lasso-coefs-1se}
+coef(cv_lasso, s = "lambda.1se")
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+LASSO performs shrinkage and may set some coefficients exactly to zero.
+
+#### 21. Apparent Discrimination
+
+<!-- generated-learning-note -->
+This subsection explains **21. Apparent Discrimination** and shows how it contributes to the overall NHANES Diabetes Prediction: Complete Clinical Prediction Modeling Workflow in R workflow.
+
+
+For the remaining primary demonstration, we use the spline model.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block extracts inferential or predictive results from fitted objects. Match each estimate, interval, contrast, or diagnostic to the quantity it represents.
+
+```{r apparent-predictions}
+model_complete$pred_prob <- as.numeric(
+  predict(
+    fit_spline,
+    type = "fitted"
+  )
+)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Interpret estimates on the scale reported by the function, and use intervals or other uncertainty measures when drawing conclusions.
+
+
+#### 21.1 ROC curve and AUC
+
+<!-- generated-learning-note -->
+This section uses **21.1 ROC curve and AUC** to make patterns visible. Confirm what each axis, group, scale, and annotation represents.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r roc}
+roc_obj <- roc(
+  response = model_complete$Diabetes_num,
+  predictor = model_complete$pred_prob,
+  quiet = TRUE
+)
+
+roc_obj
+auc(roc_obj)
+ci.auc(roc_obj)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r roc-plot, fig.height=5, fig.width=6}
+plot(
+  roc_obj,
+  print.auc = TRUE,
+  main = "ROC Curve: Apparent Performance"
+)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+The AUC measures discrimination: how well the model ranks participants with diabetes above participants without diabetes.
+
+#### 22. Bootstrap Internal Validation
+
+<!-- generated-learning-note -->
+This subsection explains **22. Bootstrap Internal Validation** and shows how it contributes to the overall NHANES Diabetes Prediction: Complete Clinical Prediction Modeling Workflow in R workflow.
+
+
+Bootstrap validation estimates model optimism by repeatedly rebuilding the model in bootstrap samples and testing performance in the original data.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r bootstrap-validation}
+set.seed(2026)
+
+val_boot <- validate(
+  fit_spline,
+  method = "boot",
+  B = 500
+)
+
+val_boot
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+The most useful columns are typically:
+
+- `index.orig`: apparent performance in the original data
+- `training`: average performance in bootstrap samples
+- `test`: performance when bootstrap-fitted models are applied back to the original data
+- `optimism`: estimated over-optimism
+- `index.corrected`: optimism-corrected performance
+
+For a final analysis, increasing `B` to 1000 or more is common when computationally feasible.
+
+#### 23. Bootstrap Calibration
+
+<!-- generated-learning-note -->
+This subsection explains **23. Bootstrap Calibration** and shows how it contributes to the overall NHANES Diabetes Prediction: Complete Clinical Prediction Modeling Workflow in R workflow.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r bootstrap-calibration}
+set.seed(2026)
+
+cal_boot <- calibrate(
+  fit_spline,
+  method = "boot",
+  B = 500
+)
+
+cal_boot
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r calibration-plot, fig.height=6, fig.width=7}
+plot(
+  cal_boot,
+  xlab = "Predicted Probability",
+  ylab = "Observed Probability"
+)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+A perfectly calibrated model would lie on the 45-degree identity line.
+
+#### 24. Calibration Intercept and Calibration Slope
+
+<!-- generated-learning-note -->
+This subsection explains **24. Calibration Intercept and Calibration Slope** and shows how it contributes to the overall NHANES Diabetes Prediction: Complete Clinical Prediction Modeling Workflow in R workflow.
+
+
+Calibration should preferably be evaluated on validation or resampled predictions. The following calculation on the development data is shown to explain the definitions.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block extracts inferential or predictive results from fitted objects. Match each estimate, interval, contrast, or diagnostic to the quantity it represents.
+
+```{r calibration-lp}
+model_complete$lp <- as.numeric(
+  predict(
+    fit_spline,
+    type = "lp"
+  )
+)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Interpret estimates on the scale reported by the function, and use intervals or other uncertainty measures when drawing conclusions.
+
+
+#### 24.1 Calibration intercept with slope fixed at 1
+
+<!-- generated-learning-note -->
+This subsection explains **24.1 Calibration intercept with slope fixed at 1** and shows how it contributes to the overall NHANES Diabetes Prediction: Complete Clinical Prediction Modeling Workflow in R workflow.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block specifies and fits the statistical model. Identify the outcome, predictors, reference levels, link or distribution, and any correlation structure before interpreting coefficients.
+
+```{r calibration-intercept}
+cal_intercept_model <- glm(
+  Diabetes_num ~ 1 + offset(lp),
+  data = model_complete,
+  family = binomial()
+)
+
+calibration_intercept <- unname(coef(cal_intercept_model)[1])
+calibration_intercept
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Focus on coefficient direction and scale, uncertainty intervals, fit statistics, and diagnostics. Statistical significance alone does not establish practical importance or model adequacy.
+
+
+Ideal value:
+
+\[
+\text{Calibration intercept}=0.
+\]
+
+#### 24.2 Calibration slope
+
+<!-- generated-learning-note -->
+This subsection explains **24.2 Calibration slope** and shows how it contributes to the overall NHANES Diabetes Prediction: Complete Clinical Prediction Modeling Workflow in R workflow.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block specifies and fits the statistical model. Identify the outcome, predictors, reference levels, link or distribution, and any correlation structure before interpreting coefficients.
+
+```{r calibration-slope}
+cal_slope_model <- glm(
+  Diabetes_num ~ lp,
+  data = model_complete,
+  family = binomial()
+)
+
+calibration_slope <- unname(coef(cal_slope_model)[2])
+calibration_slope
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Focus on coefficient direction and scale, uncertainty intervals, fit statistics, and diagnostics. Statistical significance alone does not establish practical importance or model adequacy.
+
+
+Ideal value:
+
+\[
+\text{Calibration slope}=1.
+\]
+
+A slope less than 1 often indicates overly extreme predictions and overfitting.
+
+#### 25. Brier Score
+
+<!-- generated-learning-note -->
+This subsection explains **25. Brier Score** and shows how it contributes to the overall NHANES Diabetes Prediction: Complete Clinical Prediction Modeling Workflow in R workflow.
+
+
+The Brier score is
+
+\[
+\text{Brier} = \frac{1}{n}\sum_{i=1}^{n}(\hat p_i-y_i)^2.
+\]
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block calculates descriptive summaries. Check the denominator, grouping variables, units, and treatment of missing values.
+
+```{r brier}
+brier_model <- mean(
+  (model_complete$pred_prob - model_complete$Diabetes_num)^2
+)
+
+prevalence <- mean(model_complete$Diabetes_num)
+
+brier_null <- mean(
+  (prevalence - model_complete$Diabetes_num)^2
+)
+
+brier_model
+brier_null
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Use the displayed values to understand center, spread, frequency, and missingness; investigate any implausible or unexpected result.
+
+
+A smaller Brier score indicates lower overall prediction error.
+
+#### 26. Decision-Curve Analysis
+
+<!-- generated-learning-note -->
+This section uses **26. Decision-Curve Analysis** to make patterns visible. Confirm what each axis, group, scale, and annotation represents.
+
+
+To avoid dependence on an additional package, this tutorial calculates net benefit directly.
+
+For a threshold probability \(p_t\), net benefit is
+
+\[
+NB = \frac{TP}{N} - \frac{FP}{N}\frac{p_t}{1-p_t}.
+\]
+
+#### 26.1 Function to calculate model net benefit
+
+<!-- generated-learning-note -->
+This section develops **26.1 Function to calculate model net benefit**. Read the model specification together with its assumptions and the scale of each reported effect.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block defines a reusable function. Separate its inputs, calculations, and returned value before applying it to new data.
+
+```{r dca-functions}
+net_benefit_model <- function(y, p, threshold) {
+  pred_positive <- p >= threshold
+
+  tp <- sum(pred_positive & y == 1)
+  fp <- sum(pred_positive & y == 0)
+  n <- length(y)
+
+  tp / n - fp / n * threshold / (1 - threshold)
+}
+
+net_benefit_all <- function(y, threshold) {
+  prevalence <- mean(y)
+  prevalence - (1 - prevalence) * threshold / (1 - threshold)
+}
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Test the function with simple inputs whose expected answer is known before relying on it in a larger workflow.
+
+
+#### 26.2 Calculate DCA across thresholds
+
+<!-- generated-learning-note -->
+This subsection explains **26.2 Calculate DCA across thresholds** and shows how it contributes to the overall NHANES Diabetes Prediction: Complete Clinical Prediction Modeling Workflow in R workflow.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r dca-calculate}
+thresholds <- seq(0.01, 0.50, by = 0.01)
+
+dca_results <- tibble(
+  threshold = thresholds,
+  model = map_dbl(
+    thresholds,
+    ~ net_benefit_model(
+      y = model_complete$Diabetes_num,
+      p = model_complete$pred_prob,
+      threshold = .x
+    )
+  ),
+  treat_all = map_dbl(
+    thresholds,
+    ~ net_benefit_all(
+      y = model_complete$Diabetes_num,
+      threshold = .x
+    )
+  ),
+  treat_none = 0
+) %>%
+  pivot_longer(
+    cols = c(model, treat_all, treat_none),
+    names_to = "Strategy",
+    values_to = "Net_Benefit"
+  )
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+#### 26.3 Plot decision curves
+
+<!-- generated-learning-note -->
+This section uses **26.3 Plot decision curves** to make patterns visible. Confirm what each axis, group, scale, and annotation represents.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r dca-plot, fig.height=5, fig.width=8}
+ggplot(
+  dca_results,
+  aes(
+    x = threshold,
+    y = Net_Benefit,
+    linetype = Strategy
+  )
+) +
+  geom_line(linewidth = 0.9) +
+  labs(
+    title = "Decision Curve Analysis",
+    x = "Threshold Probability",
+    y = "Net Benefit"
+  ) +
+  theme_minimal()
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+DCA is used to determine whether the model provides useful clinical net benefit over a clinically relevant threshold range. It is **not simply an automatic cutoff-selection procedure**.
+
+#### 27. Threshold-Based Classification Performance
+
+<!-- generated-learning-note -->
+This subsection explains **27. Threshold-Based Classification Performance** and shows how it contributes to the overall NHANES Diabetes Prediction: Complete Clinical Prediction Modeling Workflow in R workflow.
+
+
+Suppose, for illustration, a threshold of 20% is clinically relevant.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block prepares the analysis data. Follow each transformation carefully because filtering, recoding, grouping, and reshaping determine the observations used downstream.
+
+```{r cutoff-classification}
+cutoff <- 0.20
+
+model_complete <- model_complete %>%
+  mutate(
+    pred_class = if_else(pred_prob >= cutoff, 1L, 0L)
+  )
+
+confusion_matrix <- table(
+  Predicted = model_complete$pred_class,
+  Observed = model_complete$Diabetes_num
+)
+
+confusion_matrix
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the data before and after the transformation. Confirm that row counts, group sizes, missingness, and variable values changed as intended.
+
+
+Calculate sensitivity, specificity, PPV, and NPV:
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r classification-metrics}
+tp <- sum(
+  model_complete$pred_class == 1 &
+    model_complete$Diabetes_num == 1
+)
+
+fp <- sum(
+  model_complete$pred_class == 1 &
+    model_complete$Diabetes_num == 0
+)
+
+tn <- sum(
+  model_complete$pred_class == 0 &
+    model_complete$Diabetes_num == 0
+)
+
+fn <- sum(
+  model_complete$pred_class == 0 &
+    model_complete$Diabetes_num == 1
+)
+
+classification_metrics <- tibble(
+  Metric = c("Sensitivity", "Specificity", "PPV", "NPV"),
+  Value = c(
+    tp / (tp + fn),
+    tn / (tn + fp),
+    tp / (tp + fp),
+    tn / (tn + fn)
+  )
+)
+
+classification_metrics
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+#### 27.1 Youden index for statistical comparison only
+
+<!-- generated-learning-note -->
+This subsection explains **27.1 Youden index for statistical comparison only** and shows how it contributes to the overall NHANES Diabetes Prediction: Complete Clinical Prediction Modeling Workflow in R workflow.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r youden-index}
+coords(
+  roc_obj,
+  x = "best",
+  best.method = "youden",
+  ret = c("threshold", "sensitivity", "specificity")
+)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+A Youden-optimal cutoff maximizes sensitivity + specificity - 1, but it does not directly incorporate clinical consequences, treatment burden, resource use, or the relative cost of false positives and false negatives.
+
+#### 28. Influential Observations
+
+<!-- generated-learning-note -->
+This subsection explains **28. Influential Observations** and shows how it contributes to the overall NHANES Diabetes Prediction: Complete Clinical Prediction Modeling Workflow in R workflow.
+
+
+For influence diagnostics, use the ordinary logistic model.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r cooks-distance}
+cook <- cooks.distance(fit_full)
+
+cook_threshold <- 4 / nrow(model_complete)
+
+influential_indices <- which(cook > cook_threshold)
+
+cat("Number above 4/n threshold:", length(influential_indices), "\n")
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r cooks-plot, fig.height=5, fig.width=8}
+plot(
+  cook,
+  type = "h",
+  ylab = "Cook's Distance",
+  main = "Influence Diagnostic"
+)
+abline(h = cook_threshold, lty = 2)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+The `4/n` rule is only a screening heuristic. Large Cook's distance does not justify automatic deletion.
+
+#### 29. Sensitivity Analysis: Remove Highly Influential Observations
+
+<!-- generated-learning-note -->
+This subsection explains **29. Sensitivity Analysis: Remove Highly Influential Observations** and shows how it contributes to the overall NHANES Diabetes Prediction: Complete Clinical Prediction Modeling Workflow in R workflow.
+
+
+This is a sensitivity analysis, not the primary model.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block specifies and fits the statistical model. Identify the outcome, predictors, reference levels, link or distribution, and any correlation structure before interpreting coefficients.
+
+```{r influence-sensitivity}
+model_sens <- model_complete[
+  cook <= cook_threshold,
+  ,
+  drop = FALSE
+]
+
+fit_sens <- glm(
+  Diabetes_num ~
+    Age +
+    BMI +
+    BPSysAve +
+    TotChol +
+    Gender +
+    Race1 +
+    PhysActive +
+    Smoke100,
+  data = model_sens,
+  family = binomial()
+)
+
+coef_comparison <- tibble(
+  Term = names(coef(fit_full)),
+  Primary = coef(fit_full),
+  Sensitivity = coef(fit_sens)[names(coef(fit_full))]
+)
+
+coef_comparison
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Focus on coefficient direction and scale, uncertainty intervals, fit statistics, and diagnostics. Statistical significance alone does not establish practical importance or model adequacy.
+
+
+#### 30. Sensitivity Analysis: Complete Case versus Multiple Imputation
+
+<!-- generated-learning-note -->
+This subsection explains **30. Sensitivity Analysis: Complete Case versus Multiple Imputation** and shows how it contributes to the overall NHANES Diabetes Prediction: Complete Clinical Prediction Modeling Workflow in R workflow.
+
+
+Complete-case model:
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r complete-case-model}
+fit_cc <- glm(
+  Diabetes_num ~
+    Age +
+    BMI +
+    BPSysAve +
+    TotChol +
+    Gender +
+    Race1 +
+    PhysActive +
+    Smoke100,
+  data = model_cc,
+  family = binomial()
+)
+
+broom::tidy(
+  fit_cc,
+  exponentiate = TRUE,
+  conf.int = TRUE
+)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+
+Compare this with the pooled MI estimates reported earlier.
+
+#### 31. Sensitivity Analysis: Linear versus Spline Functional Forms
+
+<!-- generated-learning-note -->
+This subsection explains **31. Sensitivity Analysis: Linear versus Spline Functional Forms** and shows how it contributes to the overall NHANES Diabetes Prediction: Complete Clinical Prediction Modeling Workflow in R workflow.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r linear-vs-spline-validation}
+set.seed(2026)
+
+val_linear <- validate(
+  fit_linear,
+  method = "boot",
+  B = 300
+)
+
+set.seed(2026)
+
+val_spline <- validate(
+  fit_spline,
+  method = "boot",
+  B = 300
+)
+
+val_linear
+val_spline
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+If a more complex spline model provides little improvement after optimism correction, the simpler linear model may be preferable.
+
+#### 32. Subgroup Performance
+
+<!-- generated-learning-note -->
+This subsection explains **32. Subgroup Performance** and shows how it contributes to the overall NHANES Diabetes Prediction: Complete Clinical Prediction Modeling Workflow in R workflow.
+
+
+Subgroup evaluation asks whether the **same model** performs similarly across clinically important groups. It is different from fitting a new model within each subgroup.
+
+#### 32.1 AUC by gender
+
+<!-- generated-learning-note -->
+This subsection explains **32.1 AUC by gender** and shows how it contributes to the overall NHANES Diabetes Prediction: Complete Clinical Prediction Modeling Workflow in R workflow.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r subgroup-gender-auc}
+gender_auc <- model_complete %>%
+  split(.$Gender) %>%
+  imap_dfr(
+    function(dat, group_name) {
+      if (length(unique(dat$Diabetes_num)) < 2) {
+        return(
+          tibble(
+            Gender = group_name,
+            N = nrow(dat),
+            AUC = NA_real_
+          )
+        )
+      }
+
+      r <- roc(
+        dat$Diabetes_num,
+        dat$pred_prob,
+        quiet = TRUE
+      )
+
+      tibble(
+        Gender = group_name,
+        N = nrow(dat),
+        AUC = as.numeric(auc(r))
+      )
+    }
+  )
+
+gender_auc
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+#### 32.2 Mean predicted versus observed risk by race
+
+<!-- generated-learning-note -->
+This subsection explains **32.2 Mean predicted versus observed risk by race** and shows how it contributes to the overall NHANES Diabetes Prediction: Complete Clinical Prediction Modeling Workflow in R workflow.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block prepares the analysis data. Follow each transformation carefully because filtering, recoding, grouping, and reshaping determine the observations used downstream.
+
+```{r subgroup-race-calibration}
+race_calibration <- model_complete %>%
+  group_by(Race1) %>%
+  summarise(
+    N = n(),
+    Observed = mean(Diabetes_num),
+    Predicted = mean(pred_prob),
+    Difference = Predicted - Observed,
+    .groups = "drop"
+  )
+
+race_calibration
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the data before and after the transformation. Confirm that row counts, group sizes, missingness, and variable values changed as intended.
+
+
+This is only a simple subgroup calibration summary. More complete subgroup validation would also examine calibration slopes and smooth calibration curves where sample size permits.
+
+#### 33. Temporal Validation Using Survey Cycle
+
+<!-- generated-learning-note -->
+This subsection explains **33. Temporal Validation Using Survey Cycle** and shows how it contributes to the overall NHANES Diabetes Prediction: Complete Clinical Prediction Modeling Workflow in R workflow.
+
+
+The `NHANES` teaching dataset contains two survey cycles. We use the earlier cycle for development and the later cycle as a temporal validation sample.
+
+Check the actual coding first:
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block calculates descriptive summaries. Check the denominator, grouping variables, units, and treatment of missing values.
+
+```{r survey-year-levels}
+levels(NHANES$SurveyYr)
+table(NHANES$SurveyYr, useNA = "ifany")
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Use the displayed values to understand center, spread, frequency, and missingness; investigate any implausible or unexpected result.
+
+
+#### 33.1 Create temporal-validation data
+
+<!-- generated-learning-note -->
+This section prepares the information needed for **33.1 Create temporal-validation data**. Check variable definitions, units, coding, and missing values before moving to analysis.
+
+
+For clarity, this section uses complete cases. In a publication-level analysis, the missing-data strategy should be carefully transported to the validation sample as well.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block prepares the analysis data. Follow each transformation carefully because filtering, recoding, grouping, and reshaping determine the observations used downstream.
+
+```{r temporal-data}
+temporal_data <- NHANES %>%
+  filter(
+    Age >= 20,
+    Diabetes %in% c("Yes", "No")
+  ) %>%
+  mutate(
+    Diabetes_num = if_else(Diabetes == "Yes", 1L, 0L)
+  ) %>%
+  select(
+    SurveyYr,
+    Diabetes_num,
+    Age,
+    BMI,
+    BPSysAve,
+    TotChol,
+    Gender,
+    Race1,
+    PhysActive,
+    Smoke100
+  ) %>%
+  drop_na()
+
+survey_levels <- levels(droplevels(temporal_data$SurveyYr))
+
+if (length(survey_levels) != 2) {
+  stop(
+    "Expected exactly two SurveyYr levels, but found: ",
+    paste(survey_levels, collapse = ", ")
+  )
+}
+
+survey_levels
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the data before and after the transformation. Confirm that row counts, group sizes, missingness, and variable values changed as intended.
+
+
+Use the first factor level as development and the second as validation:
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block prepares the analysis data. Follow each transformation carefully because filtering, recoding, grouping, and reshaping determine the observations used downstream.
+
+```{r temporal-split}
+development_level <- survey_levels[1]
+validation_level <- survey_levels[2]
+
+development <- temporal_data %>%
+  filter(SurveyYr == development_level) %>%
+  droplevels()
+
+validation <- temporal_data %>%
+  filter(SurveyYr == validation_level) %>%
+  droplevels()
+
+cat("Development cycle:", development_level, "N =", nrow(development), "\n")
+cat("Validation cycle:", validation_level, "N =", nrow(validation), "\n")
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the data before and after the transformation. Confirm that row counts, group sizes, missingness, and variable values changed as intended.
+
+
+#### 34. Develop the Model Only in the Earlier Survey Cycle
+
+<!-- generated-learning-note -->
+This section develops **34. Develop the Model Only in the Earlier Survey Cycle**. Read the model specification together with its assumptions and the scale of each reported effect.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block specifies and fits the statistical model. Identify the outcome, predictors, reference levels, link or distribution, and any correlation structure before interpreting coefficients.
+
+```{r temporal-development-model}
+fit_dev <- glm(
+  Diabetes_num ~
+    Age +
+    BMI +
+    BPSysAve +
+    TotChol +
+    Gender +
+    Race1 +
+    PhysActive +
+    Smoke100,
+  data = development,
+  family = binomial()
+)
+
+summary(fit_dev)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Focus on coefficient direction and scale, uncertainty intervals, fit statistics, and diagnostics. Statistical significance alone does not establish practical importance or model adequacy.
+
+
+#### 35. Apply the Frozen Model to the Validation Cycle
+
+<!-- generated-learning-note -->
+This section develops **35. Apply the Frozen Model to the Validation Cycle**. Read the model specification together with its assumptions and the scale of each reported effect.
+
+
+The validation model must **not be refitted** before performance is evaluated.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block extracts inferential or predictive results from fitted objects. Match each estimate, interval, contrast, or diagnostic to the quantity it represents.
+
+```{r temporal-predict}
+validation$pred <- predict(
+  fit_dev,
+  newdata = validation,
+  type = "response"
+)
+
+validation$lp <- predict(
+  fit_dev,
+  newdata = validation,
+  type = "link"
+)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Interpret estimates on the scale reported by the function, and use intervals or other uncertainty measures when drawing conclusions.
+
+
+#### 36. Temporal Validation Discrimination
+
+<!-- generated-learning-note -->
+This subsection explains **36. Temporal Validation Discrimination** and shows how it contributes to the overall NHANES Diabetes Prediction: Complete Clinical Prediction Modeling Workflow in R workflow.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r temporal-auc}
+roc_val <- roc(
+  response = validation$Diabetes_num,
+  predictor = validation$pred,
+  quiet = TRUE
+)
+
+validation_auc <- as.numeric(auc(roc_val))
+validation_auc_ci <- ci.auc(roc_val)
+
+validation_auc
+validation_auc_ci
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r temporal-roc-plot, fig.height=5, fig.width=6}
+plot(
+  roc_val,
+  print.auc = TRUE,
+  main = "ROC Curve: Temporal Validation"
+)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+#### 37. Temporal Validation Calibration
+
+<!-- generated-learning-note -->
+This subsection explains **37. Temporal Validation Calibration** and shows how it contributes to the overall NHANES Diabetes Prediction: Complete Clinical Prediction Modeling Workflow in R workflow.
+
+
+#### 37.1 Calibration-in-the-large
+
+<!-- generated-learning-note -->
+This subsection explains **37.1 Calibration-in-the-large** and shows how it contributes to the overall NHANES Diabetes Prediction: Complete Clinical Prediction Modeling Workflow in R workflow.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block specifies and fits the statistical model. Identify the outcome, predictors, reference levels, link or distribution, and any correlation structure before interpreting coefficients.
+
+```{r temporal-calibration-intercept}
+cal_intercept_val_model <- glm(
+  Diabetes_num ~ 1 + offset(lp),
+  data = validation,
+  family = binomial()
+)
+
+cal_intercept_val <- unname(
+  coef(cal_intercept_val_model)[1]
+)
+
+cal_intercept_val
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Focus on coefficient direction and scale, uncertainty intervals, fit statistics, and diagnostics. Statistical significance alone does not establish practical importance or model adequacy.
+
+
+Ideal:
+
+\[
+\alpha = 0.
+\]
+
+#### 37.2 Calibration slope
+
+<!-- generated-learning-note -->
+This subsection explains **37.2 Calibration slope** and shows how it contributes to the overall NHANES Diabetes Prediction: Complete Clinical Prediction Modeling Workflow in R workflow.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block specifies and fits the statistical model. Identify the outcome, predictors, reference levels, link or distribution, and any correlation structure before interpreting coefficients.
+
+```{r temporal-calibration-slope}
+cal_slope_val_model <- glm(
+  Diabetes_num ~ lp,
+  data = validation,
+  family = binomial()
+)
+
+cal_slope_val <- unname(
+  coef(cal_slope_val_model)[2]
+)
+
+cal_slope_val
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Focus on coefficient direction and scale, uncertainty intervals, fit statistics, and diagnostics. Statistical significance alone does not establish practical importance or model adequacy.
+
+
+Ideal:
+
+\[
+\gamma = 1.
+\]
+
+#### 37.3 Decile calibration table
+
+<!-- generated-learning-note -->
+This subsection explains **37.3 Decile calibration table** and shows how it contributes to the overall NHANES Diabetes Prediction: Complete Clinical Prediction Modeling Workflow in R workflow.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block prepares the analysis data. Follow each transformation carefully because filtering, recoding, grouping, and reshaping determine the observations used downstream.
+
+```{r temporal-calibration-table}
+validation <- validation %>%
+  mutate(
+    risk_group = ntile(pred, 10)
+  )
+
+calibration_table <- validation %>%
+  group_by(risk_group) %>%
+  summarise(
+    N = n(),
+    Predicted = mean(pred),
+    Observed = mean(Diabetes_num),
+    .groups = "drop"
+  )
+
+calibration_table
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the data before and after the transformation. Confirm that row counts, group sizes, missingness, and variable values changed as intended.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r temporal-calibration-plot, fig.height=6, fig.width=7}
+ggplot(
+  calibration_table,
+  aes(
+    x = Predicted,
+    y = Observed
+  )
+) +
+  geom_point() +
+  geom_line() +
+  geom_abline(
+    intercept = 0,
+    slope = 1,
+    linetype = 2
+  ) +
+  coord_equal() +
+  labs(
+    title = "Temporal Validation Calibration",
+    x = "Mean Predicted Probability",
+    y = "Observed Proportion"
+  ) +
+  theme_minimal()
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+#### 38. Temporal Validation Brier Score
+
+<!-- generated-learning-note -->
+This subsection explains **38. Temporal Validation Brier Score** and shows how it contributes to the overall NHANES Diabetes Prediction: Complete Clinical Prediction Modeling Workflow in R workflow.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block calculates descriptive summaries. Check the denominator, grouping variables, units, and treatment of missing values.
+
+```{r temporal-brier}
+brier_val <- mean(
+  (validation$pred - validation$Diabetes_num)^2
+)
+
+brier_val
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Use the displayed values to understand center, spread, frequency, and missingness; investigate any implausible or unexpected result.
+
+
+#### 39. Recalibration
+
+<!-- generated-learning-note -->
+This subsection explains **39. Recalibration** and shows how it contributes to the overall NHANES Diabetes Prediction: Complete Clinical Prediction Modeling Workflow in R workflow.
+
+
+If discrimination remains acceptable but calibration has shifted, a recalibration model can be considered.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block specifies and fits the statistical model. Identify the outcome, predictors, reference levels, link or distribution, and any correlation structure before interpreting coefficients.
+
+```{r recalibration-model}
+recal_model <- glm(
+  Diabetes_num ~ lp,
+  data = validation,
+  family = binomial()
+)
+
+coef(recal_model)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Focus on coefficient direction and scale, uncertainty intervals, fit statistics, and diagnostics. Statistical significance alone does not establish practical importance or model adequacy.
+
+
+The updated linear predictor is
+
+\[
+LP_{new} = \alpha + \gamma LP_{old},
+\]
+
+where \(\alpha\) is the calibration intercept and \(\gamma\) is the calibration slope.
+
+Predictions from the recalibrated model:
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block prepares the analysis data. Follow each transformation carefully because filtering, recoding, grouping, and reshaping determine the observations used downstream.
+
+```{r recalibrated-predictions}
+validation$pred_recalibrated <- predict(
+  recal_model,
+  type = "response"
+)
+
+head(
+  validation %>%
+    select(pred, pred_recalibrated)
+)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the data before and after the transformation. Confirm that row counts, group sizes, missingness, and variable values changed as intended.
+
+
+#### 40. Final Logistic Model for Individual Prediction
+
+<!-- generated-learning-note -->
+This section develops **40. Final Logistic Model for Individual Prediction**. Read the model specification together with its assumptions and the scale of each reported effect.
+
+
+For an easy-to-deploy risk calculator, use the ordinary logistic model fitted to the completed modeling dataset.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block specifies and fits the statistical model. Identify the outcome, predictors, reference levels, link or distribution, and any correlation structure before interpreting coefficients.
+
+```{r final-model}
+final_fit <- glm(
+  Diabetes_num ~
+    Age +
+    BMI +
+    BPSysAve +
+    TotChol +
+    Gender +
+    Race1 +
+    PhysActive +
+    Smoke100,
+  data = model_complete,
+  family = binomial()
+)
+
+coef(final_fit)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Focus on coefficient direction and scale, uncertainty intervals, fit statistics, and diagnostics. Statistical significance alone does not establish practical importance or model adequacy.
+
+
+The linear predictor is
+
+\[
+LP = \beta_0 + \sum_{j=1}^{p}\beta_j X_j,
+\]
+
+and the predicted probability is
+
+\[
+P(\text{Diabetes}) = \frac{e^{LP}}{1+e^{LP}}.
+\]
+
+#### 41. Robust Construction of a New Patient
+
+<!-- generated-learning-note -->
+This subsection explains **41. Robust Construction of a New Patient** and shows how it contributes to the overall NHANES Diabetes Prediction: Complete Clinical Prediction Modeling Workflow in R workflow.
+
+
+Factor levels can differ in capitalization across datasets. The following helper selects an available level using case-insensitive matching.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block defines a reusable function. Separate its inputs, calculations, and returned value before applying it to new data.
+
+```{r factor-helper}
+match_factor_level <- function(x, desired) {
+  lvls <- levels(x)
+  idx <- match(tolower(desired), tolower(lvls))
+
+  if (is.na(idx)) {
+    stop(
+      "Requested level '", desired,
+      "' not found. Available levels: ",
+      paste(lvls, collapse = ", ")
+    )
+  }
+
+  lvls[idx]
+}
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Test the function with simple inputs whose expected answer is known before relying on it in a larger workflow.
+
+
+Inspect available levels:
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r final-factor-levels}
+levels(model_complete$Gender)
+levels(model_complete$Race1)
+levels(model_complete$PhysActive)
+levels(model_complete$Smoke100)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+Create an illustrative new patient:
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r new-patient}
+new_patient <- tibble(
+  Age = 60,
+  BMI = 32,
+  BPSysAve = 145,
+  TotChol = 5.2,
+  Gender = factor(
+    match_factor_level(model_complete$Gender, "male"),
+    levels = levels(model_complete$Gender)
+  ),
+  Race1 = factor(
+    match_factor_level(model_complete$Race1, "white"),
+    levels = levels(model_complete$Race1)
+  ),
+  PhysActive = factor(
+    match_factor_level(model_complete$PhysActive, "no"),
+    levels = levels(model_complete$PhysActive)
+  ),
+  Smoke100 = factor(
+    match_factor_level(model_complete$Smoke100, "yes"),
+    levels = levels(model_complete$Smoke100)
+  )
+)
+
+new_patient
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+#### 42. Predict Diabetes Probability for the New Patient
+
+<!-- generated-learning-note -->
+This subsection explains **42. Predict Diabetes Probability for the New Patient** and shows how it contributes to the overall NHANES Diabetes Prediction: Complete Clinical Prediction Modeling Workflow in R workflow.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block extracts inferential or predictive results from fitted objects. Match each estimate, interval, contrast, or diagnostic to the quantity it represents.
+
+```{r new-patient-prediction}
+new_patient_probability <- predict(
+  final_fit,
+  newdata = new_patient,
+  type = "response"
+)
+
+new_patient_probability
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Interpret estimates on the scale reported by the function, and use intervals or other uncertainty measures when drawing conclusions.
+
+
+Because the `NHANES` example is cross-sectional, interpret this as a model-based probability of **prevalent diabetes status**, not future 5-year risk.
+
+#### 43. Nomogram
+
+<!-- generated-learning-note -->
+This subsection explains **43. Nomogram** and shows how it contributes to the overall NHANES Diabetes Prediction: Complete Clinical Prediction Modeling Workflow in R workflow.
+
+
+A nomogram can be created from the ordinary `lrm()` model.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r nomogram-model}
+nom_fit <- lrm(
+  Diabetes_num ~
+    Age +
+    BMI +
+    BPSysAve +
+    TotChol +
+    Gender +
+    Race1 +
+    PhysActive +
+    Smoke100,
+  data = model_complete,
+  x = TRUE,
+  y = TRUE
+)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r nomogram, fig.height=8, fig.width=11}
+nom <- nomogram(
+  nom_fit,
+  fun = plogis,
+  fun.at = c(0.05, 0.10, 0.20, 0.30, 0.50),
+  funlabel = "Probability of Diabetes"
+)
+
+plot(nom)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+#### 44. Summary Performance Table
+
+<!-- generated-learning-note -->
+This section focuses on **44. Summary Performance Table**. Emphasize effect size, uncertainty, diagnostics, and scientific relevance rather than a single threshold.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block calculates descriptive summaries. Check the denominator, grouping variables, units, and treatment of missing values.
+
+```{r performance-summary}
+performance_summary <- tibble(
+  Domain = c(
+    "Development sample size",
+    "Development event rate",
+    "Apparent AUC",
+    "Apparent Brier score",
+    "Temporal validation sample size",
+    "Temporal validation AUC",
+    "Temporal validation calibration intercept",
+    "Temporal validation calibration slope",
+    "Temporal validation Brier score"
+  ),
+  Value = c(
+    as.character(nrow(model_complete)),
+    sprintf("%.3f", mean(model_complete$Diabetes_num)),
+    sprintf("%.3f", as.numeric(auc(roc_obj))),
+    sprintf("%.3f", brier_model),
+    as.character(nrow(validation)),
+    sprintf("%.3f", validation_auc),
+    sprintf("%.3f", cal_intercept_val),
+    sprintf("%.3f", cal_slope_val),
+    sprintf("%.3f", brier_val)
+  )
+)
+
+performance_summary
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Use the displayed values to understand center, spread, frequency, and missingness; investigate any implausible or unexpected result.
+
+
+#### 45. Recommended Interpretation Framework
+
+<!-- generated-learning-note -->
+This section focuses on **45. Recommended Interpretation Framework**. Emphasize effect size, uncertainty, diagnostics, and scientific relevance rather than a single threshold.
+
+
+A clinical prediction model should not be judged by AUC alone.
+
+A useful summary is
+
+\[
+\boxed{
+\text{Model Quality}
+=
+\text{Discrimination}
++
+\text{Calibration}
++
+\text{Prediction Error}
++
+\text{Clinical Utility}
++
+\text{Validation}
+}
+\]
+
+#### Discrimination
+
+<!-- generated-learning-note -->
+This subsection explains **Discrimination** and shows how it contributes to the overall NHANES Diabetes Prediction: Complete Clinical Prediction Modeling Workflow in R workflow.
+
+
+Typical measure:
+
+\[
+AUC/C\text{-statistic}.
+\]
+
+Question:
+
+> Can the model rank participants with the outcome above those without the outcome?
+
+#### Calibration
+
+<!-- generated-learning-note -->
+This subsection explains **Calibration** and shows how it contributes to the overall NHANES Diabetes Prediction: Complete Clinical Prediction Modeling Workflow in R workflow.
+
+
+Typical measures:
+
+- Calibration plot
+- Calibration intercept
+- Calibration slope
+
+Question:
+
+> Are predicted probabilities numerically close to observed risks?
+
+#### Overall prediction error
+
+<!-- generated-learning-note -->
+This subsection explains **Overall prediction error** and shows how it contributes to the overall NHANES Diabetes Prediction: Complete Clinical Prediction Modeling Workflow in R workflow.
+
+
+Typical measure:
+
+\[
+\text{Brier Score}.
+\]
+
+#### Clinical utility
+
+<!-- generated-learning-note -->
+This subsection explains **Clinical utility** and shows how it contributes to the overall NHANES Diabetes Prediction: Complete Clinical Prediction Modeling Workflow in R workflow.
+
+
+Typical method:
+
+\[
+\text{Decision Curve Analysis}.
+\]
+
+Question:
+
+> Does using the model provide greater clinical net benefit than reasonable default strategies over relevant threshold probabilities?
+
+#### Generalizability
+
+<!-- generated-learning-note -->
+This subsection explains **Generalizability** and shows how it contributes to the overall NHANES Diabetes Prediction: Complete Clinical Prediction Modeling Workflow in R workflow.
+
+
+Assess with:
+
+- temporal validation
+- geographic validation
+- external institutional validation
+- population validation
+
+#### 46. Full Workflow Recap
+
+<!-- generated-learning-note -->
+This subsection explains **46. Full Workflow Recap** and shows how it contributes to the overall NHANES Diabetes Prediction: Complete Clinical Prediction Modeling Workflow in R workflow.
+
+
+The complete process can be summarized as:
+
+```text
+Research question
+        ↓
+Define target population and outcome
+        ↓
+Choose clinically justified candidate predictors
+        ↓
+Check IDs and duplicates
+        ↓
+Check coding and variable types
+        ↓
+Check ranges and clinically impossible values
+        ↓
+Assess missingness
+        ↓
+Assess outliers
+        ↓
+EDA and descriptive statistics
+        ↓
+Check correlation and multicollinearity
+        ↓
+Assess continuous-variable functional forms
+        ↓
+Multiple imputation
+        ↓
+Fit prespecified/full model
+        ↓
+Consider nonlinear terms and interactions
+        ↓
+Consider penalization/shrinkage
+        ↓
+Estimate apparent performance
+        ↓
+Bootstrap internal validation
+        ↓
+Optimism-corrected discrimination
+        ↓
+Calibration assessment
+        ↓
+Brier score
+        ↓
+Decision-curve analysis
+        ↓
+Clinically justified threshold assessment
+        ↓
+Sensitivity analyses
+        ↓
+Subgroup performance
+        ↓
+Temporal/external validation
+        ↓
+Recalibration if needed
+        ↓
+Individual prediction
+        ↓
+Nomogram / calculator / deployment
+```
+
+#### 47. Publication-Level Upgrades
+
+<!-- generated-learning-note -->
+This subsection explains **47. Publication-Level Upgrades** and shows how it contributes to the overall NHANES Diabetes Prediction: Complete Clinical Prediction Modeling Workflow in R workflow.
+
+
+For a real publication, consider the following upgrades beyond this teaching example:
+
+1. Use the original CDC NHANES data rather than the teaching package dataset.
+2. Account for NHANES sampling weights, strata, and PSU structure when the research question targets population inference.
+3. Prespecify predictors based on clinical knowledge and prior literature.
+4. Determine model sample size using prediction-model sample-size methods rather than relying only on the historical `10 events per variable` rule.
+5. Avoid arbitrary categorization of continuous variables.
+6. Use nonlinear modeling when clinically/statistically justified.
+7. Perform multiple imputation within the resampling procedure for rigorous internal validation with missing data.
+8. Preserve the complete model-building algorithm inside every bootstrap resample, including variable selection if variable selection is part of the algorithm.
+9. Report optimism-corrected discrimination and calibration.
+10. Validate the frozen model in independent data before clinical deployment.
+11. Report according to current prediction-model reporting guidance applicable to the study.
+12. Keep data-cleaning, derivation, modeling, validation, and reporting code reproducible and version controlled.
+
+#### 48. Session Information
+
+<!-- generated-learning-note -->
+This subsection explains **48. Session Information** and shows how it contributes to the overall NHANES Diabetes Prediction: Complete Clinical Prediction Modeling Workflow in R workflow.
+
+
+Always save session information so the analysis can be reproduced later.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r session-info}
+sessionInfo()
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+## Interpreting the Results
+
+Check timing, coding, measurement quality, missingness, and the causal role of each candidate covariate. Treat the output as evidence generated under the stated data, coding choices, and assumptions. Before using the workflow in practice, replace example inputs with validated data and confirm that the method targets the intended scientific question.
+
+## Key Takeaways
+
+- **Connect method to purpose.** Identify the question and target quantity before choosing code or a model.
+- **Read code and output together.** Confirm what each object, estimate, interval, table, or plot represents.
+- **Check assumptions and diagnostics.** A successful computation is not by itself evidence that the result is reliable.
+- **Adapt deliberately.** When applying the example elsewhere, document changes to data definitions, parameters, and analytical choices.

@@ -1,0 +1,322 @@
+---
+title: "Standardization and G estimation"
+description: "A practical R learning guide to Standardization and G estimation, with concise explanations, reproducible examples, and interpretation guidance."
+date: 2026-08-31
+section: "Epidemiology & Real-World Evidence"
+category: "Causal Methods"
+topic: "Standardization and G estimation"
+type: article
+tags: ["Causal Methods", "Epidemiology & Real-World Evidence", "Standardization", "G", "estimation"]
+status: published
+featured: true
+youtube: []
+pdf: []
+downloads: []
+validate-yaml: false
+execute:
+  enabled: false
+  echo: true
+  warning: false
+  error: true
+---
+
+## Why This Topic Matters
+
+Causal methods combine design assumptions and statistical adjustment to estimate well-defined treatment or exposure contrasts.
+
+## Learning Objectives
+
+After working through this material, you should be able to:
+
+- explain the main ideas behind **Standardization and G estimation**;
+- interpret the R workflow and its output; and
+- adapt the examples to a related analysis.
+
+## Lesson Roadmap
+
+The original material is organized around the following topics:
+
+1. Standardization and G estimation
+
+## How to Use This Lesson
+
+Read the explanation before each workflow, then run the R chunks in sequence. Code and output are shown together so that each numerical or graphical result can be connected to the command that produced it. Some source examples require optional packages or external data. Those setup-dependent chunks remain visible for reference but are marked `eval: false` when they cannot be reproduced safely in a clean website build.
+
+## Reproducible Learning Check
+
+This short R chunk confirms the scope of the lesson and always produces a visible output.
+
+```{r}
+#| label: learning-overview
+learning_overview <- data.frame(
+  section = "Epidemiology & Real-World Evidence",
+  category = "Causal Methods",
+  topic = "Standardization and G estimation"
+)
+learning_overview
+```
+
+## Learning Material
+
+The following material develops **Standardization and G estimation** from core ideas to practical implementation. Definitions and assumptions come first; worked code then shows how the ideas are represented computationally.
+
+### Conceptual Foundation
+
+The material below closely follows the original R Markdown source, with its examples retained for study and reuse.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#### Standardization and G estimation
+
+<!-- generated-learning-note -->
+This subsection explains **Standardization and G estimation** and shows how it contributes to the overall Standardization and G estimation workflow.
+
+
+The standardized mean (typical weighting on the outcome) is the weighted average of the conditional means in each stratum, and the weights are the probability of occurrence Pr [L = l ] in each stratum. But in high-dimensional data—such as our smoking cessation example—it is impossible for us to estimate E[Y|A=1,C =0,L=l] in a nonparametric way (C=0 means no censor).  
+
+That is, when calculating the standardized mean, the stratum with the largest number of people has the most weight. 
+
+- Estimated prediction mean by model
+
+### R Workflow and Examples
+
+Run the examples in order because later blocks may reuse objects created earlier. Each block includes a short purpose statement and guidance for reading its output.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This source block depends on optional software, external data, or a machine-specific path. It is retained as a reference and is not executed during the website build.
+
+```{r pressure, echo=FALSE}
+#| eval: false
+#| code-fold: true
+library("readxl")
+library(tidyverse)
+library(here)
+nhefs <- read.csv("C:\\Users\\hed2\\Downloads\\mybook2\\mybook2\\nhefs.csv")
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Because this block is not executed, it produces no website output. Enable it only after its dependencies and input paths have been validated.
+
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block specifies and fits the statistical model. Identify the outcome, predictors, reference levels, link or distribution, and any correlation structure before interpreting coefficients.
+
+```{r}
+# some preprocessing of the data
+nhefs$cens <- ifelse(is.na(nhefs$wt82), 1, 0)
+
+fit <- glm(wt82_71 ~ qsmk + sex + race + age + I(age*age) + as.factor(education)
+           + smokeintensity + I(smokeintensity*smokeintensity) + smokeyrs
+           + I(smokeyrs*smokeyrs) + as.factor(exercise) + as.factor(active)
+           + wt71 + I(wt71*wt71) + qsmk*smokeintensity, data=nhefs)
+summary(fit)
+
+nhefs$predicted.meanY <- predict(fit, nhefs) # conditional E[Y | A=1,C =0,L= l] 
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Focus on coefficient direction and scale, uncertainty intervals, fit statistics, and diagnostics. Statistical significance alone does not establish practical importance or model adequacy.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+nhefs[which(nhefs$seqn==24770), c("predicted.meanY", "qsmk", "sex", 
+                                 "race", "age", "education", 
+                                 "smokeintensity", "smokeyrs", "exercise",
+                                 "active", "wt71")]
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block extracts inferential or predictive results from fitted objects. Match each estimate, interval, contrast, or diagnostic to the quantity it represents.
+
+```{r}
+summary(nhefs$predicted.meanY[nhefs$cens==0])
+
+summary(nhefs$wt82_71[nhefs$cens==0])
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Interpret estimates on the scale reported by the function, and use intervals or other uncertainty measures when drawing conclusions.
+
+
+Our goal is to estimate when A=a, ∑E[Y|A=a,C=0,L =l]*Pr[L l]. The summation in L should be written as integral notation, since the variables in L are essentially continuous and cannot be represented by simple probabilities. But whatever the notation, we have now estimated E [Y | A = a, C =0, L = l ] for all combinations of A and L. Next we need to normalize these means according to the value l in L.
+
+
+
+- Standardization of outcome means according to the distribution of confounding variables
+
+In principle, we could compute this probability non parametrically by simply dividing the number of people with L = l by the total number of people.  
+
+Next we describe how to estimate in the treatment group ( A = 1 ) and the non-treatment group ( A = 0 ). 
+
+
+This method has four steps: data augmentation (create a data matrix), outcome regression, prediction, and standardization (`also can use the linear regression formula`).
+
+
+We need to add the second and third plates to the original data, fit the model  of E[Y|A=a,C =0,L= l], and then generate the predicted value. The mean of the predicted values in the second panel is 1.66, the value in the third panel is 5.18, and the causal effect E(Ya1,c0)-E(Ya0,c0) is 3.5.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block specifies and fits the statistical model. Identify the outcome, predictors, reference levels, link or distribution, and any correlation structure before interpreting coefficients.
+
+```{r}
+# create a dataset with 3 copies of each subject
+nhefs$interv <- -1 # 1st copy: equal to original one
+# original one
+
+interv0 <- nhefs # 2nd copy: treatment set to 0, outcome to missing 
+interv0$interv <- 0 # a=0
+interv0$qsmk <- 0 #  
+interv0$wt82_71 <- NA
+
+interv1 <- nhefs # 3rd copy: treatment set to 1, outcome to missing
+interv1$interv <- 1 #  
+interv1$qsmk <- 1 # A=1
+interv1$wt82_71 <- NA #
+
+onesample <- rbind(nhefs, interv0, interv1) # combining datasets # by rows
+
+# linear model to estimate mean outcome conditional on treatment and confounders . parameters are estimated using original observations only (nhefs)
+
+std <- glm(wt82_71 ~ qsmk + sex + race + age + I(age*age)
+           + as.factor(education) + smokeintensity 
+           + I(smokeintensity*smokeintensity) + smokeyrs 
+           + I(smokeyrs*smokeyrs) + as.factor(exercise) 
+           + as.factor(active) + wt71 + I(wt71*wt71) + I(qsmk*smokeintensity), 
+           data=onesample)# modeling
+summary(std)   
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Focus on coefficient direction and scale, uncertainty intervals, fit statistics, and diagnostics. Statistical significance alone does not establish practical importance or model adequacy.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block extracts inferential or predictive results from fitted objects. Match each estimate, interval, contrast, or diagnostic to the quantity it represents.
+
+```{r}
+onesample$predicted_meanY <- predict(std, onesample) # prediction
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Interpret estimates on the scale reported by the function, and use intervals or other uncertainty measures when drawing conclusions.
+
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block calculates descriptive summaries. Check the denominator, grouping variables, units, and treatment of missing values.
+
+```{r}
+# estimate mean outcome in each of the groups interv=0, and interv=1
+# this mean outcome is a weighted average of the mean outcomes in each combination of values of treatment and confounders, that is, the standardized outcome
+mean(onesample[which(onesample$interv==-1),]$predicted_meanY) # calculate
+mean(onesample[which(onesample$interv==0),]$predicted_meanY)
+mean(onesample[which(onesample$interv==1),]$predicted_meanY)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Use the displayed values to understand center, spread, frequency, and missingness; investigate any implausible or unexpected result.
+
+
+- Bootstrap method to calculate the confidence interval
+
+<!-- generated-learning-note -->
+**Purpose.** This source block depends on optional software, external data, or a machine-specific path. It is retained as a reference and is not executed during the website build.
+
+```{r}
+#| eval: false
+#| code-fold: true
+#install.packages("boot") # install package if required
+library(boot) # 
+
+# function to calculate difference in means
+# indices -i by row，frequencies-f ，weights-w   ，how to smaple
+
+standardization <- function(data, indices) {
+  # create a dataset with 3 copies of each subject
+  d <- data[indices,] # 1st copy: equal to original one，
+  d$interv <- -1
+  d0 <- d # 2nd copy: treatment set to 0, outcome to missing
+  d0$interv <- 0
+  d0$qsmk <- 0
+  d0$wt82_71 <- NA
+  d1 <- d # 3rd copy: treatment set to 1, outcome to missing
+  d1$interv <- 1
+  d1$qsmk <- 1
+  d1$wt82_71 <- NA
+  d.onesample <- rbind(d, d0, d1) # combining datasets
+  
+  # parameter estimates are used to predict mean outcome for observations with set treatment (interv=0 and interv=1)
+  fit <- glm(wt82_71 ~ qsmk + sex + race + age + I(age*age) + 
+               as.factor(education) + smokeintensity + 
+               I(smokeintensity*smokeintensity) + smokeyrs + I(smokeyrs*smokeyrs) +
+               as.factor(exercise) + as.factor(active) + wt71 + I(wt71*wt71), 
+             data=d.onesample)
+  
+  d.onesample$predicted_meanY <- predict(fit, d.onesample)
+  
+  # estimate mean outcome in each of the groups interv=-1, interv=0, and interv=1
+  return(c(mean(d.onesample$predicted_meanY[d.onesample$interv==-1]),
+           mean(d.onesample$predicted_meanY[d.onesample$interv==0]),
+           mean(d.onesample$predicted_meanY[d.onesample$interv==1]),
+           mean(d.onesample$predicted_meanY[d.onesample$interv==1])-
+             mean(d.onesample$predicted_meanY[d.onesample$interv==0])))
+}
+
+# bootstrap
+results <- boot(data=nhefs, statistic=standardization, R=5)
+
+# generating confidence intervals
+se <- c(sd(results$t[,1]), sd(results$t[,2]), 
+        sd(results$t[,3]), sd(results$t[,4]))
+mean <- results$t0 # t0 ?
+ll <- mean - qnorm(0.975)*se
+ul <- mean + qnorm(0.975)*se
+
+bootstrap <- data.frame(cbind(c("Observed", "No Treatment", "Treatment", 
+                                "Treatment - No Treatment"), mean, se, ll, ul))
+bootstrap
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Because this block is not executed, it produces no website output. Enable it only after its dependencies and input paths have been validated.
+
+`ipw and standardization is suitbale for simple randomization control trial.`
+
+The inverse probability weighted mean and the standardized mean are equal only when the model is not used, otherwise they are not necessarily equal. 
+
+The validity of causal inference depends on the following conditions: interchangeability, positivity, and consistency. It does not involve measurement errors and model errors.
+
+However, effect estimates from observational studies are always severely flawed. The problem is that no one can guarantee that these conditions will be perfectly established. Unmeasured confounding variables, nonoverlapping confounding variable distributions, poorly specified interventions, mismeasured variables, and misspecified models are all common problems we encounter in effect estimation. For example, we can try different models, but it is impossible to adjust for variables that are not measured. 
+
+The important problem with causal inference is that we cannot observe all the counterfactual data, so we use the above assumptions to approximate these data. The more we deviate from these assumptions, the more our effect estimates deviate from the true causal effect. Therefore, causal inferences drawn from observational studies must be viewed with caution. 
+
+
+Inverse probability weighting, standadization, and G-estimation are often collectively referred to as G-formula.
+
+## Interpreting the Results
+
+Check nuisance models, overlap, weights, balance, diagnostics, estimand alignment, and sensitivity to modeling choices. Treat the output as evidence generated under the stated data, coding choices, and assumptions. Before using the workflow in practice, replace example inputs with validated data and confirm that the method targets the intended scientific question.
+
+## Key Takeaways
+
+- **Connect method to purpose.** Identify the question and target quantity before choosing code or a model.
+- **Read code and output together.** Confirm what each object, estimate, interval, table, or plot represents.
+- **Check assumptions and diagnostics.** A successful computation is not by itself evidence that the result is reliable.
+- **Adapt deliberately.** When applying the example elsewhere, document changes to data definitions, parameters, and analytical choices.

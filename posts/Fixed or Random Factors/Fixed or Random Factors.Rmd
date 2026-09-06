@@ -1,0 +1,26 @@
+---
+title: "Fixed or Random Factors"
+output: html_document
+date: '2024-02-02'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Fixed or Random Factors
+
+E.g. Two way ANOVA
+
+#### Fixed effect factor: Data has been gathered from all the levels of the factor that are of interest.
+
+
+
+#### Random effect factor: The factor has many possible levels, interest is in all possible levels, but only a random sample of levels is included in the data.
+
+- The standard methods for analyzing random effects models assume that the random factor has infinitely many levels, but usually still work well if the total number of levels of the random factor is at least 100 times the number of levels observed in the data. 
+
+- An interaction term involving both a fixed and a random factor should be considered a random factor.
+
+- A factor that is nested in a random factor should be considered random.
+

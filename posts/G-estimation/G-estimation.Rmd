@@ -1,0 +1,120 @@
+
+
+## G-estimation  
+
+Inverse probability weighting, normalization, and G-estimation are often collectively referred to as G-formula.
+
+The counterfactual outcome Y a=0 of each individual can be expressed as a function of the observed data and the unknown parameter ψ1. 
+
+If the model is correct and we know the value of ψ 1 , then we can compute the counterfactual outcome Y a = 0 for each individual without treatment. Now we don't know the value of ψ1, our goal is to estimate ψ1.
+
+![](C:\Users\hed2\Downloads\mybook2\mybook2\g-computer.png)
+
+- Processing data
+```{r pressure, echo=FALSE}
+library("readxl")
+library(tidyverse)
+library(here)
+nhefs <- read.csv("C:\\Users\\hed2\\Downloads\\mybook2\\mybook2\\nhefs.csv")
+```
+
+```{r}
+# some processing of the data
+nhefs$cens <- ifelse(is.na(nhefs$wt82), 1, 0) # missing
+
+# ranking of extreme observations
+#install.packages("Hmisc")
+library(Hmisc)
+describe(nhefs$wt82_71)
+```
+
+ 
+Calculate the weight for no censor 
+```{r}
+# estimation of denominator of ip weights for Censor using all data
+cw.denom <- glm(cens==0 ~ qsmk + sex + race + age + I(age^2) 
+                     + as.factor(education) + smokeintensity + I(smokeintensity^2) 
+                     + smokeyrs + I(smokeyrs^2) + as.factor(exercise) 
+                     + as.factor(active) + wt71 + I(wt71^2), 
+                     data = nhefs, family = binomial("logit"))
+
+summary(cw.denom)
+
+nhefs$pd.c <- predict(cw.denom, nhefs, type="response") # predict
+
+# no censor
+nhefs$wc <- ifelse(nhefs$cens==0, 1/nhefs$pd.c, NA)  #  observations with cens=1 only contribute to censoring models
+
+```
+
+
+
+- Structural Embedding Models of Two or More Parameters
+
+In this model, we need to find possible combinations of ψ 1  and ψ 2 (interaction).
+
+Calculate probability (ps)
+```{r}
+# Calculate probability (ps) 
+
+logit.est <- glm(qsmk ~ sex + race + age + I(age^2) + as.factor(education) 
+                 + smokeintensity + I(smokeintensity^2) + smokeyrs 
+                 + I(smokeyrs^2) + as.factor(exercise) + as.factor(active) 
+                 + wt71 + I(wt71^2), data = nhefs, weight = wc, 
+                 family = binomial())
+
+summary(logit.est)
+
+nhefs$pqsmk <- predict(logit.est, nhefs, type = "response")
+```
+
+
+Calculate psi (ATE) after weighting outcome and exposure.
+
+- For 1-parameter model  
+```{r}
+# solve sum(w_c * H(psi) * (qsmk - E[qsmk | L]))  = 0
+# for a single psi and H(psi) = wt82_71 - psi * qsmk
+# this can be solved as psi = sum( w_c * wt82_71 * (qsmk - pqsmk)) / sum(w_c * qsmk * (qsmk - pqsmk))
+
+nhefs.c <- nhefs[which(!is.na(nhefs$wt82)),]
+with(nhefs.c, sum(wc*wt82_71*(qsmk-pqsmk)) / sum(wc*qsmk*(qsmk - pqsmk))) #weighting outcome and exposure
+
+# = beta A
+```
+
+- G-estimation: estimator for 2-parameter model  
+```{r}
+diff = with(nhefs.c, qsmk - pqsmk)
+diff2 = with(nhefs.c, wc * diff)   #adjust weights
+
+# interaction effect matrix
+lhs = matrix(0,2,2)
+lhs[1,1] = with(nhefs.c, sum(qsmk * diff2))
+lhs[1,2] = with(nhefs.c, sum(qsmk * smokeintensity  * diff2))
+lhs[2,1] = with(nhefs.c, sum(qsmk * smokeintensity * diff2))
+lhs[2,2] = with(nhefs.c, sum(qsmk * smokeintensity * smokeintensity * diff2))
+
+rhs = matrix(0,2,1)
+rhs[1] = with(nhefs.c, sum(wt82_71 * diff2))
+rhs[2] = with(nhefs.c, sum(wt82_71 * smokeintensity * diff2))
+
+psi = t(solve(lhs,rhs))
+psi  #A and interaction factor
+```
+
+```{r}
+(lhs)
+(rhs)
+```
+
+- Calculate the average total effect of A when smokeintensity= mean
+```{r}
+mean(nhefs.c$smokeintensity )
+
+2.86*1+ 0.03*mean(nhefs.c$smokeintensity )
+```
+
+`weight the outcome mean`
+
+

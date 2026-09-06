@@ -1,0 +1,424 @@
+---
+title: "BE Simulation Report"
+description: "A practical R learning guide to BE Simulation Report, with concise explanations, reproducible examples, and interpretation guidance."
+date: 2026-08-31
+section: "Biostatistics"
+category: "Non-Inferiority & Equivalence"
+topic: "BE Simulation Report"
+type: article
+tags: ["Non-Inferiority & Equivalence", "Biostatistics", "BE", "Simulation", "Report"]
+status: published
+featured: true
+youtube: []
+pdf: []
+downloads: []
+validate-yaml: false
+execute:
+  echo: true
+  warning: false
+  error: true
+---
+
+## Why This Topic Matters
+
+Non-inferiority and equivalence analyses compare effects with clinically justified margins rather than testing only for any difference.
+
+## Learning Objectives
+
+After working through this material, you should be able to:
+
+- explain the main ideas behind **BE Simulation Report**;
+- interpret the R workflow and its output; and
+- adapt the examples to a related analysis.
+
+## Lesson Roadmap
+
+The original material is organized around the following topics:
+
+1. Summary of Simulation Workflow
+2. Step 1 – Define Reference PK Profile
+3. Step 2 – Set Simulation Parameters
+4. Step 3 – Monte Carlo Trial Generation
+5. Step 4 – Decision Probability Estimation
+6. Step 5 – Decision Heatmap
+
+## How to Use This Lesson
+
+Read the explanation before each workflow, then run the R chunks in sequence. Code and output are shown together so that each numerical or graphical result can be connected to the command that produced it. Some source examples require optional packages or external data. Those setup-dependent chunks remain visible for reference but are marked `eval: false` when they cannot be reproduced safely in a clean website build.
+
+## Reproducible Learning Check
+
+This short R chunk confirms the scope of the lesson and always produces a visible output.
+
+```{r}
+#| label: learning-overview
+learning_overview <- data.frame(
+  section = "Biostatistics",
+  category = "Non-Inferiority & Equivalence",
+  topic = "BE Simulation Report"
+)
+learning_overview
+```
+
+## Learning Material
+
+The following material develops **BE Simulation Report** from core ideas to practical implementation. Definitions and assumptions come first; worked code then shows how the ideas are represented computationally.
+
+### Conceptual Foundation
+
+The material below closely follows the original R Markdown source, with its examples retained for study and reuse.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#### Summary of Simulation Workflow
+
+<!-- generated-learning-note -->
+This section focuses on **Summary of Simulation Workflow**. Emphasize effect size, uncertainty, diagnostics, and scientific relevance rather than a single threshold.
+
+
+This R script implements a reproducible framework for virtual bioequivalence (BE) assessment using physiologically based pharmacokinetic (PBPK)–inspired concentration–time profiles and Monte Carlo methods.
+
+#### Step 1 – Define Reference PK Profile
+
+<!-- generated-learning-note -->
+This subsection explains **Step 1 – Define Reference PK Profile** and shows how it contributes to the overall BE Simulation Report workflow.
+
+A mean reference concentration–time profile is provided (e.g., `ref <- data.frame(time_hr, mean_conc_ng_per_mL)`).
+This serves as the baseline for simulating both **Test** and **Reference** arms under user-specified variability assumptions.
+
+#### Step 2 – Set Simulation Parameters
+
+<!-- generated-learning-note -->
+This subsection explains **Step 2 – Set Simulation Parameters** and shows how it contributes to the overall BE Simulation Report workflow.
+
+Key parameters include:
+- `n_per_arm` – sample size per treatment arm  
+- `CV_between`, `CV_resid` – between-subject and residual variability (coefficient of variation)  
+- `true_GMR` – assumed geometric mean ratio (Test/Reference)  
+- BE acceptance limits (default 0.80 – 1.25) and type I error `alpha`
+
+#### Step 3 – Monte Carlo Trial Generation
+
+<!-- generated-learning-note -->
+This subsection explains **Step 3 – Monte Carlo Trial Generation** and shows how it contributes to the overall BE Simulation Report workflow.
+
+For each virtual trial:
+1. Individual concentration profiles are generated with log-normal random effects (`CV_between`) and residual error (`CV_resid`).
+2. Individual AUC and Cmax values are calculated using trapezoidal integration (`trap_auc()`).
+3. Bioequivalence statistics (90 % CI of log-transformed ratios) are computed using a standard parallel-design t-test (`be_stats_parallel()`).
+4. Pass/fail outcomes for AUC, Cmax, and joint BE are recorded.
+
+#### Step 4 – Decision Probability Estimation
+
+<!-- generated-learning-note -->
+This subsection explains **Step 4 – Decision Probability Estimation** and shows how it contributes to the overall BE Simulation Report workflow.
+
+Multiple (e.g., > 1000) virtual trials are simulated to estimate the empirical probability of meeting BE criteria for the specified design and parameters:
+\[
+P_\text{BE} = \Pr(90\%\,CI \subseteq [0.80,\,1.25]).
+\]
+
+#### Step 5 – Decision Heatmap
+
+<!-- generated-learning-note -->
+This subsection explains **Step 5 – Decision Heatmap** and shows how it contributes to the overall BE Simulation Report workflow.
+
+A two-dimensional grid of **true GMR** values and **sample sizes** is explored.
+For each grid cell, the Monte Carlo procedure is repeated, yielding a heatmap of \(P_\text{BE}\) for AUC and Cmax.
+This allows visualization of power and design sensitivity across plausible conditions.
+
+#### Step 6 – Parameter-Uncertainty Propagation
+
+<!-- generated-learning-note -->
+This subsection explains **Step 6 – Parameter-Uncertainty Propagation** and shows how it contributes to the overall BE Simulation Report workflow.
+
+To evaluate robustness, uncertainty in variability parameters is propagated by repeatedly sampling plausible `CV_between` and `CV_resid` values (log-normal distribution around nominal).  
+Each sampled pair triggers a short Monte Carlo run, generating a distribution of \(P_\text{BE}\) estimates.
+
+#### Step 7 – Visualization and Reporting
+
+<!-- generated-learning-note -->
+This section uses **Step 7 – Visualization and Reporting** to make patterns visible. Confirm what each axis, group, scale, and annotation represents.
+
+Plots include:
+- Histograms of simulated Cmax and AUC ratios with BE limits  
+- Heatmaps of \(P_\text{BE}\) vs GMR and sample size  
+- Sensitivity plots showing impact of variability on BE probability  
+
+#### BE Simulation Report
+
+<!-- generated-learning-note -->
+This subsection explains **BE Simulation Report** and shows how it contributes to the overall BE Simulation Report workflow.
+
+### R Workflow and Examples
+
+Run the examples in order because later blocks may reuse objects created earlier. Each block includes a short purpose statement and guidance for reading its output.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r}
+# virtual BE Monte Carlo with:
+# ------------------------------------------------------------------------------
+
+# ---------------------------
+# PACKAGES
+# ---------------------------
+library(ggplot2)
+
+# ---------------------------
+# 0. EXAMPLE REFERENCE PROFILE
+# ---------------------------
+ref <- data.frame(
+  time_hr = c(0, 0.25, 0.5, 1, 2, 4, 6, 8, 12, 24),
+  mean_conc_ng_per_mL = c(0, 12.5, 28.3, 42.8, 36.0, 20.1, 12.6, 7.8, 2.1, 0.2)
+)
+
+# ---------------------------
+# 1. USER PARAMETERS (tweak for speed/precision)
+# ---------------------------
+set.seed(12345)
+# Basic simulation parameters
+N_trials_main <- 1200     # Monte Carlo trials for main simulation (per baseline scenario)
+n_per_arm <- 24
+CV_between_nom <- 0.25
+CV_resid_nom <- 0.20
+true_GMR_nom <- 0.95
+alpha <- 0.10
+BE_lower <- 0.80
+BE_upper <- 1.25
+
+# Extended analyses parameters
+# 1) Heatmap grid for decision visualization
+gmr_grid <- seq(0.88, 1.04, length.out = 9)      # range of true GMRs to explore
+n_grid   <- seq(12, 60, by = 6)                  # sample sizes per arm to evaluate
+reps_per_cell <- 250                             # Monte Carlo replicates per (GMR, n) cell
+
+# 2) Parameter uncertainty propagation
+param_sims <- 60                                 # number of different (CV_between, CV_resid) draws
+trials_per_param_sim <- 600                      # MC trials within each param simulation
+
+# Files
+# results_dir <- "."
+# results_csv_main <- file.path(results_dir, "results_summary_virtual_BE_main.csv")
+# results_csv_heatmap <- file.path(results_dir, "results_heatmap_BE.csv")
+# results_csv_param <- file.path(results_dir, "results_param_uncertainty.csv")
+# report_rmd <- file.path(results_dir, "virtual_BE_report.Rmd")
+# report_html <- file.path(results_dir, "virtual_BE_report.html")
+
+# ---------------------------
+# 2. HELPER FUNCTIONS
+# ---------------------------
+trap_auc <- function(t, conc){
+  sum(0.5 * (conc[-1] + conc[-length(conc)]) * diff(t))
+}
+cv_to_lnsd <- function(cv) sqrt(log(1 + cv^2))
+be_stats_parallel <- function(yT, yR, alpha = 0.10){
+  # returns ratio, lower, upper (on original scale)
+  lnT <- log(yT); lnR <- log(yR)
+  nT <- length(lnT); nR <- length(lnR)
+  meanT <- mean(lnT); meanR <- mean(lnR)
+  s2T <- var(lnT); s2R <- var(lnR)
+  df <- nT + nR - 2
+  if (df <= 0) return(list(ratio = NA, lower = NA, upper = NA))
+  s_pooled <- sqrt(((nT - 1) * s2T + (nR - 1) * s2R) / df)
+  se_diff <- s_pooled * sqrt(1/nT + 1/nR)
+  t_crit <- qt(1 - alpha/2, df)
+  diff <- meanT - meanR
+  lower_ln <- diff - t_crit * se_diff
+  upper_ln <- diff + t_crit * se_diff
+  list(ratio = exp(diff), lower = exp(lower_ln), upper = exp(upper_ln))
+}
+
+simulate_trial_parallel <- function(mean_profile, n_per_arm, CV_between, CV_resid, true_GMR, alpha){
+  # Simulate one virtual two-arm (parallel) trial and return BE stats for AUC and Cmax
+  times <- mean_profile$time_hr
+  mean_conc <- mean_profile$mean_conc_ng_per_mL
+  sd_between_ln <- cv_to_lnsd(CV_between)
+  sd_resid_ln <- cv_to_lnsd(CV_resid)
+  
+  # subject-level scaling and residuals
+  etaR <- exp(rnorm(n_per_arm, 0, sd_between_ln))
+  etaT <- exp(rnorm(n_per_arm, 0, sd_between_ln))
+  aucR <- aucT <- cmaxR <- cmaxT <- numeric(n_per_arm)
+  
+  for (i in seq_len(n_per_arm)) {
+    residR <- exp(rnorm(length(mean_conc), 0, sd_resid_ln))
+    residT <- exp(rnorm(length(mean_conc), 0, sd_resid_ln))
+    concR <- mean_conc * etaR[i] * residR
+    concT <- mean_conc * true_GMR * etaT[i] * residT
+    aucR[i] <- trap_auc(times, concR); aucT[i] <- trap_auc(times, concT)
+    cmaxR[i] <- max(concR); cmaxT[i] <- max(concT)
+  }
+  bs_auc <- be_stats_parallel(aucT, aucR, alpha)
+  bs_cmax <- be_stats_parallel(cmaxT, cmaxR, alpha)
+  pass_auc <- (bs_auc$lower >= BE_lower) & (bs_auc$upper <= BE_upper)
+  pass_cmax <- (bs_cmax$lower >= BE_lower) & (bs_cmax$upper <= BE_upper)
+  list(
+    ratio_auc = bs_auc$ratio, lower_auc = bs_auc$lower, upper_auc = bs_auc$upper,
+    ratio_cmax = bs_cmax$ratio, lower_cmax = bs_cmax$lower, upper_cmax = bs_cmax$upper,
+    pass_auc = pass_auc, pass_cmax = pass_cmax, pass_both = (pass_auc & pass_cmax)
+  )
+}
+
+# ---------------------------
+# 3. MAIN / baseline simulation (single scenario) 
+# ---------------------------
+cat("Running main baseline Monte Carlo simulation...\n")
+main_results <- data.frame(
+  trial = integer(), ratio_auc = numeric(), lower_auc = numeric(), upper_auc = numeric(),
+  ratio_cmax = numeric(), lower_cmax = numeric(), upper_cmax = numeric(),
+  pass_auc = logical(), pass_cmax = logical(), pass_both = logical(),
+  stringsAsFactors = FALSE
+)
+
+for (tr in seq_len(N_trials_main)){
+  res <- simulate_trial_parallel(ref, n_per_arm, CV_between_nom, CV_resid_nom, true_GMR_nom, alpha)
+  main_results[tr, ] <- c(tr, res$ratio_auc, res$lower_auc, res$upper_auc,
+                          res$ratio_cmax, res$lower_cmax, res$upper_cmax,
+                          res$pass_auc, res$pass_cmax, res$pass_both)
+}
+main_results$pass_auc <- as.logical(main_results$pass_auc)
+main_results$pass_cmax <- as.logical(main_results$pass_cmax)
+main_results$pass_both <- as.logical(main_results$pass_both)
+
+print(head(main_results,100 ))
+
+
+# Summary probabilities
+prob_pass_auc_main  <- mean(main_results$pass_auc, na.rm = TRUE)
+prob_pass_cmax_main <- mean(main_results$pass_cmax, na.rm = TRUE)
+prob_pass_both_main <- mean(main_results$pass_both, na.rm = TRUE)
+cat(sprintf("Baseline P(pass AUC) = %.3f | P(pass Cmax) = %.3f | P(pass both) = %.3f\n",
+            prob_pass_auc_main, prob_pass_cmax_main, prob_pass_both_main))
+
+# ---------------------------
+# 4. Heatmap: P(BE) vs true_GMR and sample size (Cmax & AUC)
+# ---------------------------
+cat("Computing heatmap grid (this may take a while)...\n")
+heatmap_rows <- expand.grid(true_GMR = gmr_grid, n = n_grid)
+heatmap_rows$prob_cmax <- NA
+heatmap_rows$prob_auc <- NA
+
+# iterate cells
+cell_idx <- 0
+total_cells <- nrow(heatmap_rows)
+for (r in seq_len(total_cells)){
+  cell_idx <- cell_idx + 1
+  gmr_val <- heatmap_rows$true_GMR[r]
+  n_val <- heatmap_rows$n[r]
+  pass_cmax_cnt <- 0
+  pass_auc_cnt <- 0
+  for (rep in seq_len(reps_per_cell)){
+    res <- simulate_trial_parallel(ref, n_val, CV_between_nom, CV_resid_nom, gmr_val, alpha)
+    pass_cmax_cnt <- pass_cmax_cnt + as.integer(res$pass_cmax)
+    pass_auc_cnt  <- pass_auc_cnt  + as.integer(res$pass_auc)
+  }
+  heatmap_rows$prob_cmax[r] <- pass_cmax_cnt / reps_per_cell
+  heatmap_rows$prob_auc[r]  <- pass_auc_cnt / reps_per_cell
+  if (cell_idx %% 8 == 0) cat(sprintf("Completed %d / %d cells...\n", cell_idx, total_cells))
+}
+print(heatmap_rows )
+
+
+# ---------------------------
+# 5. Parameter uncertainty propagation
+# ---------------------------
+cat("Running parameter uncertainty propagation...\n")
+# Assume uncertainty on CVs ~ lognormal around nominal with 20% CV on each CV
+param_results <- data.frame(sim = integer(), CV_between = numeric(), CV_resid = numeric(),
+                            prob_pass_auc = numeric(), prob_pass_cmax = numeric(), prob_pass_both = numeric(),
+                            stringsAsFactors = FALSE)
+
+for (s in seq_len(param_sims)){
+  # sample CVs in a plausible range (lognormal multiplicative uncertainty)
+  CV_between_s <- CV_between_nom * exp(rnorm(1, 0, 0.2))  # ~20% multiplicative uncertainty
+  CV_resid_s   <- CV_resid_nom   * exp(rnorm(1, 0, 0.2))
+  pass_auc_cnt <- pass_cmax_cnt <- pass_both_cnt <- 0
+  for (tr in seq_len(trials_per_param_sim)){
+    res <- simulate_trial_parallel(ref, n_per_arm, CV_between_s, CV_resid_s, true_GMR_nom, alpha)
+    pass_auc_cnt <- pass_auc_cnt + as.integer(res$pass_auc)
+    pass_cmax_cnt <- pass_cmax_cnt + as.integer(res$pass_cmax)
+    pass_both_cnt <- pass_both_cnt + as.integer(res$pass_both)
+  }
+  param_results[s, ] <- c(s, CV_between_s, CV_resid_s,
+                          pass_auc_cnt / trials_per_param_sim,
+                          pass_cmax_cnt / trials_per_param_sim,
+                          pass_both_cnt / trials_per_param_sim)
+  if (s %% 10 == 0) cat(sprintf("Completed %d / %d parameter sims...\n", s, param_sims))
+}
+names(param_results) <- c("sim", "CV_between", "CV_resid", "prob_pass_auc", "prob_pass_cmax", "prob_pass_both")
+print(param_results )
+
+
+# ---------------------------
+# 6. PLOTS (save to files & keep in environment)
+# ---------------------------
+cat("Creating plots... (files will be saved in working directory)\n")
+# Main: distributions of ratios (AUC & Cmax)
+p1 <- ggplot(main_results, aes(x = ratio_cmax)) +
+  geom_histogram(binwidth = 0.02, fill = "skyblue", color = "black") +
+  geom_vline(xintercept = c(BE_lower, BE_upper), linetype = "dashed", color = "red") +
+  labs(title = "Cmax Ratio Distribution (Main Scenario)", x = "Cmax Ratio", y = "Count")
+
+p2 <- ggplot(main_results, aes(x = ratio_auc)) +
+  geom_histogram(binwidth = 0.02, fill = "lightcoral", color = "black") +
+  geom_vline(xintercept = c(BE_lower, BE_upper), linetype = "dashed", color = "red") +
+  labs(title = "AUC Ratio Distribution (Main Scenario)", x = "AUC Ratio", y = "Count")
+p1
+p2
+
+# Heatmap (Cmax)
+library(reshape2)
+heat_cmax <- dcast(heatmap_rows, n ~ true_GMR, value.var = "prob_cmax")
+# convert to plotting-friendly long form
+heat_long_cmax <- heatmap_rows[, c("true_GMR", "n", "prob_cmax")]
+p_heat_cmax <- ggplot(heat_long_cmax, aes(x = factor(true_GMR), y = factor(n), fill = prob_cmax)) +
+  geom_tile() + scale_fill_gradient(low = "white", high = "steelblue") +
+  labs(x = "True GMR", y = "Sample Size per Arm", fill = "P(BE) (Cmax)",
+       title = "Heatmap: P(BE) for Cmax vs True GMR & Sample Size") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+p_heat_cmax
+
+# Heatmap (AUC)
+heat_long_auc <- heatmap_rows[, c("true_GMR", "n", "prob_auc")]
+p_heat_auc <- ggplot(heat_long_auc, aes(x = factor(true_GMR), y = factor(n), fill = prob_auc)) +
+  geom_tile() + scale_fill_gradient(low = "white", high = "tomato") +
+  labs(x = "True GMR", y = "Sample Size per Arm", fill = "P(BE) (AUC)",
+       title = "Heatmap: P(BE) for AUC vs True GMR & Sample Size") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+p_heat_auc
+
+
+# Parameter uncertainty plots
+p_param_cv_between <- ggplot(param_results, aes(x = CV_between, y = prob_pass_both)) +
+  geom_point() + geom_smooth(method = "loess", se = TRUE) +
+  labs(title = "Effect of CV_between on P(BE both)", x = "CV_between", y = "P(pass both)")
+
+p_param_cv_resid <- ggplot(param_results, aes(x = CV_resid, y = prob_pass_both)) +
+  geom_point() + geom_smooth(method = "loess", se = TRUE) +
+  labs(title = "Effect of CV_resid on P(BE both)", x = "CV_resid", y = "P(pass both)")
+p_param_cv_between
+p_param_cv_resid
+# ggsave("param_cv_between_vs_prob.png", p_param_cv_between, width = 7, height = 4)
+# ggsave("param_cv_resid_vs_prob.png", p_param_cv_resid, width = 7, height = 4)
+
+
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+## Interpreting the Results
+
+Interpret confidence intervals relative to the margin and confirm that the analysis scale matches the scientific claim. Treat the output as evidence generated under the stated data, coding choices, and assumptions. Before using the workflow in practice, replace example inputs with validated data and confirm that the method targets the intended scientific question.
+
+## Key Takeaways
+
+- **Connect method to purpose.** Identify the question and target quantity before choosing code or a model.
+- **Read code and output together.** Confirm what each object, estimate, interval, table, or plot represents.
+- **Check assumptions and diagnostics.** A successful computation is not by itself evidence that the result is reliable.
+- **Adapt deliberately.** When applying the example elsewhere, document changes to data definitions, parameters, and analytical choices.

@@ -1,0 +1,115 @@
+---
+title: "Mediation analysis"
+output: html_document
+date: '2023-05-07'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+## Mediation analysis
+
+[Reference](https://towardsdatascience.com/doing-and-reporting-your-first-mediation-analysis-in-r-2fe423b92171)   
+
+![](https://bs1125.github.io/CMAverse/reference/cmdag-1.png)
+
+Four steps: 
+
+  - First, we will test the total effect.  
+  
+  - Second, we will test the effect of the independent variable on the mediator. 
+  - Third, we will simultaneously test the mediator's and the independent variable’s effect on the dependent variable.  
+  
+  - Fourth and lastly, we will estimate various quantities for causal mediation analysis, meaning that we will compare the direct to the indirect effect
+
+![](https://miro.medium.com/v2/resize:fit:828/format:webp/1*yskMu2M2kiHgBHtjYQ5csw.png)
+
+- Data processing 
+```{r}
+df=iris
+set.seed(12334)
+```
+
+
+```{r}
+df$random1=runif(nrow(df),min=min(df$Sepal.Length),max=max(df$Sepal.Length))
+df$mediator=df$Sepal.Length*0.35+df$random1*0.65
+
+df$random2=runif(nrow(df),min=min(df$mediator),max=max(df$mediator))
+df$dv=df$mediator*0.35+df$random2*0.65
+```
+
+- Step 1: The total effect
+
+y~x
+```{r}
+fit.totaleffect=lm(dv~Sepal.Length,df)
+summary(fit.totaleffect)
+```
+
+
+- Step 2: The effect of the independent variable onto the mediator
+
+m~x
+
+```{r}
+fit.mediator=lm(mediator~Sepal.Length,df)
+summary(fit.mediator)
+```
+
+- Step 3: The effect of the mediator on the dependent variable while controlling for the independent variable.
+
+y~x+m
+```{r}
+fit.dv=lm(dv~Sepal.Length+mediator,df)
+summary(fit.dv)
+```
+
+`In such cases, the total effect of the IV on the DV is explained by the mediator. `
+
+- Step 4: Causal Mediation Analysis
+
+```{r}
+# installed the mediation package yet.
+library(mediation)
+```
+
+m~x
+
+y~x+m
+
+```{r}
+results = mediate(fit.mediator, fit.dv, treat='Sepal.Length', mediator='mediator', boot=T)
+```
+`The mediation package asks for the models we just estimated and then requires us to specify the variable that is the treatment, i.e., our independent variable, and the variable that is the mediator.`
+
+```{r}
+summary(results)
+```
+
+
+`ACME stands for average causal mediation (indirect) effects. This effect to be .0905 — this is exactly .39 (the effect of the IV on the mediator from step #2) times .23 (the mediator's effect on the DV from step #3).   
+
+ADE stands for average direct effects. We have calculated this effect in step #3: the direct effect of the IV on the DV when controlling for the mediator. 0.03.  
+
+Total Effect stands for the total effect (direct + indirect) of the IV onto the DV. We calculated this in step #1. We can also get it by simply adding the ACME (.0905) and the ADE (.03) to receive the total effect of .1197.  
+
+Prop. Mediated describes the proportion of the effect of the IV on the DV that goes through the mediator. It’s calculated by dividing the ACME (.0905) by the total effect (.1197) to receive .75. `
+
+
+The indirect effect was (.23)*(.39) = .0905. The bootstrapped unstandardized indirect effect was .0905, and the 95% confidence interval ranged from  0.0280   to 0.17. Thus, the indirect effect was statistically significant (p<.001).
+
+
+
+
+
+
+
+
+
+
+
+

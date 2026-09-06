@@ -1,0 +1,185 @@
+---
+title: "Instrumental variables"
+description: "A practical R learning guide to Instrumental variables, with concise explanations, reproducible examples, and interpretation guidance."
+date: 2026-08-31
+section: "Epidemiology & Real-World Evidence"
+category: "Causal Methods"
+topic: "Instrumental variables"
+type: article
+tags: ["Causal Methods", "Epidemiology & Real-World Evidence", "Instrumental", "variables"]
+status: published
+featured: true
+youtube: []
+pdf: []
+downloads: []
+validate-yaml: false
+execute:
+  echo: true
+  warning: false
+  error: true
+---
+
+## Why This Topic Matters
+
+Causal methods combine design assumptions and statistical adjustment to estimate well-defined treatment or exposure contrasts.
+
+## Learning Objectives
+
+After working through this material, you should be able to:
+
+- explain the main ideas behind **Instrumental variables**;
+- interpret the R workflow and its output; and
+- adapt the examples to a related analysis.
+
+## Lesson Roadmap
+
+The original material is organized around the following topics:
+
+1. Instrumental variables
+
+## How to Use This Lesson
+
+Read the explanation before each workflow, then run the R chunks in sequence. Code and output are shown together so that each numerical or graphical result can be connected to the command that produced it. Some source examples require optional packages or external data. Those setup-dependent chunks remain visible for reference but are marked `eval: false` when they cannot be reproduced safely in a clean website build.
+
+## Reproducible Learning Check
+
+This short R chunk confirms the scope of the lesson and always produces a visible output.
+
+```{r}
+#| label: learning-overview
+learning_overview <- data.frame(
+  section = "Epidemiology & Real-World Evidence",
+  category = "Causal Methods",
+  topic = "Instrumental variables"
+)
+learning_overview
+```
+
+## Learning Material
+
+The following material develops **Instrumental variables** from core ideas to practical implementation. Definitions and assumptions come first; worked code then shows how the ideas are represented computationally.
+
+### Conceptual Foundation
+
+The material below closely follows the original R Markdown source, with its examples retained for study and reuse.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#### Instrumental variables
+
+<!-- generated-learning-note -->
+This section prepares the information needed for **Instrumental variables**. Check variable definitions, units, coding, and missing values before moving to analysis.
+
+
+[Reference](https://rpubs.com/wsundstrom/t_ivreg)   
+
+
+![](https://i.stack.imgur.com/NEaQRl.png)
+
+- Simple model
+
+### R Workflow and Examples
+
+Run the examples in order because later blocks may reuse objects created earlier. Each block includes a short purpose statement and guidance for reading its output.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r}
+library(AER)
+
+(data("CigarettesSW", package = "AER"))
+
+CigarettesSW$lquant=log(CigarettesSW$packs)
+CigarettesSW$lprice=log(CigarettesSW$price)
+CigarettesSW$lprice=log(CigarettesSW$price)
+CigarettesSW$lincome=log(CigarettesSW$income)
+CigarettesSW$tdiff= (CigarettesSW$taxs-CigarettesSW$tax)
+
+iv1 = ivreg(lquant ~ lprice | tdiff , data = CigarettesSW)
+
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block extracts inferential or predictive results from fitted objects. Match each estimate, interval, contrast, or diagnostic to the quantity it represents.
+
+```{r}
+summary(iv1)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Interpret estimates on the scale reported by the function, and use intervals or other uncertainty measures when drawing conclusions.
+
+`tdiff` is a instrument variable. 
+
+Compare to general linear model
+
+<!-- generated-learning-note -->
+**Purpose.** This block specifies and fits the statistical model. Identify the outcome, predictors, reference levels, link or distribution, and any correlation structure before interpreting coefficients.
+
+```{r}
+iv1_1 = lm(lquant ~ lprice + tdiff , data = CigarettesSW)
+summary(iv1_1)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Focus on coefficient direction and scale, uncertainty intervals, fit statistics, and diagnostics. Statistical significance alone does not establish practical importance or model adequacy.
+
+
+
+Note that we can have more than one instrument, and we can also include exogenous control variables. 
+
+$
+ivreg(Y ~ X + W | W + Z, ... )
+$
+
+Let Y be the outcome (dependent) variable of interest (lquant), X be the endogenous variable (lprice), W be any exogenous regressors, not including instruments, and Z be the instruments (tdiff). 
+ 
+Important note: Endogenous variables (X) can only appear before the vertical line; instruments (Z) can only appear after the vertical line; exogenous regressors that are not instruments (W) must appear both before and after the vertical line.
+
+
+- Complex model
+
+Let’s add an exogenous regressor: log per capita income.   Let’s also add another instrument: the real tax on cigarettes tax/cpi. 
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block extracts inferential or predictive results from fitted objects. Match each estimate, interval, contrast, or diagnostic to the quantity it represents.
+
+```{r}
+iv2 = ivreg(lquant ~ lprice + lincome | lincome + tdiff + I(tax/cpi),
+            data = CigarettesSW)
+summary(iv2, vcov = sandwich, diagnostics = TRUE)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Interpret estimates on the scale reported by the function, and use intervals or other uncertainty measures when drawing conclusions.
+
+ 
+Diagnostic tests:
+
+Weak instruments: The null hypothesis is essentially that we have weak instruments.
+
+Wu-Hausman: This tests the consistency of the OLS estimates under the assumption that the IV is consistent. 
+
+Sargan: If the null is rejected, it means that at least one of our instruments is invalid, and possibly all of them.
+
+## Interpreting the Results
+
+Check nuisance models, overlap, weights, balance, diagnostics, estimand alignment, and sensitivity to modeling choices. Treat the output as evidence generated under the stated data, coding choices, and assumptions. Before using the workflow in practice, replace example inputs with validated data and confirm that the method targets the intended scientific question.
+
+## Key Takeaways
+
+- **Connect method to purpose.** Identify the question and target quantity before choosing code or a model.
+- **Read code and output together.** Confirm what each object, estimate, interval, table, or plot represents.
+- **Check assumptions and diagnostics.** A successful computation is not by itself evidence that the result is reliable.
+- **Adapt deliberately.** When applying the example elsewhere, document changes to data definitions, parameters, and analytical choices.

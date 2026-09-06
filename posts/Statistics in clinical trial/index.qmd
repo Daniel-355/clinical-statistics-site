@@ -1,0 +1,495 @@
+---
+title: "Statistics in clinical trial"
+description: "A practical R learning guide to Statistics in clinical trial, with concise explanations, reproducible examples, and interpretation guidance."
+date: 2026-08-31
+section: "Resources"
+category: "SAP & Protocol Resources"
+topic: "Statistics in clinical trial"
+type: article
+tags: ["SAP & Protocol Resources", "Resources", "Statistics", "clinical", "trial"]
+status: published
+featured: true
+youtube: []
+pdf: []
+downloads: []
+validate-yaml: false
+execute:
+  echo: true
+  warning: false
+  error: true
+---
+
+## Why This Topic Matters
+
+A statistical analysis plan translates protocol objectives into pre-specified, reproducible analytical decisions.
+
+## Learning Objectives
+
+After working through this material, you should be able to:
+
+- explain the main ideas behind **Statistics in clinical trial**;
+- interpret the R workflow and its output; and
+- adapt the examples to a related analysis.
+
+## Lesson Roadmap
+
+The original material is organized around the following topics:
+
+1. Introduction
+2. Sample size
+3. Mean values of the endpoint
+4. Rates of several complications
+5. Interim data reports
+6. Classical group sequential testing
+
+## How to Use This Lesson
+
+Read the explanation before each workflow, then run the R chunks in sequence. Code and output are shown together so that each numerical or graphical result can be connected to the command that produced it. Some source examples require optional packages or external data. Those setup-dependent chunks remain visible for reference but are marked `eval: false` when they cannot be reproduced safely in a clean website build.
+
+## Reproducible Learning Check
+
+This short R chunk confirms the scope of the lesson and always produces a visible output.
+
+```{r}
+#| label: learning-overview
+learning_overview <- data.frame(
+  section = "Resources",
+  category = "SAP & Protocol Resources",
+  topic = "Statistics in clinical trial"
+)
+learning_overview
+```
+
+## Learning Material
+
+The following material develops **Statistics in clinical trial** from core ideas to practical implementation. Definitions and assumptions come first; worked code then shows how the ideas are represented computationally.
+
+### Conceptual Foundation
+
+The material below closely follows the original R Markdown source, with its examples retained for study and reuse.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+[Brief summary from the book](https://home.csulb.edu/~okoroste/)
+
+
+#### Introduction
+
+<!-- generated-learning-note -->
+This section establishes the concepts and assumptions needed to understand **Introduction** in the context of Statistics in clinical trial.
+
+
+The clinical statistician determines the statistical methodology for the
+trial; evaluates the trial length; for randomized trials,
+randomizes group allocations for subjects; monitors the
+data; analyzes the data; and provides the interim data reports
+for DSMBs and the final FDA (EC/EMEA) report.
+
+A typical protocol consists of the following parts:
+
+• The title page, containing the title of the trial, the name and complete
+address of the PI, and the date
+
+• Review of the literature that is related to the clinical problem and justification
+of the need for the trial
+
+• Preclinical data analysis-that is, the results from Pha.5e I and II clinical
+trials
+
+• Research questions and statistical hypotheses
+
+• Study design: randomized or nonrandomized trial, double-blinded,
+controlled
+
+• Subjects enrollment procedure: recruitment, screening, and selection (the
+inclusion-exclusion criteria, which are the standards used to determine
+whether a person may or may not be allowed to participate in a clinical
+trial)
+
+• Materials and methodology: description of the product, treatment regimen,
+product preparation, receiving, storage, dispensing, and return
+
+• Data forms: baseline and follow-up data collection forms
+
+• Database management: data collection and clean-up
+
+• Statistical plan: trial length determination,
+randomization procedure, and statistical methods
+
+• Subject safety monitoring plan: reporting of serious adverse events,
+maintenance of subject privacy and confidentiality.
+
+
+#### Sample size
+
+<!-- generated-learning-note -->
+This subsection explains **Sample size** and shows how it contributes to the overall Statistics in clinical trial workflow.
+
+
+The minimum required sample size ( or the number of patient-years) should be estimated before the trial begins and documented in
+the protocol.
+
+
+Generally, the mean percentage changes or actual changes are modeled
+as normally distributed random variables by the Central Limit Theorem. In the case of the event rate
+endpoint, event occurrences are random and may be modeled by a Poisson
+distribution.
+
+For percentage
+change or actual change, the sample size is to be computed. For the complication
+rate, the number of patient-years must be calculated.
+
+
+inference factors:
+
+• The hypotheses of interest are Ho : μtr = μe and H 1 : μtr > μe . The
+one-sided alternative is taken.
+
+• The probability of type I error a = max P(reject Ho | Ho is true) is set
+at 0.05.
+
+• The minimum detectable difference  = μtr - μe is considered to be 5%;
+
+• The probability of type II error  = P(accept HolH1 : μtr -μe  holds)
+is fixed at 0.25.
+
+• the underlying distribution
+is approximately normal with a standard deviation of a= 15.
+
+• an equal number n of subjects in each
+group.
+
+
+#### Mean values of the endpoint
+
+<!-- generated-learning-note -->
+This subsection explains **Mean values of the endpoint** and shows how it contributes to the overall Statistics in clinical trial workflow.
+
+
+Denote by $\bar{x}_{t r}$ and $\bar{x}_{c}$ the unknown mean values of the endpoint in the treatment group and the control group, respectively. Under $H_{0}$, the test statistic
+
+$$
+Z=\frac{\bar{x}_{t r}-\bar{x}_{c}}{\sigma \sqrt{2 / n}} \sim \mathcal{N}(0,1)
+$$
+
+The acceptance region - the region in which $H_{0}$ is accepted-is of the form
+
+$$
+\{Z<k\}=\left\{\frac{\bar{x}_{t r}-\bar{x}_{c}}{\sigma \sqrt{2 / n}}<k\right\}=\left\{\bar{x}_{t r}-\bar{x}_{c}<k \sigma \sqrt{2 / n}\right\}
+$$
+
+If a specific alternative $H_{1}: \mu_{t r}-\mu_{c}=\delta$ holds, then
+
+$$
+\bar{x}_{t r}-\bar{x}_{c} \sim \mathcal{N}\left(\delta, 2 \sigma^{2} / n\right)
+$$
+
+The probabilities of type I and II errors define two equations for $n$ and $k$ :
+
+$$
+1-\alpha=\mathbb{P}(Z<k \mid Z \sim \mathcal{N}(0,1))=\Phi(k)
+$$
+
+and
+
+$$
+\begin{aligned}
+\beta & =\mathbb{P}\left(\bar{x}_{t r}-\bar{x}_{c}<k \sigma \sqrt{2 / n} \mid \bar{x}_{t r}-\bar{x}_{c} \sim \mathcal{N}\left(\delta, 2 \sigma^{2} / n\right)\right) \\
+& =\Phi\left(k-\frac{\delta}{\sigma \sqrt{2 / n}}\right)
+\end{aligned}
+$$
+
+where $\Phi$ denotes the cumulative distribution function of a $\mathcal{N}(0,1)$ random variable.
+
+It can be shown 
+
+$$
+n=2(\sigma / \delta)^{2}\left(\Phi^{-1}(1-\alpha)-\Phi^{-1}(\beta)\right)^{2}
+$$
+
+####### Rates of several complications
+
+- The number of complications $X$ is modeled as a Poisson random variable with mean $\lambda=R T$ over a fixed time period $T$.
+
+- The historical mean of the number of complications is $\lambda_{h}=R_{h} T$. The null and the alternative hypotheses of interest can be written as $H_{0}: \lambda \geq 2 \lambda_{h}$ and $H_{1}: \lambda<2 \lambda_{h}$. The specific value of the alternative for which $\beta$ is computed is $\lambda=\lambda_{h}$. 
+
+
+Therefore, the equations for $\alpha$ and $\beta$ are
+
+$$
+1-\alpha=\mathbb{P}\left(X>x_{0} \mid \lambda=2 \lambda_{h}\right) \quad \text { and } \quad \beta=\mathbb{P}\left(X>x_{0} \mid \lambda=\lambda_{h}\right)
+$$
+
+where $X \sim \operatorname{Poisson}(\lambda)$.
+
+These equations define a system of two nonlinear equations in two unknowns, $x_{0}$ and $\lambda_{h}$ :
+
+<!-- $$ -->
+<!-- \begin{aligned} -->
+<!-- 1-\alpha & =\sum_{k=x_{0}+1}^{\infty} \frac{\left(2 \lambda_{h}\right)^{k}}{k !} e^{-2 \lambda_{h}} \\ -->
+<!-- \beta & =\sum_{k=x_{0}+1}^{\infty} \frac{\lambda_{h}^{k}}{k !} e^{-\lambda_{h}} -->
+<!-- \end{aligned} -->
+<!-- $$ -->
+
+For any $Y \sim \operatorname{Poisson}\left(\lambda_{0}\right)$, and for any positive real $y$, the following formula holds (see Exercise 2.4):
+
+$$
+\mathbb{P}(Y>y)=\int_{0}^{\lambda_{0}} \frac{u^{y}}{\Gamma(y+1)} e^{-u} d u
+$$
+
+where $\Gamma(y+1)=\int_{0}^{\infty} v^{y} e^{-v} d v$ is the gamma function. 
+
+Hence, 
+
+$$
+\begin{aligned}
+1-\alpha & =\int_{0}^{2 \lambda_{h}} \frac{u^{x_{0}}}{\Gamma\left(x_{0}+1\right)} e^{-u} d u \\
+\beta & =\int_{0}^{\lambda_{h}} \frac{u^{x_{0}}}{\Gamma\left(x_{0}+1\right)} e^{-u} d u
+\end{aligned}
+$$
+
+The numerical solution of these equations can be computed ($x_{0}$ and $\lambda_{h}$). 
+
+
+#### Interim data reports
+
+<!-- generated-learning-note -->
+This section prepares the information needed for **Interim data reports**. Check variable definitions, units, coding, and missing values before moving to analysis.
+
+
+There are two major statistical methods for calculation of interim sample
+sizes: classical group sequential testing and the Bayesian sequential
+procedure.
+
+
+The probability of type I error for the $N$ interim statistical tests is a constant $\alpha^{\prime}$. For a fixed $N$, the values of $\alpha^{\prime}$ and $n$ can be found if $\alpha$ and $\beta$-the overall probabilities of type I and type II errors, respectively - are specified. The overall probability of type I error is defined as the probability of at least one interim significant difference given that the null hypothesis is true. The overall probability of type II error is the probability of all interim differences being insignificant under a specific alternative hypothesis.
+
+
+####### Classical group sequential testing
+
+
+Consider now the case $N=2$. Let $\bar{x}_{t r}^{(i)}$ and $\bar{x}_{c}^{(i)}$ be the respective group sample means in the $i$ th set of $2 n$ subjects, $i=1$ or 2 . Denote by $\bar{x}_{t r}=\left(\bar{x}_{t r}^{(1)}+\right.$ $\left.\bar{x}_{t r}^{(2)}\right) / 2$ and $\bar{x}_{c}=\left(\bar{x}_{c}^{(1)}+\bar{x}_{c}^{(2)}\right) / 2$ the respective group sample means in the combined set of $4 n$ subjects.
+
+The first statistical test of $H_{0}: \mu_{t r}=\mu_{c}$ against $H_{1}: \mu_{t r}>\mu_{c}$ at significance level $\alpha^{\prime}$ is performed on the initial set of $2 n$ subjects. Under $H_{0}$, $\bar{x}_{t r}^{(1)}-\bar{x}_{c}^{(1)} \sim \mathcal{N}\left(0,2 \sigma^{2} / n\right)$. The acceptance region is
+
+$$
+\left\{\frac{\bar{x}_{t r}^{(1)}-\bar{x}_{c}^{(1)}}{\sigma \sqrt{2 / n}}<k\right\}=\left\{\bar{x}_{t r}^{(1)}-\bar{x}_{c}^{(1)}<k \sigma \sqrt{2 / n}\right\}
+$$
+
+The relation between the significance level $\alpha^{\prime}$ and the critical value of the acceptance region $k$ is given by the formula $k=\Phi^{-1}\left(1-\alpha^{\prime}\right)$ or, equivalently, $\alpha^{\prime}=1-\Phi(k)$. 
+
+Under a specific $H_{1}: \mu_{t r}-\mu_{c}=\delta, \bar{x}_{t r}^{(1)}-\bar{x}_{c}^{(1)} \sim \mathcal{N}\left(\delta, 2 \sigma^{2} / n\right)$.
+
+If in the first test the null hypothesis is accepted, the second test of $H_{0}$ : $\mu_{t r}=\mu_{c}$ against $H_{1}: \mu_{t r}>\mu_{c}$ at significance level $\alpha^{\prime}$ is performed on the set of $4 n$ subjects. The difference
+
+$$
+\bar{x}_{t r}-\bar{x}_{c}=\frac{\bar{x}_{t r}^{(1)}-\bar{x}_{c}^{(1)}}{2}+\frac{\bar{x}_{t r}^{(2)}-\bar{x}_{c}^{(2)}}{2}
+$$
+
+is the sum of two independent random variables that under $H_{0}$ have distribution $\mathcal{N}\left(0, \sigma^{2} /(2 n)\right)$, and under a specific $H_{1}: \mu_{t r}-\mu_{c}=\delta$ have distribution $\mathcal{N}\left(\delta, \sigma^{2} /(2 n)\right)$. Thus, under $H_{0}$, the distribution of $\bar{x}_{t r}-\bar{x}_{c}$ is $\mathcal{N}\left(0, \sigma^{2} / n\right)$. Therefore, the acceptance region for the second test is
+
+$$
+\left\{\frac{\bar{x}_{t r}-\bar{x}_{c}}{\sigma \sqrt{1 / n}}<k\right\}=\left\{\left(\bar{x}_{t r}^{(1)}-\bar{x}_{c}^{(1)}\right)+\left(\bar{x}_{t r}^{(2)}-\bar{x}_{c}^{(2)}\right)<2 k \sigma \sqrt{1 / n}\right\}
+$$
+
+Under a specific $H_{1}: \mu_{t r}-\mu_{c}=\delta$, the distribution of $\bar{x}_{t r}-\bar{x}_{c}$ is $\mathcal{N}\left(\delta, \sigma^{2} / n\right)$.
+
+The definitions of $\alpha$ and $\beta$ provide two equations for $k$ and $n$. 
+
+The first equation is
+
+$$
+1-\alpha=\mathbb{P}\left(\frac{\bar{x}_{t r}^{(1)}-\bar{x}_{c}^{(1)}}{\sigma \sqrt{2 / n}}<k, \frac{\bar{x}_{t r}-\bar{x}_{c}}{\sigma \sqrt{1 / n}}<k\right)
+$$
+`The variances are different.`
+
+where $\bar{x}_{t r}^{(1)}-\bar{x}_{c}^{(1)} \sim \mathcal{N}\left(0,2 \sigma^{2} / n\right)$ and $\bar{x}_{t r}-\bar{x}_{c} \sim \mathcal{N}\left(0, \sigma^{2} / n\right)$
+
+
+
+$$
+=\mathbb{P}\left(Z_{1}<k, Z_{1}+Z_{2}<\sqrt{2} k\right)
+$$
+
+where
+
+$$
+Z_{1}=\frac{\bar{x}_{t r}^{(1)}-\bar{x}_{c}^{(1)}}{\sigma \sqrt{2 / n}} \quad \text { and } \quad Z_{2}=\frac{\bar{x}_{t r}^{(2)}-\bar{x}_{c}^{(2)}}{\sigma \sqrt{2 / n}}
+$$
+
+are independent $\mathcal{N}(0,1)$ random variables. 
+
+The second equation is
+
+$$
+\beta=\mathbb{P}\left(\frac{\bar{x}_{t r}^{(1)}-\bar{x}_{c}^{(1)}}{\sigma \sqrt{2 / n}}<k, \frac{\bar{x}_{t r}-\bar{x}_{c}}{\sigma \sqrt{1 / n}}<k\right)
+$$
+
+where $\bar{x}_{t r}^{(1)}-\bar{x}_{c}^{(1)} \sim \mathcal{N}\left(\delta, 2 \sigma^{2} / n\right)$ and $\bar{x}_{t r}-\bar{x}_{c} \sim \mathcal{N}\left(\delta, \sigma^{2} / n\right)$
+
+$$
+=\mathbb{P}\left(Z_{3}+\frac{\delta}{\sigma \sqrt{2 / n}}<k, Z_{3}+Z_{4}+2 \frac{\delta}{\sigma \sqrt{2 / n}}<\sqrt{2} k\right)
+$$
+
+where $Z_{3}=\frac{\bar{x}_{t r}^{(1)}-\bar{x}_{c}^{(1)}-\delta}{\sigma \sqrt{2 / n}}$ and $Z_{4}=\frac{\bar{x}_{t r}^{(2)}-\bar{x}_{c}^{(2)}-\delta}{\sigma \sqrt{2 / n}}$ are independent $\mathcal{N}(0,1)$ random variables. they can be expressed by $Z_{1}$ and $Z_{2}$. 
+
+To simplify notation, let $n^{*}=(1 / 2)(\delta / \sigma)^{2} n$. In terms of $k$ and $n^{*}$, 
+
+$$
+\begin{aligned}
+1-\alpha & =\mathbb{P}\left(Z_{1}<k, Z_{1}+Z_{2}<\sqrt{2} k\right) \\
+\beta & =\mathbb{P}\left(Z_{1}+\sqrt{n^{*}}<k, Z_{1}+Z_{2}+2 \sqrt{n^{*}}<\sqrt{2} k\right)
+\end{aligned}
+$$
+
+where $Z_{1}$ and $Z_{2}$ are independent $\mathcal{N}(0,1)$ random variables.
+
+
+
+
+For a general $N$, the quantities $k$ and $n^{*}$ can be expressed as follows 
+
+$$
+\begin{aligned}
+1-\alpha & =\mathbb{P}\left(\bigcap_{m=1}^{N}\left\{Z_{1}+\cdots+Z_{m}<\sqrt{m} k\right\}\right) \\
+\beta & =\mathbb{P}\left(\bigcap_{m=1}^{N}\left\{Z_{1}+\cdots+Z_{m}+m \sqrt{n^{*}}<\sqrt{m} k\right\}\right)
+\end{aligned}
+$$
+
+where $Z_{1}, \ldots, Z_{N}$ are independent $\mathcal{N}(0,1)$ random variables. 
+
+In these methods, $\alpha^{\prime}$ is not the same for all interim tests.  
+
+
+Thus, instead of accruing 97 subjects in each group and testing the hypotheses once at the $5 \%$ significance level, the group sequential method with $N=2$ suggests that investigators test at the $3 \%$ significance level with 55 subjects in each group and, if the null is accepted, test a second time at the $3 \%$ significance level with a group size of 110 subjects. Researchers who have a very strong belief in the success of the tested product might want to go with the sequential testing plan because there is a good chance of stopping the trial after data have been collected and analyzed for only 55 subjects per group. 
+
+#### Bayesian Sequential Procedure
+
+<!-- generated-learning-note -->
+This subsection explains **Bayesian Sequential Procedure** and shows how it contributes to the overall Statistics in clinical trial workflow.
+
+
+Bayesian hypotheses testing is based on $f_{\Theta}(\theta \mid$ data), the posterior density of $\Theta$, given the data from trial. The posterior density is computed according to Bayes' formula
+
+$$
+f_{\Theta}(\theta \mid \text { data })=\frac{f(\text { data } \mid \Theta=\theta) \pi(\theta)}{\int f(\text { data } \mid \Theta=\theta) \pi(\theta) d \theta}
+$$
+
+It is convenient to choose a conjugate prior, defined as a prior density of a certain algebraic form chosen in such a way.
+
+The decision of accepting or rejecting the null hypothesis is based on the following rule. If the posterior probability of the null hypothesis
+
+$$
+\mathbb{P}\left(H_{0} \mid \text { data }\right)=\int_{\Omega_{0}} f_{\Theta}(\theta \mid \text { data }) d \theta
+$$
+
+is small (usually 0.05 or less), then the null is rejected. `If the posterior probability of` $H_{0}$ `is large (usually 0.95 or more), the null is accepted. Otherwise, the trial continues.`
+
+The number of events (x) has a Poisson distribution with mean $R T$, $\pi(x)$.
+
+1. The prior density of $R$ should be specified. A computationally convenient choice would be a conjugate prior. The distribution of the data is Poisson. It can be proven that the gamma distribution is conjugate to the Poisson distribution. Thus the prior of $R$ may be taken as $\operatorname{Gamma}(a, b)$ with the density
+
+$$
+\pi(x)=\frac{x^{a-1} e^{-x / b}}{\Gamma(a) b^{a}}, x, a, b>0
+$$
+2. The parameters $a$ and $b$ of this density should be determined. The gamma distribution is unimodal and right-skewed; hence, mode $<$ median $<$ mean. 
+
+Consequently,
+
+$$
+\mathbb{P}(R<\text { mode })<0.5<\mathbb{P}(R<\text { mean })
+$$
+
+For a $\operatorname{Gamma}(a, b)$ distribution, the mode equals $(a-1) b$ and the mean is $a b$.
+
+For a skeptical prior, the mode should be chosen equal to 0.024 . Then,  
+
+$$
+\mathbb{P}\left(H_{1}\right)=\mathbb{P}(R<0.024)=\mathbb{P}(R<\text { mode })<0.5
+$$
+
+and, therefore, the prior probability of $H_{1}$ can be fixed at any value less than 0.5 . Thus the parameters $a$ and $b$ can be computed numerically
+from the equations
+
+$$
+\begin{aligned}
+(a-1) b & =0.024 \text { (for a skeptical prior) } \\
+\mathbb{P}\left(H_{1}\right) & =\int_{0}^{0.024} \frac{x^{a-1} e^{-x / b}}{\Gamma(a) b^{a}} d x
+\end{aligned}
+$$
+
+3. The posterior density of $R$ should be computed. Suppose that $t$ patient years has been accumulated during which $n$ cases were observed. the posterior distribution of $R$ is $\operatorname{Gamma}(n+a, 1 /(1 / b+t))$. Under this posterior, the probability that the alternative is correct is
+
+$$
+\begin{aligned}
+\mathbb{P}\left(H_{1} \mid \text { data }\right) & =\mathbb{P}(R<0.024 \mid n, t) \\
+& =\int_{0}^{0.024} \frac{x^{\alpha+n-1}(1 / b+t)^{a+n}}{\Gamma(a+n)} e^{-x(1 / b+t)} d x \\
+& =\int_{0}^{0.024(1 / b+t)} \frac{x^{a+n-1}}{\Gamma(a+n)} e^{-x} d x
+\end{aligned}
+$$
+
+For certain values of $n$ and $t$, this probability becomes smaller than 0.05 (then the null is accepted) or larger than 0.95 (then the alternative is accepted).
+
+Assume a skeptical prior with the probability of the true alternative equal to $\mathbb{P}\left(H_{1}\right)=0.4$. The posterior probability of the alternative is computed according to $a$ and $b$.
+
+Suppose that researchers decide a priori to conduct interim Bayesian analyses at $t=400$ and $t=600$ patientyears. researchers should terminate the trial at 400 patient-years if 2 (or fewer) or 17 (or more) events are observed. In the former case, the sample complication rate is small, and $H_{1}$ is accepted. In the latter case, the observed complication rate is high, and $H_{0}$ is accepted. If between 3 and 16 events have occured, then the trial should continue until 600 patient-years is accrued. Otherwise, it
+continues for the prescribed length of 800 patient-years.
+
+
+#### Randomization of assignment
+
+<!-- generated-learning-note -->
+This subsection explains **Randomization of assignment** and shows how it contributes to the overall Statistics in clinical trial workflow.
+
+
+#### Equally sized groups
+
+<!-- generated-learning-note -->
+This subsection explains **Equally sized groups** and shows how it contributes to the overall Statistics in clinical trial workflow.
+
+
+For normal populations with equal variances, the likelihood
+ratio test is most powerful if the sizes of the compared groups are equal.
+
+$$
+0>\frac{\delta}{\sqrt{v}}-\frac{\delta}{\sqrt{v_{N / 2}}}=\Phi^{-1}\left(\beta_{N / 2}\right)-\Phi^{-1}(\beta)
+$$
+where $v_{N / 2}<v$ yields. 
+
+Hence,
+
+$$
+\Phi^{-1}(\beta)>\Phi^{-1}\left(\beta_{N / 2}\right) \quad \text { or } \quad \beta>\beta_{N / 2} \quad \text { or } \quad 1- \beta< 1- \beta_{N / 2}
+$$
+
+#### Concealment of Assignments
+
+<!-- generated-learning-note -->
+This subsection explains **Concealment of Assignments** and shows how it contributes to the overall Statistics in clinical trial workflow.
+
+
+The most common randomization are the simple, block, and stratified procedures.
+
+An actual group assignment should be kept secret from the subject as well as
+from the physician responsible for administering therapy, if the trial is double blinded. 
+when a new subject enters the trial, the physician
+should call the central location where the next envelope in the sequence is
+opened to reveal the group assignment for the subject.
+
+### Applying the Material
+
+This source is primarily conceptual or procedural. Use its definitions and decision points as a checklist, and document how each item is implemented in the intended study or analysis.
+
+## Interpreting the Results
+
+Use the material as a checklist and adapt each element to the study design, estimands, data structure, and reporting requirements. Treat the output as evidence generated under the stated data, coding choices, and assumptions. Before using the workflow in practice, replace example inputs with validated data and confirm that the method targets the intended scientific question.
+
+## Key Takeaways
+
+- **Connect method to purpose.** Identify the question and target quantity before choosing code or a model.
+- **Read code and output together.** Confirm what each object, estimate, interval, table, or plot represents.
+- **Check assumptions and diagnostics.** A successful computation is not by itself evidence that the result is reliable.
+- **Adapt deliberately.** When applying the example elsewhere, document changes to data definitions, parameters, and analytical choices.

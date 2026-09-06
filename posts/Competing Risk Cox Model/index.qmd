@@ -1,0 +1,307 @@
+---
+title: "Competing Risk Cox Model"
+description: "A practical R learning guide to Competing Risk Cox Model, with concise explanations, reproducible examples, and interpretation guidance."
+date: 2026-08-31
+section: "Biostatistics"
+category: "Time-to-Event Analysis"
+topic: "Competing Risk Cox Model"
+type: article
+tags: ["Time-to-Event Analysis", "Biostatistics", "Competing", "Risk", "Cox"]
+status: published
+featured: true
+youtube: []
+pdf: []
+downloads: []
+validate-yaml: false
+execute:
+  enabled: false
+  echo: true
+  warning: false
+  error: true
+---
+
+## Why This Topic Matters
+
+Time-to-event methods use both event occurrence and follow-up time while accounting for censoring.
+
+## Learning Objectives
+
+After working through this material, you should be able to:
+
+- explain the main ideas behind **Competing Risk Cox Model**;
+- interpret the R workflow and its output; and
+- adapt the examples to a related analysis.
+
+## Lesson Roadmap
+
+The original material is organized around the following topics:
+
+1. Competing Risk Cox Model
+2. Read data
+3. Data transform
+4. Cumulative incidence (Fine-Gray univariate analysis)
+5. Univariate competing risk regression analysis
+6. Multivariable competing risk regression analysis
+
+## How to Use This Lesson
+
+Read the explanation before each workflow, then run the R chunks in sequence. Code and output are shown together so that each numerical or graphical result can be connected to the command that produced it. Some source examples require optional packages or external data. Those setup-dependent chunks remain visible for reference but are marked `eval: false` when they cannot be reproduced safely in a clean website build.
+
+## Reproducible Learning Check
+
+This short R chunk confirms the scope of the lesson and always produces a visible output.
+
+```{r}
+#| label: learning-overview
+learning_overview <- data.frame(
+  section = "Biostatistics",
+  category = "Time-to-Event Analysis",
+  topic = "Competing Risk Cox Model"
+)
+learning_overview
+```
+
+## Learning Material
+
+The following material develops **Competing Risk Cox Model** from core ideas to practical implementation. Definitions and assumptions come first; worked code then shows how the ideas are represented computationally.
+
+### Conceptual Foundation
+
+The material below closely follows the original R Markdown source, with its examples retained for study and reuse.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#### Competing Risk Cox Model
+
+<!-- generated-learning-note -->
+This section develops **Competing Risk Cox Model**. Read the model specification together with its assumptions and the scale of each reported effect.
+
+
+[Reference](https://mengte.online/archives/13486)
+ 
+Traditional survival analysis generally only cares about one endpoint event. requiring that the censoring situation and the individual endpoint event are independent of each other. In actual situations, another event may affect the probability of the endpoint event, in which case it can be considered that the former has a competing risk with the latter.  
+
+Observation time not fully observed: censoring (Assumed to be non-informative); (Observed) Event that prevents the event of interest: competing risks.  
+
+The purpose is to study the relationship between the number of lymph node examinations and the survival time of patients with non-small cell lung cancer based on a competing risk model. The event of interest is the death of patients from non-small cell lung cancer, and the competing event is death from other causes (such as other tumors, etc.). The outcome variable is a three-category variable (0, 1, 2), including survival (censored), death from non-small cell lung cancer, and death from other causes.  
+
+ 
+
+####### Read data
+
+### R Workflow and Examples
+
+Run the examples in order because later blocks may reuse objects created earlier. Each block includes a short purpose statement and guidance for reading its output.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This source block depends on optional software, external data, or a machine-specific path. It is retained as a reference and is not executed during the website build.
+
+```{r}
+#| eval: false
+#| code-fold: true
+setwd("C:\\Users\\hed2\\Downloads\\dell\\code-storage\\code")
+mydata <- read.csv ('compt risk survival.csv') 
+str (mydata)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Because this block is not executed, it produces no website output. Enable it only after its dependencies and input paths have been validated.
+
+
+####### Data transform  
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+mydata$Age <- factor (mydata$Age, levels = c(1, 2, 3), labels = c ("<60", "60-74", "≥75"))
+mydata$Gender <- factor (mydata$Gender, levels = c(1, 2), labels = c ("Male", "Female"))
+mydata$Ethnicity <- factor (mydata$Ethnicity, levels = c(1, 2, 3, 4), labels = c ("White", "Asian", "Black", "Others"))
+mydata$Primary_site <- factor (mydata$Primary_site, levels = c(1, 2, 3, 4, 5), labels = c ("Upper lobe", "Middle lobe", "Lower lobe", "Main bronchus", "Overlapping lesion"))
+mydata$T_stage <- factor (mydata$T_stage, levels = c(1, 2, 3, 4), labels = c ("T1", "T2", "T3", "T4"))
+mydata$Lymph_number <- factor (mydata$Lymph_number, levels = c(1, 2), labels = c ("< 16", "≥ 16"))
+mydata$Outcome <- factor (mydata$ Outcome)
+View(mydata)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block extracts inferential or predictive results from fitted objects. Match each estimate, interval, contrast, or diagnostic to the quantity it represents.
+
+```{r}
+summary (mydata)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Interpret estimates on the scale reported by the function, and use intervals or other uncertainty measures when drawing conclusions.
+
+
+
+####### Cumulative incidence (Fine-Gray univariate analysis)
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r}
+library (cmprsk)
+library (riskRegression)
+library(pec)
+cum_Lymph_number <- cuminc (mydata$Survival_months, mydata$Outcome, mydata$Lymph_number)  
+cum_Lymph_number 
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+cum_Lymph_number$`< 16 1`$est[length(cum_Lymph_number $`< 16 1`$est)]   
+cum_Lymph_number$`≥ 16 1`$est[length(cum_Lymph_number $`≥ 16 1`$est)]   
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+plot (cum_Lymph_number, color = c ("pink", "red", "blue", "darkcyan"), xlab = "", xlim = c (0,100), ylim = c (0,1), ylab = "CIF", main = 'Lymph')  
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+
+####### Univariate competing risk regression analysis
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block extracts inferential or predictive results from fitted objects. Match each estimate, interval, contrast, or diagnostic to the quantity it represents.
+
+```{r}
+fgr_Lymph_number <- FGR(Hist(Survival_months, Outcome)~ Lymph_number, data = mydata)   
+summary (fgr_Lymph_number)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Interpret estimates on the scale reported by the function, and use intervals or other uncertainty measures when drawing conclusions.
+
+After controlling for competing risk events, the risk of death from non-small cell lung cancer in the group <16 was 0.91 times higher than that in the group ≥16 (HR=1.91), and the risk of death from non-small cell lung cancer in the group ≥16 was 0.477 times lower than that in the group <16 (HR=0.523, 95%CI: 0.407-0.673). ≥16/<16=exp(coef)=0.523;  <16/≥16=exp(-coef)=1.91.  
+
+`Please be careful here` the highest level of the covariate is the reference group in SAS but the lowest level in R. 
+
+####### Multivariable competing risk regression analysis
+
+<!-- generated-learning-note -->
+**Purpose.** This block extracts inferential or predictive results from fitted objects. Match each estimate, interval, contrast, or diagnostic to the quantity it represents.
+
+```{r}
+fgr_multi <- FGR (Hist(Survival_months, Outcome)~Age + Gender + Primary_site + Lymph_number, data = mydata)   
+summary (fgr_multi)   
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Interpret estimates on the scale reported by the function, and use intervals or other uncertainty measures when drawing conclusions.
+
+
+####### Without consider competing risk events
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block specifies and fits the statistical model. Identify the outcome, predictors, reference levels, link or distribution, and any correlation structure before interpreting coefficients.
+
+```{r}
+mydata$Outcome2=ifelse (mydata$Outcome==2|mydata$Outcome==0, 0, 1)  
+
+coxph <- coxph ( Surv (Survival_months, Outcome2)~Age + Gender + Primary_site + Lymph_number, data = mydata)   
+summary (coxph)   
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Focus on coefficient direction and scale, uncertainty intervals, fit statistics, and diagnostics. Statistical significance alone does not establish practical importance or model adequacy.
+
+
+The risk of death from non-small cell lung cancer in the group with ≥16 lymph node examinations was 0.483 times lower than that in the group with <16 lymph node examinations (HR=0.517, P=7.33e-07<0.001). It can be seen that when there is a competing risk, if the competing risk model is not used and the traditional proportional risk Cox regression is used, the effect of the research factor will be exaggerated.
+
+
+####### Subdistribution PH assumption  
+
+`The subdistribution satisfies the proportional hazards (PH) assumption.` 
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r}
+library ('survival')   
+library ('survminer')   
+data_1 <- mydata[mydata$Outcome!=2,]   
+data_2 <- mydata[mydata$Outcome!=1,]   
+data_2$Outcome <- ifelse(data_2$Outcome ==0,0,1)   
+
+cox_1 <- coxph (formula = Surv(Survival_months, Outcome) ~ Age + Gender + Primary_site + Lymph_number, data = data_1, id = ID)   
+cox_2 <- coxph (formula = Surv(Survival_months, Outcome) ~ Age + Gender + Primary_site + Lymph_number, data = data_2, id = ID)   
+ph_1 <- cox.zph(cox_1)   
+ph_2 <- cox.zph(cox_2)   
+ph_1   
+ph_2   
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+ggcoxzph (ph_1)
+ggcoxzph (ph_2)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+The test P value of the covariate Age in model 1 was 0.033, indicating that the proportional hazard assumption was not met. However, given that the overall test P values of the two models were 0.120 and 0.188, both > 0.05, and the test P values of the target independent variable (number of lymph node examinations) were all > 0.05, it can be considered that the analysis model meets the PH assumption.  
+
+####### Multicollinearity diagnosis
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r}
+library ('car')   
+data_lm <- mydata   
+data_lm$Group <- 1:length(data_lm[,1])   
+lm_model <- lm (formula = Group ~ Age + Gender + Primary_site + Lymph_number, data = data_lm)   
+vif(lm_model)   
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+## Interpreting the Results
+
+Read survival probabilities, hazards, risk sets, and model contrasts with careful attention to time and censoring assumptions. Treat the output as evidence generated under the stated data, coding choices, and assumptions. Before using the workflow in practice, replace example inputs with validated data and confirm that the method targets the intended scientific question.
+
+## Key Takeaways
+
+- **Connect method to purpose.** Identify the question and target quantity before choosing code or a model.
+- **Read code and output together.** Confirm what each object, estimate, interval, table, or plot represents.
+- **Check assumptions and diagnostics.** A successful computation is not by itself evidence that the result is reliable.
+- **Adapt deliberately.** When applying the example elsewhere, document changes to data definitions, parameters, and analytical choices.

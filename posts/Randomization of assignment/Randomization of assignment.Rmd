@@ -1,0 +1,42 @@
+---
+title: "Randomization of assignment"
+output: html_document
+date: '2024-01-23'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+[Brief summary from the book](https://home.csulb.edu/~okoroste/)
+
+
+#### Equally sized groups
+
+For normal populations with equal variances, the likelihood
+ratio test is most powerful if the sizes of the compared groups are equal.
+
+$$
+0>\frac{\delta}{\sqrt{v}}-\frac{\delta}{\sqrt{v_{N / 2}}}=\Phi^{-1}\left(\beta_{N / 2}\right)-\Phi^{-1}(\beta)
+$$
+where $v_{N / 2}<v$ yields. 
+
+Hence,
+
+$$
+\Phi^{-1}(\beta)>\Phi^{-1}\left(\beta_{N / 2}\right) \quad \text { or } \quad \beta>\beta_{N / 2} \quad \text { or } \quad 1- \beta< 1- \beta_{N / 2}
+$$
+
+#### Concealment of Assignments
+
+The most common randomization are the simple, block, and stratified procedures.
+
+An actual group assignment should be kept secret from the subject as well as
+from the physician responsible for administering therapy, if the trial is double blinded. 
+when a new subject enters the trial, the physician
+should call the central location where the next envelope in the sequence is
+opened to reveal the group assignment for the subject.
+
+
+

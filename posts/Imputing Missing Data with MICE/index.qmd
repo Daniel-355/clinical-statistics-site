@@ -1,0 +1,258 @@
+---
+title: "Imputing Missing Data with MICE"
+description: "A practical R learning guide to Imputing Missing Data with MICE, with concise explanations, reproducible examples, and interpretation guidance."
+date: 2026-08-31
+section: "Biostatistics"
+category: "Missing Data & Sensitivity Analysis"
+topic: "Imputing Missing Data with MICE"
+type: article
+tags: ["Missing Data & Sensitivity Analysis", "Biostatistics", "Imputing", "Missing", "Data"]
+status: published
+featured: true
+youtube: []
+pdf: []
+downloads: []
+validate-yaml: false
+execute:
+  echo: true
+  warning: false
+  error: true
+---
+
+## Why This Topic Matters
+
+Missing-data methods make assumptions about unobserved values explicit and propagate the resulting uncertainty into inference.
+
+## Learning Objectives
+
+After working through this material, you should be able to:
+
+- explain the main ideas behind **Imputing Missing Data with MICE**;
+- interpret the R workflow and its output; and
+- adapt the examples to a related analysis.
+
+## Lesson Roadmap
+
+The original material is organized around the following topics:
+
+1. Imputing Missing Data with MICE
+
+## How to Use This Lesson
+
+Read the explanation before each workflow, then run the R chunks in sequence. Code and output are shown together so that each numerical or graphical result can be connected to the command that produced it. Some source examples require optional packages or external data. Those setup-dependent chunks remain visible for reference but are marked `eval: false` when they cannot be reproduced safely in a clean website build.
+
+## Reproducible Learning Check
+
+This short R chunk confirms the scope of the lesson and always produces a visible output.
+
+```{r}
+#| label: learning-overview
+learning_overview <- data.frame(
+  section = "Biostatistics",
+  category = "Missing Data & Sensitivity Analysis",
+  topic = "Imputing Missing Data with MICE"
+)
+learning_overview
+```
+
+## Learning Material
+
+The following material develops **Imputing Missing Data with MICE** from core ideas to practical implementation. Definitions and assumptions come first; worked code then shows how the ideas are represented computationally.
+
+### Conceptual Foundation
+
+The material below closely follows the original R Markdown source, with its examples retained for study and reuse.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+MCAR and MAR observations are called ignorable, while MNAR values are called non-ignorable or informative.
+
+- Work with the unbalanced data and use the ML or REML method for
+parameter estimation. This approach works best if all missing values are
+ignorable. However, for MNAR values, this strategy results in biased estimates.
+
+- Delete all incomplete cases, which are the subjects with at least one missing
+observation. It works best when the number of incomplete cases is not large, and there is no structure to the missing data (they are MCAR observations). 
+
+- Impute the missing values and work with the resulting complete data set, including mean, last observation, and multiple imputation tech. The resulting parameter estimates are biased (unless that is MCAR).
+
+#### Imputing Missing Data with MICE
+
+<!-- generated-learning-note -->
+This section prepares the information needed for **Imputing Missing Data with MICE**. Check variable definitions, units, coding, and missing values before moving to analysis.
+
+
+Substitute the means for other variables with missingness, run a regression to get the imputed values for the first variable; next, run a regression for the second variable and imputed using the first variable's updated values; repeat the above steps until all missing data was imputed by regression; that is the first iterate. repeat the above process by 50 iterates to get the first imputed dataset. repeat the above procedure 5 times to get 5 imputed datasets. 
+
+- Data summary
+
+### R Workflow and Examples
+
+Run the examples in order because later blocks may reuse objects created earlier. Each block includes a short purpose statement and guidance for reading its output.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r}
+library(mice)
+data <- airquality
+summary(data)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+
+- Take a look at the variable and its distribution
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+md.pattern(data)
+hist(data$Ozone)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+- Imputed missing values using simple values
+
+<!-- generated-learning-note -->
+**Purpose.** This block calculates descriptive summaries. Check the denominator, grouping variables, units, and treatment of missing values.
+
+```{r}
+imputed_zero = replace(data$Ozone, is.na(data$Ozone), 0) 
+imputed_mean = replace(data$Ozone, is.na(data$Ozone), mean(data$Ozone, na.rm = TRUE))
+imputed_median = replace(data$Ozone, is.na(data$Ozone), median(data$Ozone, na.rm = TRUE))
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Use the displayed values to understand center, spread, frequency, and missingness; investigate any implausible or unexpected result.
+
+
+- Check the distribution again
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+hist(imputed_zero)
+hist(imputed_mean)
+hist(imputed_median)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+- Imputed missing values by different algorithm methods (MICE)
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+imputed_pmm = complete(mice(data, method = "pmm",seed=500))$Ozone #default the first imputed dataset
+imputed_cart = complete(mice(data, method = "cart",seed=500))$Ozone
+imputed_lasso = complete(mice(data, method = "lasso.norm",seed=500))$Ozone
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+`lasso is different with other two`
+
+- Check the distribution again
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+hist(data$Ozone)
+hist(imputed_pmm)
+hist(imputed_cart)
+hist(imputed_lasso)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+- Imputing the missing data using MICE
+
+<!-- generated-learning-note -->
+**Purpose.** This block extracts inferential or predictive results from fitted objects. Match each estimate, interval, contrast, or diagnostic to the quantity it represents.
+
+```{r}
+tempData <- mice(data,m=5,maxit=50,meth='pmm',seed=500) #m=5 refers to the number of imputed datasets.
+summary(tempData)
+tempData$imp$Ozone
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Interpret estimates on the scale reported by the function, and use intervals or other uncertainty measures when drawing conclusions.
+
+
+- Get back a completed dataset
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+completedData <- complete(tempData,1)
+# completed <- complete(tempData) 
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+- Inspecting the distribution of original and imputed data
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+xyplot(tempData,Ozone ~ Wind+Temp+Solar.R,pch=18,cex=1) #?
+densityplot(tempData)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+- Pooling the results
+
+<!-- generated-learning-note -->
+**Purpose.** This block specifies and fits the statistical model. Identify the outcome, predictors, reference levels, link or distribution, and any correlation structure before interpreting coefficients.
+
+```{r}
+modelFit1 <- with(tempData,lm(Temp~ Ozone+Solar.R+Wind))
+summary(pool(modelFit1))
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Focus on coefficient direction and scale, uncertainty intervals, fit statistics, and diagnostics. Statistical significance alone does not establish practical importance or model adequacy.
+
+
+
+
+`Using logistic regression to indentify if it is missing completely at random;`
+
+`How well is your imputation working? Remove all missing rows; Run statistics on your dataset from #1;Randomly remove values from your dataset; Impute values, calculate statistics, and compare to #2; Repeat steps 3 and 4 with many different removed values + imputation methods;`
+
+## Interpreting the Results
+
+Compare complete-case, imputed, and sensitivity results; large changes signal dependence on unverifiable assumptions. Treat the output as evidence generated under the stated data, coding choices, and assumptions. Before using the workflow in practice, replace example inputs with validated data and confirm that the method targets the intended scientific question.
+
+## Key Takeaways
+
+- **Connect method to purpose.** Identify the question and target quantity before choosing code or a model.
+- **Read code and output together.** Confirm what each object, estimate, interval, table, or plot represents.
+- **Check assumptions and diagnostics.** A successful computation is not by itself evidence that the result is reliable.
+- **Adapt deliberately.** When applying the example elsewhere, document changes to data definitions, parameters, and analytical choices.

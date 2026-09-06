@@ -1,0 +1,103 @@
+---
+title: "Imputing Missing Data with MICE"
+output: html_document
+date: '2023-12-11'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+MCAR and MAR observations are called ignorable, while MNAR values are called non-ignorable or informative.
+
+- Work with the unbalanced data and use the ML or REML method for
+parameter estimation. This approach works best if all missing values are
+ignorable. However, for MNAR values, this strategy results in biased estimates.
+
+- Delete all incomplete cases, which are the subjects with at least one missing
+observation. It works best when the number of incomplete cases is not large, and there is no structure to the missing data (they are MCAR observations). 
+
+- Impute the missing values and work with the resulting complete data set, including mean, last observation, and multiple imputation tech. The resulting parameter estimates are biased (unless that is MCAR).
+
+### Imputing Missing Data with MICE
+
+Substitute the means for other variables with missingness, run a regression to get the imputed values for the first variable; next, run a regression for the second variable and imputed using the first variable's updated values; repeat the above steps until all missing data was imputed by regression; that is the first iterate. repeat the above process by 50 iterates to get the first imputed dataset. repeat the above procedure 5 times to get 5 imputed datasets. 
+
+- Data summary
+```{r}
+library(mice)
+data <- airquality
+summary(data)
+```
+
+- Take a look at the variable and its distribution
+```{r}
+md.pattern(data)
+hist(data$Ozone)
+```
+
+- Imputed missing values using simple values
+```{r}
+imputed_zero = replace(data$Ozone, is.na(data$Ozone), 0) 
+imputed_mean = replace(data$Ozone, is.na(data$Ozone), mean(data$Ozone, na.rm = TRUE))
+imputed_median = replace(data$Ozone, is.na(data$Ozone), median(data$Ozone, na.rm = TRUE))
+```
+
+- Check the distribution again
+```{r}
+hist(imputed_zero)
+hist(imputed_mean)
+hist(imputed_median)
+```
+
+- Imputed missing values by different algorithm methods (MICE)
+```{r}
+imputed_pmm = complete(mice(data, method = "pmm",seed=500))$Ozone #default the first imputed dataset
+imputed_cart = complete(mice(data, method = "cart",seed=500))$Ozone
+imputed_lasso = complete(mice(data, method = "lasso.norm",seed=500))$Ozone
+```
+
+`lasso is different with other two`
+
+- Check the distribution again
+```{r}
+hist(data$Ozone)
+hist(imputed_pmm)
+hist(imputed_cart)
+hist(imputed_lasso)
+```
+
+- Imputing the missing data using MICE
+```{r}
+tempData <- mice(data,m=5,maxit=50,meth='pmm',seed=500) #m=5 refers to the number of imputed datasets.
+summary(tempData)
+tempData$imp$Ozone
+```
+
+- Get back a completed dataset
+```{r}
+completedData <- complete(tempData,1)
+# completed <- complete(tempData) 
+```
+
+- Inspecting the distribution of original and imputed data
+```{r}
+xyplot(tempData,Ozone ~ Wind+Temp+Solar.R,pch=18,cex=1) #?
+densityplot(tempData)
+```
+
+- Pooling the results
+```{r}
+modelFit1 <- with(tempData,lm(Temp~ Ozone+Solar.R+Wind))
+summary(pool(modelFit1))
+```
+
+
+
+`Using logistic regression to indentify if it is missing completely at random;`
+
+`How well is your imputation working? Remove all missing rows; Run statistics on your dataset from #1;Randomly remove values from your dataset; Impute values, calculate statistics, and compare to #2; Repeat steps 3 and 4 with many different removed values + imputation methods;`
+
+
+
+

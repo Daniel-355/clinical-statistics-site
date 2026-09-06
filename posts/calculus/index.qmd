@@ -1,0 +1,191 @@
+---
+title: "Calculus"
+description: "A practical R learning guide to Calculus, with concise explanations, reproducible examples, and interpretation guidance."
+date: 2026-08-31
+section: "Resources"
+category: "Reference Resources"
+topic: "Calculus"
+type: article
+tags: ["Reference Resources", "Resources", "Calculus"]
+status: published
+featured: true
+youtube: []
+pdf: []
+downloads: []
+validate-yaml: false
+execute:
+  echo: true
+  warning: false
+  error: true
+---
+
+## Why This Topic Matters
+
+Mathematical and statistical foundations make model behavior and computational results easier to understand.
+
+## Learning Objectives
+
+After working through this material, you should be able to:
+
+- explain the main ideas behind **Calculus**;
+- interpret the R workflow and its output; and
+- adapt the examples to a related analysis.
+
+## Lesson Roadmap
+
+The original material is organized around the following topics:
+
+1. Calculus
+2. Derivation
+3. Integration
+
+## How to Use This Lesson
+
+Read the explanation before each workflow, then run the R chunks in sequence. Code and output are shown together so that each numerical or graphical result can be connected to the command that produced it. Some source examples require optional packages or external data. Those setup-dependent chunks remain visible for reference but are marked `eval: false` when they cannot be reproduced safely in a clean website build.
+
+## Reproducible Learning Check
+
+This short R chunk confirms the scope of the lesson and always produces a visible output.
+
+```{r}
+#| label: learning-overview
+learning_overview <- data.frame(
+  section = "Resources",
+  category = "Reference Resources",
+  topic = "Calculus"
+)
+learning_overview
+```
+
+## Learning Material
+
+The following material develops **Calculus** from core ideas to practical implementation. Definitions and assumptions come first; worked code then shows how the ideas are represented computationally.
+
+### Conceptual Foundation
+
+The material below closely follows the original R Markdown source, with its examples retained for study and reuse.
+
+#### Calculus
+
+<!-- generated-learning-note -->
+This subsection explains **Calculus** and shows how it contributes to the overall Calculus workflow.
+
+#### Derivation
+
+<!-- generated-learning-note -->
+This subsection explains **Derivation** and shows how it contributes to the overall Calculus workflow.
+
+### R Workflow and Examples
+
+Run the examples in order because later blocks may reuse objects created earlier. Each block includes a short purpose statement and guidance for reading its output.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+dx <- deriv(y ~ x^3, "x"); dx
+mode(dx)
+x<-1:2   
+eval(dx)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+dx <- deriv(y ~ sin(x), "x", func= TRUE) ;  
+mode(dx)
+dx(c(pi,4*pi))  
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+a<-2                
+dx<-deriv(y~a*cos(a*x),"x",func = TRUE)    
+dx(pi/3)
+   
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+fxy = expression(2*x^2+y+3*x*y^2)
+dxy = deriv(fxy, c("x", "y"), func = TRUE)
+dxy(1,2)  
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+#### Integration
+
+<!-- generated-learning-note -->
+This subsection explains **Integration** and shows how it contributes to the overall Calculus workflow.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+integrate(dnorm, -1.96, 1.96)
+ 
+integrate(dnorm, -Inf, Inf)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block defines a reusable function. Separate its inputs, calculations, and returned value before applying it to new data.
+
+```{r}
+integrand <- function(x) {1/((x+1)*sqrt(x))}
+ 
+integrate(integrand, lower = 0, upper = Inf)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Test the function with simple inputs whose expected answer is known before relying on it in a larger workflow.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block defines a reusable function. Separate its inputs, calculations, and returned value before applying it to new data.
+
+```{r}
+ integrand <- function(x) {sin(x)}
+ integrate(integrand, lower = 0, upper = pi/2) 
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Test the function with simple inputs whose expected answer is known before relying on it in a larger workflow.
+
+## Interpreting the Results
+
+Work through the notation first, then use the R examples to connect definitions with numerical behavior. Treat the output as evidence generated under the stated data, coding choices, and assumptions. Before using the workflow in practice, replace example inputs with validated data and confirm that the method targets the intended scientific question.
+
+## Key Takeaways
+
+- **Connect method to purpose.** Identify the question and target quantity before choosing code or a model.
+- **Read code and output together.** Confirm what each object, estimate, interval, table, or plot represents.
+- **Check assumptions and diagnostics.** A successful computation is not by itself evidence that the result is reliable.
+- **Adapt deliberately.** When applying the example elsewhere, document changes to data definitions, parameters, and analytical choices.

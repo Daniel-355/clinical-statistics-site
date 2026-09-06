@@ -1,0 +1,274 @@
+---
+title: "Diagnostic test"
+description: "A practical R learning guide to Diagnostic test, with concise explanations, reproducible examples, and interpretation guidance."
+date: 2026-08-31
+section: "Biostatistics"
+category: "Statistical Models"
+topic: "Diagnostic test"
+type: article
+tags: ["Statistical Models", "Biostatistics", "Diagnostic", "test"]
+status: published
+featured: true
+youtube: []
+pdf: []
+downloads: []
+validate-yaml: false
+execute:
+  echo: true
+  warning: false
+  error: true
+---
+
+## Why This Topic Matters
+
+A statistical model is a structured approximation that links observed data to an estimand or prediction target.
+
+## Learning Objectives
+
+After working through this material, you should be able to:
+
+- explain the main ideas behind **Diagnostic test**;
+- interpret the R workflow and its output; and
+- adapt the examples to a related analysis.
+
+## Lesson Roadmap
+
+The original material is organized around the following topics:
+
+1. Diagnostic test
+2. Basic concept
+3. Diagnostic test 2x2 contingency table
+4. Posterior probability
+5. ROC
+6. Meausres of diagnostic test
+
+## How to Use This Lesson
+
+Read the explanation before each workflow, then run the R chunks in sequence. Code and output are shown together so that each numerical or graphical result can be connected to the command that produced it. Some source examples require optional packages or external data. Those setup-dependent chunks remain visible for reference but are marked `eval: false` when they cannot be reproduced safely in a clean website build.
+
+## Reproducible Learning Check
+
+This short R chunk confirms the scope of the lesson and always produces a visible output.
+
+```{r}
+#| label: learning-overview
+learning_overview <- data.frame(
+  section = "Biostatistics",
+  category = "Statistical Models",
+  topic = "Diagnostic test"
+)
+learning_overview
+```
+
+## Learning Material
+
+The following material develops **Diagnostic test** from core ideas to practical implementation. Definitions and assumptions come first; worked code then shows how the ideas are represented computationally.
+
+### Conceptual Foundation
+
+The material below closely follows the original R Markdown source, with its examples retained for study and reuse.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#### Diagnostic test
+
+<!-- generated-learning-note -->
+This subsection explains **Diagnostic test** and shows how it contributes to the overall Diagnostic test workflow.
+
+
+#### Basic concept
+
+<!-- generated-learning-note -->
+This section establishes the concepts and assumptions needed to understand **Basic concept** in the context of Diagnostic test.
+
+####### Diagnostic test 2x2 contingency table  
+  
+![](https://upload.medbullets.com/topic/101006/images/sensitivity-specificity_corrected.jpg)  
+
+
+- A. True positives: those sick individuals with a positive test result.  
+- B. False positives: those healthy individuals with a positive test result.  
+- C. False negatives: those sick individuals with a negative test result.  
+- D. True negatives: those healthy individuals with a negative test result.  
+- Sensitivity is the probability that the sick individual will be positive  
+- Specificity  the probability that healthy individuals will have a negative result  
+- positive predictive values is the probability that the positive individual is actual sick  
+- negative predictive values is the probability that the negative individual is healthy. (Predictive values are conditioned by the a priori probability of the condition under study. When the a priori probability is low, negative predictive values will be high, and positive predictive values will be low.)   
+- The positive likelihood ratio is the probability of positive result when sick exist in relation to the probability of positive result when healthy exist.  
+- The negative likelihood ratio is the probability of negative result when sick exist in relation to the probability of negative result when healthy exist.  
+
+####### Posterior probability
+- Probability describes the chance of an event occurring, while likelihood refers to the strength of evidence for a hypothesis given observed data.
+- odd is  the ratio of the probability of sick happening to that of it not happening
+- the posterior probability of hypothesis H given data D is the likelihood of observing the data D given hypothesis H times the prior probability of hypothesis H
+- Post-test odds = Pre-test odds * Likelihood ratio
+![](https://miro.medium.com/v2/resize:fit:1100/format:webp/1*3qRK21B_BKBmGUp7yq74sA.jpeg)
+- Post-test probability is the updated probability of having a disease after a test result, while predictive values are a measure of the test's accuracy in correctly identifying the presence or absence of the disease within a population. 
+
+####### ROC
+- The ROC curve plots the True Positive Rate (TPR) against the False Positive Rate (FPR) at various threshold settings of a classifier.
+- AUC provides a single, concise summary of a model's performance
+
+#### Meausres of diagnostic test
+
+<!-- generated-learning-note -->
+This subsection explains **Meausres of diagnostic test** and shows how it contributes to the overall Diagnostic test workflow.
+
+### R Workflow and Examples
+
+Run the examples in order because later blocks may reuse objects created earlier. Each block includes a short purpose statement and guidance for reading its output.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r}
+library(mltools)
+library(caret)
+library(pROC)
+library(epiR)
+set.seed(123)
+# 2x2 contingency table, two methods/ packages
+binomial_case <- data.frame(labels = sample(c(2,0), 100, 
+                                            replace = TRUE), predictions = sample(c(2,0), 100, replace = TRUE))
+############## have to pay attention the reference group very much #pay attention the order of two varialbes 
+confusionMatrix=confusionMatrix( relevel( as.factor(binomial_case$predictions), ref = "2"), relevel( as.factor(binomial_case$labels), ref = "2"))
+confusionMatrix
+
+## Generate a two-by-two table:
+tab <- table(binomial_case$predictions,binomial_case$labels)[2:1,2:1]
+rval <- epi.tests(tab, conf.level = 0.95)
+rval
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+
+#### One binary AUC comparison
+
+<!-- generated-learning-note -->
+This subsection explains **One binary AUC comparison** and shows how it contributes to the overall Diagnostic test workflow.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block generates controlled example data. Simulation makes the data-generating assumptions explicit and provides a known setting in which to study the method.
+
+```{r}
+############### one-class auc comparison
+#generate df with random numbers
+df <- data.frame(disease_status = rbinom(n=100, size=1, prob=0.20),
+                 test1 = rnorm(100, mean=15, sd=4),
+                 test2 = rnorm(100, mean=30, sd=2))
+
+# Basic example with 2 roc objects
+roc1<-roc(df$disease_status, df$test1, plot=TRUE, smooth = FALSE)
+roc2<-roc(df$disease_status, df$test2, plot=TRUE, smooth = FALSE)
+result=roc.test(roc1, roc2)
+result
+
+# Comparison of partial AUC:
+roc3 <- roc(df$disease_status, df$test1, partial.auc=c(1, 0.8), partial.auc.focus="se")
+roc4 <- roc(df$disease_status, df$test2, partial.auc=c(1, 0.8), partial.auc.focus="se")
+roc.test(roc3, roc4)
+
+# Unpaired (unrelated) tests
+roc7 <- roc1
+# artificially create an roc8 unpaired with roc7
+roc8 <- roc(df$disease_status[1:70], df$test1[1:70])
+roc.test(roc7, roc8, paired=FALSE, method="bootstrap")
+
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the generated sample with the parameters used to create it. Differences reflect random variation unless the code intentionally introduces bias or structure.
+
+
+#### Comparison on specificity and sensitivity
+
+<!-- generated-learning-note -->
+This subsection explains **Comparison on specificity and sensitivity** and shows how it contributes to the overall Diagnostic test workflow.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+# related ROC
+# Comparison on specificity and sensitivity
+roc.test(roc1, roc2, method="specificity", specificity=0.9)  #true difference in sensitivity at 0.9 specificity is not equal to 0
+roc.test(roc1, roc2, method="sensitivity", sensitivity=0.9)  #true difference in specificity at 0.9 sensitivity is not equal to 0
+# unrelated ROC
+# Comparison on specificity and sensitivity
+roc.test(roc1, roc2, paired=FALSE,method="specificity", specificity=0.9)  #true difference in sensitivity at 0.9 specificity is not equal to 0
+roc.test(roc1, roc2, paired=FALSE,method="sensitivity", sensitivity=0.9)  #true difference in specificity at 0.9 sensitivity is not equal to 0
+
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+#### Two-class auc comparsion
+
+<!-- generated-learning-note -->
+This subsection explains **Two-class auc comparsion** and shows how it contributes to the overall Diagnostic test workflow.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r}
+############### Two-class auc comparsion
+set.seed(123)
+library(metrica)
+library(mltools)
+binomial_case <- data.frame(labels = sample(c(2,0), 100, 
+                                            replace = TRUE), predictions = sample(c(2,0), 100, replace = TRUE))
+# Get AUC estimate for two-class case
+# three packages/methods generate very similar results
+AUC_roc(data = binomial_case, obs = labels, pred = predictions, tidy = TRUE)#pay attention the order of two varialbes 
+auc_roc( binomial_case$predictions,binomial_case$labels) 
+roc ( binomial_case$labels, binomial_case$predictions, plot=TRUE, smooth = FALSE)
+
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+
+#### Multi-class auc comparsion
+
+<!-- generated-learning-note -->
+This subsection explains **Multi-class auc comparsion** and shows how it contributes to the overall Diagnostic test workflow.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This source block depends on optional software, external data, or a machine-specific path. It is retained as a reference and is not executed during the website build.
+
+```{r}
+#| eval: false
+#| code-fold: true
+# Multi-class
+multinomial_case <- data.frame(labels = sample(c(2,1,0), 100, 
+                                               replace = TRUE), predictions = sample(c(2,1,0), 100, replace = TRUE) )
+# Get AUC estimate for multi-class case
+AUC_roc(data = multinomial_case, obs = labels, pred = predictions, tidy = TRUE)
+# https://r-packages.io/packages/metrica/AUC_roc
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Because this block is not executed, it produces no website output. Enable it only after its dependencies and input paths have been validated.
+
+## Interpreting the Results
+
+Interpret coefficients with their coding and scale, examine uncertainty, and use diagnostics to evaluate assumptions. Treat the output as evidence generated under the stated data, coding choices, and assumptions. Before using the workflow in practice, replace example inputs with validated data and confirm that the method targets the intended scientific question.
+
+## Key Takeaways
+
+- **Connect method to purpose.** Identify the question and target quantity before choosing code or a model.
+- **Read code and output together.** Confirm what each object, estimate, interval, table, or plot represents.
+- **Check assumptions and diagnostics.** A successful computation is not by itself evidence that the result is reliable.
+- **Adapt deliberately.** When applying the example elsewhere, document changes to data definitions, parameters, and analytical choices.

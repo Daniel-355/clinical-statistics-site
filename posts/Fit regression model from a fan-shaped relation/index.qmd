@@ -1,0 +1,226 @@
+---
+title: "Fit regression model from a fan-shaped relation"
+description: "A practical R learning guide to Fit regression model from a fan-shaped relation, with concise explanations, reproducible examples, and interpretation guidance."
+date: 2026-08-31
+section: "Biostatistics"
+category: "Statistical Models"
+topic: "Fit regression model from a fan-shaped relation"
+type: article
+tags: ["Statistical Models", "Biostatistics", "Fit", "regression", "fan-shaped"]
+status: published
+featured: true
+youtube: []
+pdf: []
+downloads: []
+validate-yaml: false
+execute:
+  echo: true
+  warning: false
+  error: true
+---
+
+## Why This Topic Matters
+
+A statistical model is a structured approximation that links observed data to an estimand or prediction target.
+
+## Learning Objectives
+
+After working through this material, you should be able to:
+
+- explain the main ideas behind **Fit regression model from a fan-shaped relation**;
+- interpret the R workflow and its output; and
+- adapt the examples to a related analysis.
+
+## Lesson Roadmap
+
+The original material is organized around the following topics:
+
+1. Data and plot
+2. Examine standard deviation
+3. Method1, construct a weighted regression using weights proportional to 1/x^2
+4. Mothod2, Take logs, and fit a linear model with the coefficient restricted to 1 (also called an offset)
+5. Method3, fit a gamma glm with identity link (and perhaps without an intercept)
+6. References
+
+## How to Use This Lesson
+
+Read the explanation before each workflow, then run the R chunks in sequence. Code and output are shown together so that each numerical or graphical result can be connected to the command that produced it. Some source examples require optional packages or external data. Those setup-dependent chunks remain visible for reference but are marked `eval: false` when they cannot be reproduced safely in a clean website build.
+
+## Reproducible Learning Check
+
+This short R chunk confirms the scope of the lesson and always produces a visible output.
+
+```{r}
+#| label: learning-overview
+learning_overview <- data.frame(
+  section = "Biostatistics",
+  category = "Statistical Models",
+  topic = "Fit regression model from a fan-shaped relation"
+)
+learning_overview
+```
+
+## Learning Material
+
+The following material develops **Fit regression model from a fan-shaped relation** from core ideas to practical implementation. Definitions and assumptions come first; worked code then shows how the ideas are represented computationally.
+
+### Conceptual Foundation
+
+The material below closely follows the original R Markdown source, with its examples retained for study and reuse.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#### Data and plot
+
+<!-- generated-learning-note -->
+This section prepares the information needed for **Data and plot**. Check variable definitions, units, coding, and missing values before moving to analysis.
+
+### R Workflow and Examples
+
+Run the examples in order because later blocks may reuse objects created earlier. Each block includes a short purpose statement and guidance for reading its output.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block generates controlled example data. Simulation makes the data-generating assumptions explicit and provides a known setting in which to study the method.
+
+```{r}
+x = (runif(5000))
+y = x*(1+rnorm(5000,0,0.1))
+plot(x,y,cex=.5,pch=21)
+
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the generated sample with the parameters used to create it. Differences reflect random variation unless the code intentionally introduces bias or structure.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block specifies and fits the statistical model. Identify the outcome, predictors, reference levels, link or distribution, and any correlation structure before interpreting coefficients.
+
+```{r}
+mod=lm(y~x)
+summary(mod)
+plot(mod)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Focus on coefficient direction and scale, uncertainty intervals, fit statistics, and diagnostics. Statistical significance alone does not establish practical importance or model adequacy.
+
+
+#### Examine standard deviation
+
+<!-- generated-learning-note -->
+This subsection explains **Examine standard deviation** and shows how it contributes to the overall Fit regression model from a fan-shaped relation workflow.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+x_cat=cut(x, breaks = 20)
+x_squa=(x)^2
+data=data.frame(x,y,x_cat,x_squa)
+sd=aggregate(data$y, list(data$x_cat), FUN=sd) 
+barplot((sd$x))
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+#### Method1, construct a weighted regression using weights proportional to 1/x^2
+
+<!-- generated-learning-note -->
+This section develops **Method1, construct a weighted regression using weights proportional to 1/x^2**. Read the model specification together with its assumptions and the scale of each reported effect.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block specifies and fits the statistical model. Identify the outcome, predictors, reference levels, link or distribution, and any correlation structure before interpreting coefficients.
+
+```{r}
+mod2=lm(y~x,weights=1/x_squa,data=data)
+plot(mod2)
+summary(mod2)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Focus on coefficient direction and scale, uncertainty intervals, fit statistics, and diagnostics. Statistical significance alone does not establish practical importance or model adequacy.
+
+
+
+#### Mothod2, Take logs, and fit a linear model with the coefficient restricted to 1 (also called an offset)
+
+<!-- generated-learning-note -->
+This section develops **Mothod2, Take logs, and fit a linear model with the coefficient restricted to 1 (also called an offset)**. Read the model specification together with its assumptions and the scale of each reported effect.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+log_y=log(y)
+log_x=log(x)
+plot(x,log_y,cex=.5,pch=21)
+plot(log_x,log_y,cex=.5,pch=21)
+
+
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block specifies and fits the statistical model. Identify the outcome, predictors, reference levels, link or distribution, and any correlation structure before interpreting coefficients.
+
+```{r}
+mod3=lm(log_y~(-1+log_x))
+plot(mod3)
+summary(mod3)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Focus on coefficient direction and scale, uncertainty intervals, fit statistics, and diagnostics. Statistical significance alone does not establish practical importance or model adequacy.
+
+
+#### Method3, fit a gamma glm with identity link (and perhaps without an intercept)
+
+<!-- generated-learning-note -->
+This section develops **Method3, fit a gamma glm with identity link (and perhaps without an intercept)**. Read the model specification together with its assumptions and the scale of each reported effect.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block specifies and fits the statistical model. Identify the outcome, predictors, reference levels, link or distribution, and any correlation structure before interpreting coefficients.
+
+```{r}
+# mod4=glm(y~-1+x,family=Gamma)
+# plot(mod4)
+# summary(mod4)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Focus on coefficient direction and scale, uncertainty intervals, fit statistics, and diagnostics. Statistical significance alone does not establish practical importance or model adequacy.
+
+
+#### References
+
+<!-- generated-learning-note -->
+This subsection explains **References** and shows how it contributes to the overall Fit regression model from a fan-shaped relation workflow.
+
+[https://stats.stackexchange.com/questions/156654/fit-regression-model-from-a-fan-shaped-relation-in-r]
+[https://www.itl.nist.gov/div898/handbook/pri/section2/pri24.htm]
+
+## Interpreting the Results
+
+Interpret coefficients with their coding and scale, examine uncertainty, and use diagnostics to evaluate assumptions. Treat the output as evidence generated under the stated data, coding choices, and assumptions. Before using the workflow in practice, replace example inputs with validated data and confirm that the method targets the intended scientific question.
+
+## Key Takeaways
+
+- **Connect method to purpose.** Identify the question and target quantity before choosing code or a model.
+- **Read code and output together.** Confirm what each object, estimate, interval, table, or plot represents.
+- **Check assumptions and diagnostics.** A successful computation is not by itself evidence that the result is reliable.
+- **Adapt deliberately.** When applying the example elsewhere, document changes to data definitions, parameters, and analytical choices.

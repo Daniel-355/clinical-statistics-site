@@ -1,0 +1,95 @@
+---
+title: "Principle components analysis"
+output: html_document
+date: '2023-11-15'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Principle components analysis
+
+#### Load the data
+```{r}
+library(tidyverse)
+#load data
+data("iris")
+```
+
+#### Calculate principal components
+```{r}
+#calculate principal components
+results <- prcomp(iris[,colnames(iris)[1:4]], scale = TRUE)
+
+#reverse the signs
+results$rotation <- -1*results$rotation
+
+#display principal components
+results$rotation
+```
+
+```{r}
+#reverse the signs of the scores
+results$x <- -1*results$x
+
+#display the first six scores
+head(results$x)
+```
+
+
+
+#### Visualize the Results
+```{r}
+biplot(results, scale = 0)
+```
+
+```{r}
+data_pot=data.frame(iris,results$x)
+
+library(ggplot2)
+# Scatter plot by group, upPCA
+ggplot(data_pot, aes(x = Sepal.Length, y = Sepal.Width, color = Species)) +
+  geom_point()
+```
+
+```{r}
+# Scatter plot by group, PCA
+ggplot(data_pot, aes(x = PC1, y = PC2, color = Species)) +
+  geom_point()
+```
+
+```{r}
+data_spedal=data.frame(results$rotation)
+# Scatter plot 
+ggplot(data_spedal, aes(x = PC1, y = PC2)) +
+  geom_point()
+```
+
+
+#### Find Variance Explained by Each Principal Component
+```{r}
+#calculate total variance explained by each principal component
+results$sdev^2 / sum(results$sdev^2)
+
+#calculate total variance explained by each principal component
+var_explained = results$sdev^2 / sum(results$sdev^2)
+
+#create scree plot
+qplot(c(1:4), var_explained) + 
+  geom_line() + 
+  xlab("Principal Component") + 
+  ylab("Variance Explained") +
+  ggtitle("Scree Plot") +
+  ylim(0, 1)
+```
+
+#### Applications:
+- reduce dimensions and biplot, then understand which observations are similar to each other.  
+- principal components regression to prevent multicolinearity  
+
+
+
+
+
+

@@ -1,0 +1,131 @@
+---
+title: "Poisson regression"
+output: html_document
+date: '2024-01-31'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Poisson regression 
+
+
+$$
+\mathrm{P}(Y=y \mid \lambda)=\frac{e^{-\lambda} \lambda^y}{y !}
+$$
+
+**Poisson distribution not equal Poisson regression** 
+
+```{r}
+# numbers from  
+x<-seq(0,30,1)
+
+# calculate the distribution function
+# based on the parameters
+pdf1<- dpois(x, 1)
+pdf2<- dpois(x, 7)
+pdf3<- dpois(x, 12)
+
+# Plotting the PDF 
+plot(x,pdf1,type = "l")
+lines(x,pdf2 ,col=2)
+lines(x,pdf3 ,col=3)
+```
+
+Negative binomial regression is a popular generalization of Poisson regression because it loosens the highly restrictive assumption that the variance is equal to the mean made by the Poisson model. The traditional negative binomial regression model is based on the Poisson-gamma mixture distribution. This model is popular because it models the Poisson heterogeneity with a gamma distribution.
+
+Poisson regression is typically used to model count data. But, sometimes, it is more relevant to model rates instead of counts. This is relevant when individuals are not followed the same amount of time. For example, six cases over 1 year should not amount to the same as six cases over 10 years.
+
+
+
+
+
+In Poisson regression the dependent variable $(Y)$ is an observed count that follows the Poisson distribution. The rate $\lambda$ is determined by a set of $k$ predictors $\mathbf{X}=\left(X_1, \ldots, X_k\right)$. 
+
+
+since
+
+$$
+\mu_x=\lambda=\exp \{\mathbf{X} \beta\} .
+$$
+
+$$
+\log \mu_x=\beta_0+\beta_1 x
+$$
+
+(where $\mu_x$ is the expected count for those with covariate $x$ )
+
+
+for outcome is rate not count
+
+$$
+\log \frac{\mu_x}{t_x}=\beta_0^{\prime}+\beta_1^{\prime} x
+$$
+
+(where $t_x$ is the exposure time for those with covariate $x$ ). Now, the last equation could be rewritten
+
+$$
+\log \mu_x=\log t_x+\beta_0^{\prime}+\beta_1^{\prime} x
+$$
+
+and $\log t_x$ plays the role of an offset.
+
+
+
+
+
+#### Dependent variable is count
+
+
+```{r}
+# example
+p <- read.csv("https://stats.idre.ucla.edu/stat/data/poisson_sim.csv")
+p <- within(p, {
+  prog <- factor(prog, levels=1:3, labels=c("General", "Academic", 
+                                            "Vocational"))
+  id <- factor(id)
+})
+
+head(p)
+
+hist(p$num_awards,probability = T)
+lines(density(p$num_awards))
+
+summary(m1 <- glm(num_awards ~ prog + math, family="poisson", data=p))
+```
+
+
+#### Dependent variable is rate (count/population)
+
+rate data can be modeled by including the log(n) term with coefficient of 1. This is called an offset. 
+
+```{r}
+library(ISwR)
+data(eba1977)
+cancer.data = eba1977
+head(cancer.data)
+
+# histogram count
+hist(cancer.data$case,probability = T)
+lines(density(cancer.data$case))
+
+# histogram rate
+hist(cancer.data$case/cancer.data$pop,probability = T)
+lines(density(cancer.data$case/cancer.data$pop))
+
+# using offset
+poisson.model.rate <- glm(cases ~ city + age+ offset(log(pop)), family = poisson(link = "log"), data = cancer.data)
+
+#display summary
+summary(poisson.model.rate)
+
+```
+
+- Interpretation 
+
+Compare to 40-54, age55-59 group increases the number of cases by exp (1.1)=3, while controlling for the effect of city. 
+
+
+
+

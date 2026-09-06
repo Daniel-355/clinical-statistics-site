@@ -1,0 +1,83 @@
+---
+title: "Least-squares means with interaction"
+output: html_document
+date: '2023-05-13'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+[Reference](https://www.quantargo.com/help/r/latest/packages/merTools/0.5.2/predictInterval)
+
+## Least-squares means with interaction
+
+Without interaction
+
+at a special value
+```{r}
+# Compute least-squares means for specified factors or factor combinations in a linear model
+
+require(lsmeans)
+
+# Use dataset 'fiber'
+
+### model 1 without interaction, Covariance example 
+fiber.lm <- lm(strength ~ diameter + machine, data = fiber)
+
+# adjusted means and comparison
+lsmeans(fiber.lm,   list (pairwise ~ machine ) ) 
+
+# adjusted means and contrast, treating machine C as control
+lsmeans (fiber.lm, "machine", contr = "trt.vs.ctrlk")
+
+# adjusted means and comparison, after setting "diameter" as a specific value
+lsmeans(fiber.lm,   list (pairwise ~ machine ), at = list(diameter =20) ) 
+```
+
+With interaction
+```{r}
+### model 2 with interaction
+fiber.lm2 <- lm(strength ~ diameter*machine, data=fiber)
+
+# means when diameter is its mean
+(lsmeans(fiber.lm2, ~ machine | diameter))
+
+# means when setting diameter as its mean
+lsmeans(fiber.lm2,   list (pairwise ~ machine ), at = list(diameter =24.1) ) 
+```
+
+```{r}
+### model 3 for category covariates
+warp.lm <- lm(breaks ~ wool * tension, data = warpbreaks)
+
+# means after adjusting the interaction effect
+(lsmeans(warp.lm, ~ wool | tension))
+
+# set tension ="M"
+lsmeans(warp.lm,   list (pairwise ~ wool ), at = list(tension ="M")) 
+lsmeans(warp.lm,   list (pairwise ~ wool ), at = list(tension ="H")) 
+```
+
+Compare slopes and test
+```{r}
+### Trends, obtain slopes  
+fiber.lst=( lstrends(fiber.lm, "machine", var="diameter") )
+fiber.lst
+# pairwise comparisons thereof slopes 
+pairs(fiber.lst)
+
+fiber.lst2=( lstrends(fiber.lm2, "machine", var="diameter") )
+fiber.lst2
+```
+
+Least-squares means with interaction for LMM
+```{r}
+library(lme4)
+##############
+m1 <- lmer(Reaction ~ Days + (1 | Subject), sleepstudy)
+lsmeans(m1,    ~ Days  , at = list(Days =20)  ) 
+
+lsmeans(m1,    ~ Days    ) 
+```
+

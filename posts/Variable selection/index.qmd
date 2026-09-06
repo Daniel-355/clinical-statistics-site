@@ -1,0 +1,938 @@
+---
+title: "Variable selection"
+description: "A practical R learning guide to Variable selection, with concise explanations, reproducible examples, and interpretation guidance."
+date: 2026-08-31
+section: "Biostatistics"
+category: "Statistical Models"
+topic: "Variable selection"
+type: article
+tags: ["Statistical Models", "Biostatistics", "Variable", "selection"]
+status: published
+featured: true
+youtube: []
+pdf: []
+downloads: []
+validate-yaml: false
+execute:
+  enabled: false
+  echo: true
+  warning: false
+  error: true
+---
+
+## Why This Topic Matters
+
+A statistical model is a structured approximation that links observed data to an estimand or prediction target.
+
+## Learning Objectives
+
+After working through this material, you should be able to:
+
+- explain the main ideas behind **Variable selection**;
+- interpret the R workflow and its output; and
+- adapt the examples to a related analysis.
+
+## Lesson Roadmap
+
+The original material is organized around the following topics:
+
+1. Variable selection
+2. Stepwise regression
+3. Ridge regression
+4. Lasso regression
+5. Elastic net
+6. Machine learning approch
+
+## How to Use This Lesson
+
+Read the explanation before each workflow, then run the R chunks in sequence. Code and output are shown together so that each numerical or graphical result can be connected to the command that produced it. Some source examples require optional packages or external data. Those setup-dependent chunks remain visible for reference but are marked `eval: false` when they cannot be reproduced safely in a clean website build.
+
+## Reproducible Learning Check
+
+This short R chunk confirms the scope of the lesson and always produces a visible output.
+
+```{r}
+#| label: learning-overview
+learning_overview <- data.frame(
+  section = "Biostatistics",
+  category = "Statistical Models",
+  topic = "Variable selection"
+)
+learning_overview
+```
+
+## Learning Material
+
+The following material develops **Variable selection** from core ideas to practical implementation. Definitions and assumptions come first; worked code then shows how the ideas are represented computationally.
+
+### Conceptual Foundation
+
+The material below closely follows the original R Markdown source, with its examples retained for study and reuse.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+[References](https://alain-vandormael.netlify.app/post/varselect/)
+
+#### Variable selection
+
+<!-- generated-learning-note -->
+This section prepares the information needed for **Variable selection**. Check variable definitions, units, coding, and missing values before moving to analysis.
+
+
+When this number of variables is close to or larger than the number of data points. 
+
+#### Stepwise regression
+
+<!-- generated-learning-note -->
+This section develops **Stepwise regression**. Read the model specification together with its assumptions and the scale of each reported effect.
+
+
+Data manipulation
+
+### R Workflow and Examples
+
+Run the examples in order because later blocks may reuse objects created earlier. Each block includes a short purpose statement and guidance for reading its output.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This source block depends on optional software, external data, or a machine-specific path. It is retained as a reference and is not executed during the website build.
+
+```{r}
+#| eval: false
+#| code-fold: true
+# load data
+crime <- suppressMessages(
+  readr::read_delim("http://www.statsci.org/data/general/uscrime.txt", delim="\t"))
+head(crime)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Because this block is not executed, it produces no website output. Enable it only after its dependencies and input paths have been validated.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+# scale the data, except: so and crime variables
+
+# we will recode the categorical variable as a factor and center (and scale) the numerical features.
+
+crime[, c(1, 3:15)] <- lapply(crime[, c(1,3:15)], function(x) round(scale(x), 2))
+head(crime)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+- Forward direction for variables selection
+
+<!-- generated-learning-note -->
+**Purpose.** This block specifies and fits the statistical model. Identify the outcome, predictors, reference levels, link or distribution, and any correlation structure before interpreting coefficients.
+
+```{r}
+# Model with all variables
+mod_all <- lm(Crime ~ ., data=crime)
+AIC(mod_all)
+ 
+summary(mod_all)$r.squared
+ 
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Focus on coefficient direction and scale, uncertainty intervals, fit statistics, and diagnostics. Statistical significance alone does not establish practical importance or model adequacy.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block specifies and fits the statistical model. Identify the outcome, predictors, reference levels, link or distribution, and any correlation structure before interpreting coefficients.
+
+```{r}
+# Intercept only model
+mod0 <- lm(Crime ~ 1, data=crime)
+AIC(mod0)
+ 
+summary(mod0)$r.squared
+ 
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Focus on coefficient direction and scale, uncertainty intervals, fit statistics, and diagnostics. Statistical significance alone does not establish practical importance or model adequacy.
+
+
+`Pass the intercept only model (mod0) to the object argument and the full model (mod_all) to the scope argument. `
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r}
+library(MASS)
+fmod <- stepAIC(object = mod0, direction = "forward", 
+  scope = formula(mod_all), trace=FALSE)
+
+coef(fmod)
+ 
+AIC(fmod)
+ 
+summary(fmod)$r.squared
+ 
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+
+Prediction
+
+<!-- generated-learning-note -->
+**Purpose.** This block extracts inferential or predictive results from fitted objects. Match each estimate, interval, contrast, or diagnostic to the quantity it represents.
+
+```{r}
+predict(fmod,crime[1:5,])
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Interpret estimates on the scale reported by the function, and use intervals or other uncertainty measures when drawing conclusions.
+
+
+
+`Forward elimination selects 7 variables. the AIC get lower until the model stops step7.  `
+
+
+Compare to linear regression
+
+(modeling using the selected variables)
+
+<!-- generated-learning-note -->
+**Purpose.** This block specifies and fits the statistical model. Identify the outcome, predictors, reference levels, link or distribution, and any correlation structure before interpreting coefficients.
+
+```{r}
+lm <- lm(Crime~  Po1   +Ineq  +Ed+ M   +Prob +U2 , data=crime )
+coefficients(lm)
+
+predict(lm,crime[1:5,])
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Focus on coefficient direction and scale, uncertainty intervals, fit statistics, and diagnostics. Statistical significance alone does not establish practical importance or model adequacy.
+
+
+`Model interaction`
+
+<!-- generated-learning-note -->
+**Purpose.** This block specifies and fits the statistical model. Identify the outcome, predictors, reference levels, link or distribution, and any correlation structure before interpreting coefficients.
+
+```{r}
+# Model interaction
+mod_inter <- lm(Crime ~  (Po1+ Ineq+ Ed)^2, data=crime)
+
+itermod <- stepAIC(object = mod0, direction = "forward", 
+  scope = formula(mod_inter), trace=FALSE)
+
+coef(itermod) 
+ 
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Focus on coefficient direction and scale, uncertainty intervals, fit statistics, and diagnostics. Statistical significance alone does not establish practical importance or model adequacy.
+
+
+
+- Backward direction for variables selection
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block extracts inferential or predictive results from fitted objects. Match each estimate, interval, contrast, or diagnostic to the quantity it represents.
+
+```{r}
+bmod <- stepAIC(mod_all, direction = "backward", 
+  scope = formula(mod0), trace=FALSE)
+coef(bmod)
+ 
+AIC(bmod)
+ 
+summary(bmod)$r.squared
+ 
+
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Interpret estimates on the scale reported by the function, and use intervals or other uncertainty measures when drawing conclusions.
+
+
+`Backwards elimination selects 9 variables. `
+
+- Both forward and backward directions
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block extracts inferential or predictive results from fitted objects. Match each estimate, interval, contrast, or diagnostic to the quantity it represents.
+
+```{r}
+smod <- stepAIC(mod_all, direction = "both", trace=FALSE)
+coef(smod)
+ 
+AIC(smod)
+ 
+summary(smod)$r.squared
+ 
+
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Interpret estimates on the scale reported by the function, and use intervals or other uncertainty measures when drawing conclusions.
+
+
+`8 variables are selected. `
+
+
+- k-fold cross-validation for backward direction
+
+(10 fold, repeated 3 times; take the average of all the individual  scores; then train the model on the entire initial training data set with [the specific hyper-parameter value](https://medium.com/analytics-vidhya/regularization-and-cross-validation-how-to-choose-the-penalty-value-lambda-1217fa4351e5)) 
+
+
+
+The main thing to remember here is that we have to keep the test data away from the algorithm and do all the validation only on the training data.
+
+![](https://scikit-learn.org/stable/_images/grid_search_workflow.png)
+
+Three scenarios: 
+
+  - Collect another completely independent dataset and test your model. 
+
+  - If you have a sufficiently large dataset, you would then build your model on the remaining training samples and then test on these left-out samples.Usually splits the dataset into a large training set and a smaller test set (= holdout) and perform the k-fold CV on the training set, then validates on the test set.
+
+![](https://miro.medium.com/v2/resize:fit:1100/format:webp/1*kqVo1EWX-crwgqGiv-yXjA.png)
+
+  - If you have a smaller dataset, the validation is performed on every fold (k-fold CV).
+
+Caret cv
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r}
+library(caret)
+set.seed(100599)
+
+set_train <- trainControl(method="repeatedcv", number=10, repeats=3)
+
+cvmod <- train(Crime ~ ., data=crime,  scope = formula(mod0),
+  method="lmStepAIC", direction="backward", trace=FALSE, trControl=set_train)
+
+coef(cvmod$finalModel)
+ 
+AIC(cvmod$finalModel)
+ 
+
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+
+`8 are selected.`
+
+However, stepwise regression may not perform as well when testing the final set of variables on other data (external validation).
+
+
+#### Ridge regression
+
+<!-- generated-learning-note -->
+This section develops **Ridge regression**. Read the model specification together with its assumptions and the scale of each reported effect.
+
+
+
+$$
+\text{RSS} + \lambda \sum_{j=1}^p \beta^2_j
+$$
+- Use the glmnet library to run ridge regression by selecting a=0 and search lambda. 
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r}
+library(glmnet)
+y <- as.matrix(dplyr::select(crime, Crime))
+x <- as.matrix(dplyr::select(crime, -Crime))
+
+lgrid <- c(seq(0, 1, by=0.1), seq(2, 9, by=1), seq(10, 100, by=10))
+lgrid 
+rmod <- glmnet(x, y, alpha=0, lambda=lgrid, standardize=FALSE)
+rmod
+
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+head(coefficients(rmod))
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+`Here, lamda =0 is the best fit.`
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+set.seed(100599)
+
+ridge_model <- cv.glmnet(x , y , alpha = 0,nfolds = 10,    lambda=lgrid, family="gaussian",
+                standardize=FALSE )
+coefficients(ridge_model)
+
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+best coefficient
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+coef(ridge_model, s = "lambda.min")
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+best parameter
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+ridge_model$lambda.min
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+[cv.glmnet is close to Caret glmnet.](https://stats.stackexchange.com/questions/299653/caret-glmnet-vs-cv-glmnet)
+
+
+
+
+Compare to linear regression
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block specifies and fits the statistical model. Identify the outcome, predictors, reference levels, link or distribution, and any correlation structure before interpreting coefficients.
+
+```{r}
+# lm <- lm(Crime~ .  , data=crime )
+# coefficients(lm)
+# 
+# predict(lm,crime[1:5,])
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Focus on coefficient direction and scale, uncertainty intervals, fit statistics, and diagnostics. Statistical significance alone does not establish practical importance or model adequacy.
+
+
+
+- Prediction
+They are regularized (not LSD). 
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block extracts inferential or predictive results from fitted objects. Match each estimate, interval, contrast, or diagnostic to the quantity it represents.
+
+```{r}
+predict(ridge_model, newx = x[1:5,], s = "lambda.min")
+ 
+# predict(ridge_model, newx = x[1:5,], s = "lambda.1se")
+
+# predict(ridge_model, newx = x[1:5,] )
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Interpret estimates on the scale reported by the function, and use intervals or other uncertainty measures when drawing conclusions.
+
+
+- Using a cross-validated approach
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block specifies and fits the statistical model. Identify the outcome, predictors, reference levels, link or distribution, and any correlation structure before interpreting coefficients.
+
+```{r}
+set.seed(100599)
+
+set_train <- trainControl(method="cv", number=10 ,returnResamp="all"
+                    )
+
+rmod <- train(Crime~., data = crime, method = 'glmnet', 
+   tuneGrid = expand.grid(alpha=0, lambda=lgrid), trControl = set_train)
+rmod
+# method = glnet not lmstepaic
+
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Focus on coefficient direction and scale, uncertainty intervals, fit statistics, and diagnostics. Statistical significance alone does not establish practical importance or model adequacy.
+
+
+best coefficient
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+coef(rmod$finalModel, rmod$bestTune$lambda)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+best parameter
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+rmod$bestTune
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+plot(rmod$finalModel, xvar="lambda", label=TRUE)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block extracts inferential or predictive results from fitted objects. Match each estimate, interval, contrast, or diagnostic to the quantity it represents.
+
+```{r}
+las=glmnet(x, y, alpha=0, lambda=50, standardize=FALSE)
+coef(las)
+# predict(las,x)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Interpret estimates on the scale reported by the function, and use intervals or other uncertainty measures when drawing conclusions.
+
+
+
+Essentially, when lamda (50 is selected) is large, the beta coefficients are zero. However, ridge regresssion benefit comes at the cost of increased bias.
+
+
+#### Lasso regression
+
+<!-- generated-learning-note -->
+This section develops **Lasso regression**. Read the model specification together with its assumptions and the scale of each reported effect.
+
+
+$$
+\text{RSS} + \lambda \sum_{j=1}^p |\beta_j|.
+$$
+
+Some coefficients can be forced to exactly zero when lambda is sufficiently large.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+lmod <- glmnet(x, y, alpha=1, lambda=lgrid, standardize=FALSE)
+lmod
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+g <- which(rev(lgrid==10))
+coef(lmod)[, 10]
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+Coefficient 
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+lasso_model <- cv.glmnet(x , y , alpha = 1 )
+coefficients(lasso_model)
+
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+Plot MSE
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+plot(lasso_model)
+
+log(10)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+Plot coefficients
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+plot(coef(lasso_model))
+
+# total 16 variables
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+
+
+
+
+`Here, four variables were reduced.`
+
+- Prediction
+
+They are regularized (not LSD). 
+
+<!-- generated-learning-note -->
+**Purpose.** This block extracts inferential or predictive results from fitted objects. Match each estimate, interval, contrast, or diagnostic to the quantity it represents.
+
+```{r}
+predict(lasso_model, newx = x[1:5,], s = "lambda.min")
+#  
+# predict(lasso_model, newx = x[1:5,], s = "lambda.1se")
+
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Interpret estimates on the scale reported by the function, and use intervals or other uncertainty measures when drawing conclusions.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+B=matrix (coefficients(lasso_model), 1,16)
+A <- matrix (c(1,x[2,]), 16,1)
+B%*%A
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+
+
+
+- Cross validation to search lambda
+
+(Alpha = 1 and lambda = 10)
+
+<!-- generated-learning-note -->
+**Purpose.** This block specifies and fits the statistical model. Identify the outcome, predictors, reference levels, link or distribution, and any correlation structure before interpreting coefficients.
+
+```{r}
+rmod_lasso <- train(Crime~., data = crime, method = 'glmnet',
+   tuneGrid = expand.grid(alpha=1, lambda=lgrid), trControl = set_train)
+rmod_lasso
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Focus on coefficient direction and scale, uncertainty intervals, fit statistics, and diagnostics. Statistical significance alone does not establish practical importance or model adequacy.
+
+
+Plot lambda and coefficient
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+plot(rmod_lasso$finalModel, xvar="lambda", label=TRUE)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+
+
+Arbitrarily eliminates variables that are strongly correlated with each other.
+
+Cross validation (stronger generalization) is how we choose the estimated best model with optimal hyper-parameter values (e.g. lambda). Use this same process with different types of algorithms like Ridge, LASSO, Elastic-Net, Random Forests, and Boosted trees.  
+
+#### Elastic net
+
+<!-- generated-learning-note -->
+This subsection explains **Elastic net** and shows how it contributes to the overall Variable selection workflow.
+
+
+$$
+\text{RSS} + \lambda \sum_{j=1}^p |\beta_j| + (1-\lambda) \sum_{j=1}^p \beta_i^2.
+$$
+Search alpha and lambda using cross validation. 
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block specifies and fits the statistical model. Identify the outcome, predictors, reference levels, link or distribution, and any correlation structure before interpreting coefficients.
+
+```{r}
+emod <- train(Crime~., data = crime, method = 'glmnet',
+  tuneGrid = expand.grid(alpha=seq(0, 1, by=0.1), lambda=lgrid), trControl = set_train)
+
+emod
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Focus on coefficient direction and scale, uncertainty intervals, fit statistics, and diagnostics. Statistical significance alone does not establish practical importance or model adequacy.
+
+
+`Alpha = 1 and lambda = 6 are selected.
+`
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+enmod <- glmnet(x, y, nfolds=10, alpha=1, lambda=6, standardize=FALSE)
+
+coef(enmod) 
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+#### Machine learning approch
+
+<!-- generated-learning-note -->
+This subsection explains **Machine learning approch** and shows how it contributes to the overall Variable selection workflow.
+
+
+(Recursive feature elimination)
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+set.seed(100)
+
+options(warn=-1)
+
+subsets <- c(1:14)  #tries all possible solutions (i.e., only 1 feature, 2 features, …, 13 features) to find the optimal features
+
+ctrl <- rfeControl(functions = rfFuncs,  #random forest algorithm
+                   method = "repeatedcv", #k fold cross validation repeated 5 times
+                   repeats = 5,
+                   verbose = FALSE, number=10)
+
+lmProfile <- rfe(x=x, y=y,
+                 sizes = subsets,
+                 rfeControl = ctrl)
+
+lmProfile
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+RFE recommends 14 features for the model. 
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+predictors(lmProfile)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+Plot the accuracy of various combinations 
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+plot(lmProfile)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+Importance of variable
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+varimp_mars <- varImp(lmProfile)
+
+varimp_data <- data.frame(feature = row.names(varImp(lmProfile))[1:15],
+                          importance = varImp(lmProfile)[1:15, 1])
+
+dotchart(varimp_data$importance,label=varimp_data$feature, main="Variable Importance")
+
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+ggplot(data = varimp_data, 
+       aes(x = reorder(feature, -importance), y = importance, fill = feature)) +
+  geom_bar(stat="identity") + labs(x = "Features", y = "Variable Importance") + 
+  geom_text(aes(label = round(importance, 2)), vjust=1.6, color="white", size=4) + 
+  theme_bw() + theme(legend.position = "none")
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block extracts inferential or predictive results from fitted objects. Match each estimate, interval, contrast, or diagnostic to the quantity it represents.
+
+```{r}
+# Post prediction
+# postResample(predict(lmProfile, x_test), y_test)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Interpret estimates on the scale reported by the function, and use intervals or other uncertainty measures when drawing conclusions.
+
+
+This demonstrates the sensitivity of RFE in finding important features and eliminating less relevant features.
+
+ATA and RFE may produce less desirable results if:
+
+`the sample size is smaller;
+
+non-random missingness is present in the response data set;
+
+there are problematic items (e.g., items with low discrimination or high guessing).`
+
+**See 2.1: Machine learning workflow.**
+
+Available algorithms in caret
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+paste(names(getModelInfo()), collapse=',  ')
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+set.seed(100)
+
+options(warn=-1)
+
+subsets <- c(1:14)  #tries all possible solutions (i.e., only 1 feature, 2 features, …, 13 features) to find the optimal features
+
+ctrl <- rfeControl(functions = lmFuncs,  #random forest algorithm
+                   method = "repeatedcv", #k fold cross validation repeated 5 times
+                   repeats = 5,
+                   verbose = FALSE, number=10)
+
+lmProfile <- rfe(x=x, y=y,
+                 sizes = subsets,
+                 rfeControl = ctrl)
+
+lmProfile
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+only 4 are selected. 
+
+#### Variable Selection for Generalized Linear Mixed Models
+
+<!-- generated-learning-note -->
+This section prepares the information needed for **Variable Selection for Generalized Linear Mixed Models**. Check variable definitions, units, coding, and missing values before moving to analysis.
+
+[see here](chrome-extension://efaidnbmnnnibpcajpcglclefindmkaj/https://cran.r-project.org/web/packages/glmmLasso/glmmLasso.pdf)
+
+## Interpreting the Results
+
+Interpret coefficients with their coding and scale, examine uncertainty, and use diagnostics to evaluate assumptions. Treat the output as evidence generated under the stated data, coding choices, and assumptions. Before using the workflow in practice, replace example inputs with validated data and confirm that the method targets the intended scientific question.
+
+## Key Takeaways
+
+- **Connect method to purpose.** Identify the question and target quantity before choosing code or a model.
+- **Read code and output together.** Confirm what each object, estimate, interval, table, or plot represents.
+- **Check assumptions and diagnostics.** A successful computation is not by itself evidence that the result is reliable.
+- **Adapt deliberately.** When applying the example elsewhere, document changes to data definitions, parameters, and analytical choices.

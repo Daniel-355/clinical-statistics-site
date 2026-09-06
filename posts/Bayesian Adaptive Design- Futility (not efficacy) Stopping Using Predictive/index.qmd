@@ -1,0 +1,1040 @@
+---
+title: "Bayesian Adaptive Design: Futility (Not Efficacy) Stopping Using Predictive Probability"
+description: "A practical R learning guide to Bayesian Adaptive Design: Futility (Not Efficacy) Stopping Using Predictive Probability, with concise explanations, reproducible examples, and interpretation guidance."
+date: 2026-08-31
+section: "Biostatistics"
+category: "Interim Analysis & Stopping Rules"
+topic: "Bayesian Adaptive Design: Futility (Not Efficacy) Stopping Using Predictive Probability"
+type: article
+tags: ["Interim Analysis & Stopping Rules", "Biostatistics", "Bayesian", "Adaptive", "Design"]
+status: published
+featured: true
+youtube: []
+pdf: []
+downloads: []
+validate-yaml: false
+execute:
+  echo: true
+  warning: false
+  error: true
+---
+
+## Why This Topic Matters
+
+Interim rules allow pre-planned adaptation while preserving operating characteristics and trial credibility.
+
+## Learning Objectives
+
+After working through this material, you should be able to:
+
+- explain the main ideas behind **Bayesian Adaptive Design: Futility (Not Efficacy) Stopping Using Predictive Probability**;
+- interpret the R workflow and its output; and
+- adapt the examples to a related analysis.
+
+## Lesson Roadmap
+
+The original material is organized around the following topics:
+
+1. Introduction
+2. Trial Scenario
+3. Method 1: Beta-Binomial Posterior Predictive Simulation
+4. Prior and Posterior Distribution
+5. R Code
+6. Futility Decision
+
+## How to Use This Lesson
+
+Read the explanation before each workflow, then run the R chunks in sequence. Code and output are shown together so that each numerical or graphical result can be connected to the command that produced it. Some source examples require optional packages or external data. Those setup-dependent chunks remain visible for reference but are marked `eval: false` when they cannot be reproduced safely in a clean website build.
+
+## Reproducible Learning Check
+
+This short R chunk confirms the scope of the lesson and always produces a visible output.
+
+```{r}
+#| label: learning-overview
+learning_overview <- data.frame(
+  section = "Biostatistics",
+  category = "Interim Analysis & Stopping Rules",
+  topic = "Bayesian Adaptive Design: Futility (Not Efficacy) Stopping Using Predictive Probability"
+)
+learning_overview
+```
+
+## Learning Material
+
+The following material develops **Bayesian Adaptive Design: Futility (Not Efficacy) Stopping Using Predictive Probability** from core ideas to practical implementation. Definitions and assumptions come first; worked code then shows how the ideas are represented computationally.
+
+### Conceptual Foundation
+
+The material below closely follows the original R Markdown source, with its examples retained for study and reuse.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  message = FALSE,
+  warning = FALSE
+)
+```
+
+#### Introduction
+
+<!-- generated-learning-note -->
+This section establishes the concepts and assumptions needed to understand **Introduction** in the context of Bayesian Adaptive Design: Futility (Not Efficacy) Stopping Using Predictive Probability.
+
+
+Futility stopping is a common component of Bayesian adaptive clinical trial designs.
+
+At an interim analysis, the observed data are used to estimate the probability that the trial will eventually meet its prespecified success criterion if enrollment continues to the planned sample size.
+
+This probability is often called the:
+
+* Predictive probability of success
+* Predictive power
+* Posterior predictive probability
+
+If this probability is sufficiently low, the trial may be stopped early for futility.
+
+#### Trial Scenario
+
+<!-- generated-learning-note -->
+This subsection explains **Trial Scenario** and shows how it contributes to the overall Bayesian Adaptive Design: Futility (Not Efficacy) Stopping Using Predictive Probability workflow.
+
+
+Consider a single-arm clinical trial with a planned total enrollment of 200 patients.
+
+At the interim analysis:
+
+$$
+N_{\text{current}} = 50
+$$
+
+patients have been enrolled, and
+
+$$
+R_{\text{current}} = 15
+$$
+
+patients have responded.
+
+The observed interim response rate is therefore:
+
+$$
+\frac{15}{50}=0.30.
+$$
+
+The remaining number of patients is:
+
+$$
+N_{\text{remaining}}=200-50=150.
+$$
+
+The final success criterion is defined as:
+
+$$
+\text{Final response rate}>35%.
+$$
+
+Therefore, the trial is successful if:
+
+$$
+\frac{R_{\text{final}}}{200}>0.35.
+$$
+
+Because the number of responders must be an integer, the trial must have at least 71 total responders:
+
+$$
+R_{\text{final}}\geq 71.
+$$
+
+Since 15 responders have already been observed, at least 56 responses are required among the remaining 150 patients.
+
+#### Method 1: Beta-Binomial Posterior Predictive Simulation
+
+<!-- generated-learning-note -->
+This section develops **Method 1: Beta-Binomial Posterior Predictive Simulation**. Read the model specification together with its assumptions and the scale of each reported effect.
+
+
+#### Prior and Posterior Distribution
+
+<!-- generated-learning-note -->
+This subsection explains **Prior and Posterior Distribution** and shows how it contributes to the overall Bayesian Adaptive Design: Futility (Not Efficacy) Stopping Using Predictive Probability workflow.
+
+
+Assume a noninformative uniform prior for the response probability:
+
+$$
+p \sim \operatorname{Beta}(1,1).
+$$
+
+After observing 15 responders and 35 nonresponders, the posterior distribution is:
+
+$$
+p\mid\text{data}
+\sim
+\operatorname{Beta}(1+15,1+35).
+$$
+
+Therefore:
+
+$$
+p\mid\text{data}
+\sim
+\operatorname{Beta}(16,36).
+$$
+
+For every posterior draw of (p), we simulate the number of responders among the remaining 150 patients:
+
+$$
+R_{\text{future}}\mid p
+\sim
+\operatorname{Binomial}(150,p).
+$$
+
+The final response rate is:
+
+$$
+\frac{15+R_{\text{future}}}{200}.
+$$
+
+The predictive probability of success is estimated by the proportion of simulated trials in which the final response rate exceeds 35%.
+
+#### R Code
+
+<!-- generated-learning-note -->
+This subsection explains **R Code** and shows how it contributes to the overall Bayesian Adaptive Design: Futility (Not Efficacy) Stopping Using Predictive Probability workflow.
+
+### R Workflow and Examples
+
+Run the examples in order because later blocks may reuse objects created earlier. Each block includes a short purpose statement and guidance for reading its output.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block generates controlled example data. Simulation makes the data-generating assumptions explicit and provides a known setting in which to study the method.
+
+```{r beta-binomial-analysis}
+set.seed(2026)
+
+# Interim trial information
+n_current <- 50
+responders_current <- 15
+nonresponders_current <- n_current - responders_current
+
+# Planned final sample size
+n_total <- 200
+n_remaining <- n_total - n_current
+
+# Trial success threshold
+success_threshold <- 0.35
+
+# Number of posterior predictive simulations
+n_mcmc <- 10000
+
+# Beta(1,1) prior
+prior_alpha <- 1
+prior_beta <- 1
+
+# Posterior parameters
+posterior_alpha <- prior_alpha + responders_current
+posterior_beta <- prior_beta + nonresponders_current
+
+# Draw posterior samples of the response probability
+p_post_beta <- rbeta(
+  n = n_mcmc,
+  shape1 = posterior_alpha,
+  shape2 = posterior_beta
+)
+
+# Simulate future responders
+future_responders_beta <- rbinom(
+  n = n_mcmc,
+  size = n_remaining,
+  prob = p_post_beta
+)
+
+# Calculate final response rates
+total_responders_beta <-
+  responders_current + future_responders_beta
+
+final_response_rate_beta <-
+  total_responders_beta / n_total
+
+# Predictive probability of trial success
+predictive_probability_beta <- mean(
+  final_response_rate_beta > success_threshold
+)
+
+cat(
+  "Beta-binomial predictive probability of success:",
+  round(100 * predictive_probability_beta, 2),
+  "%\n"
+)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the generated sample with the parameters used to create it. Differences reflect random variation unless the code intentionally introduces bias or structure.
+
+
+#### Futility Decision
+
+<!-- generated-learning-note -->
+This subsection explains **Futility Decision** and shows how it contributes to the overall Bayesian Adaptive Design: Futility (Not Efficacy) Stopping Using Predictive Probability workflow.
+
+
+Suppose the prespecified futility boundary is 5%.
+
+The trial stops for futility if:
+
+$$
+P(\text{final success}\mid\text{interim data})<0.05.
+$$
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r beta-binomial-decision}
+futility_threshold <- 0.05
+
+if (predictive_probability_beta < futility_threshold) {
+
+  cat(
+    "Decision: Stop the trial for futility because",
+    "the predictive probability is below 5%.\n"
+  )
+
+} else {
+
+  cat(
+    "Decision: Do not stop for futility because",
+    "the predictive probability is at least 5%.\n"
+  )
+}
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+#### Posterior Distribution of the Response Probability
+
+<!-- generated-learning-note -->
+This subsection explains **Posterior Distribution of the Response Probability** and shows how it contributes to the overall Bayesian Adaptive Design: Futility (Not Efficacy) Stopping Using Predictive Probability workflow.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r beta-posterior-plot}
+hist(
+  p_post_beta,
+  breaks = 40,
+  probability = TRUE,
+  main = "Posterior Distribution of Response Probability",
+  xlab = "Response probability p"
+)
+
+abline(
+  v = success_threshold,
+  lty = 2,
+  lwd = 2
+)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+The dashed vertical line represents the final response-rate success threshold of 35%.
+
+However, the predictive probability is not simply:
+
+$$
+P(p>0.35\mid\text{data}).
+$$
+
+It also accounts for future binomial sampling variation among the remaining patients.
+
+#### Method 2: Logistic-Binomial Model Using rstanarm
+
+<!-- generated-learning-note -->
+This section develops **Method 2: Logistic-Binomial Model Using rstanarm**. Read the model specification together with its assumptions and the scale of each reported effect.
+
+
+The same interim data can also be analyzed using a Bayesian intercept-only logistic regression model.
+
+The model is:
+
+$$
+R_{\text{current}}
+\sim
+\operatorname{Binomial}(N_{\text{current}},p),
+$$
+
+with:
+
+$$
+\operatorname{logit}(p)=\beta_0.
+$$
+
+Equivalently:
+
+$$
+p=\operatorname{logit}^{-1}(\beta_0).
+$$
+
+#### Load rstanarm
+
+<!-- generated-learning-note -->
+This subsection explains **Load rstanarm** and shows how it contributes to the overall Bayesian Adaptive Design: Futility (Not Efficacy) Stopping Using Predictive Probability workflow.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r load-rstanarm}
+library(rstanarm)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+
+#### Prepare the Data
+
+<!-- generated-learning-note -->
+This section prepares the information needed for **Prepare the Data**. Check variable definitions, units, coding, and missing values before moving to analysis.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r prepare-rstanarm-data}
+dat <- data.frame(
+  responders = responders_current,
+  nonresponders = nonresponders_current
+)
+
+dat
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+The expression
+
+```r
+cbind(responders, nonresponders)
+```
+
+is the grouped binomial outcome.
+
+It tells the model that one row of data contains:
+
+* 15 successful responses
+* 35 unsuccessful responses
+
+#### Define the Prior
+
+<!-- generated-learning-note -->
+This subsection explains **Define the Prior** and shows how it contributes to the overall Bayesian Adaptive Design: Futility (Not Efficacy) Stopping Using Predictive Probability workflow.
+
+
+The prior is placed on the logit-scale intercept:
+
+$$ 
+\beta_0
+\sim
+N\left(
+\operatorname{logit}(0.30),
+1^2
+\right). 
+$$ 
+
+Since:
+
+$$
+\operatorname{logit}(0.30)
+=
+\log\left(\frac{0.30}{0.70}\right),
+$$
+
+the prior is centered at a response probability of 30%.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r show-prior-center}
+prior_probability <- 0.30
+
+prior_logit_mean <- qlogis(prior_probability)
+
+prior_logit_mean
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+The prior standard deviation of 1 is specified on the logit scale, not directly on the probability scale.
+
+#### Fit the rstanarm Model
+
+<!-- generated-learning-note -->
+This section develops **Fit the rstanarm Model**. Read the model specification together with its assumptions and the scale of each reported effect.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r fit-rstanarm-model, results='hide'}
+fit_stan <- stan_glm(
+  cbind(responders, nonresponders) ~ 1,
+  family = binomial(link = "logit"),
+  data = dat,
+  prior_intercept = normal(
+    location = qlogis(0.30),
+    scale = 1,
+    autoscale = FALSE
+  ),
+  chains = 4,
+  iter = 5000,
+  warmup = 2500,
+  seed = 2026,
+  refresh = 0
+)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+#### Model Summary
+
+<!-- generated-learning-note -->
+This section develops **Model Summary**. Read the model specification together with its assumptions and the scale of each reported effect.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r rstanarm-summary}
+print(
+  fit_stan,
+  digits = 3
+)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+#### Extract Posterior Response Probabilities
+
+<!-- generated-learning-note -->
+This subsection explains **Extract Posterior Response Probabilities** and shows how it contributes to the overall Bayesian Adaptive Design: Futility (Not Efficacy) Stopping Using Predictive Probability workflow.
+
+
+The sampled intercept values are initially on the logit scale.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r extract-rstanarm-draws}
+logit_p_samples <- as.matrix(
+  fit_stan,
+  pars = "(Intercept)"
+)[, 1]
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+The inverse-logit transformation converts each posterior draw to the probability scale:
+
+$$
+p
+=
+\frac{\exp(\beta_0)}
+{1+\exp(\beta_0)}.
+$$
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block extracts inferential or predictive results from fitted objects. Match each estimate, interval, contrast, or diagnostic to the quantity it represents.
+
+```{r convert-to-probability}
+p_post_stan <- plogis(
+  logit_p_samples
+)
+
+summary(p_post_stan)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Interpret estimates on the scale reported by the function, and use intervals or other uncertainty measures when drawing conclusions.
+
+
+#### Posterior Predictive Simulation Using rstanarm
+
+<!-- generated-learning-note -->
+This subsection explains **Posterior Predictive Simulation Using rstanarm** and shows how it contributes to the overall Bayesian Adaptive Design: Futility (Not Efficacy) Stopping Using Predictive Probability workflow.
+
+
+For each posterior draw of (p), simulate the number of responders among the remaining 150 patients.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block generates controlled example data. Simulation makes the data-generating assumptions explicit and provides a known setting in which to study the method.
+
+```{r rstanarm-predictive-probability}
+set.seed(2026)
+
+future_responders_stan <- rbinom(
+  n = length(p_post_stan),
+  size = n_remaining,
+  prob = p_post_stan
+)
+
+total_responders_stan <-
+  responders_current + future_responders_stan
+
+final_response_rate_stan <-
+  total_responders_stan / n_total
+
+predictive_probability_stan <- mean(
+  final_response_rate_stan > success_threshold
+)
+
+cat(
+  "rstanarm predictive probability of success:",
+  round(100 * predictive_probability_stan, 2),
+  "%\n"
+)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the generated sample with the parameters used to create it. Differences reflect random variation unless the code intentionally introduces bias or structure.
+
+
+#### Futility Decision Using rstanarm
+
+<!-- generated-learning-note -->
+This subsection explains **Futility Decision Using rstanarm** and shows how it contributes to the overall Bayesian Adaptive Design: Futility (Not Efficacy) Stopping Using Predictive Probability workflow.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r rstanarm-decision}
+if (predictive_probability_stan < futility_threshold) {
+
+  cat(
+    "Decision: Stop the trial for futility because",
+    "the predictive probability is below 5%.\n"
+  )
+
+} else {
+
+  cat(
+    "Decision: Do not stop for futility because",
+    "the predictive probability is at least 5%.\n"
+  )
+}
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+#### Comparison of the Two Methods
+
+<!-- generated-learning-note -->
+This section develops **Comparison of the Two Methods**. Read the model specification together with its assumptions and the scale of each reported effect.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block calculates descriptive summaries. Check the denominator, grouping variables, units, and treatment of missing values.
+
+```{r comparison-table}
+comparison <- data.frame(
+  Method = c(
+    "Beta-binomial",
+    "rstanarm logistic model"
+  ),
+  Prior = c(
+    "Beta(1, 1) on p",
+    "Normal(logit(0.30), 1) on logit(p)"
+  ),
+  Posterior_Mean_p = c(
+    mean(p_post_beta),
+    mean(p_post_stan)
+  ),
+  Predictive_Probability = c(
+    predictive_probability_beta,
+    predictive_probability_stan
+  )
+)
+
+comparison$Posterior_Mean_p <- round(
+  comparison$Posterior_Mean_p,
+  4
+)
+
+comparison$Predictive_Probability <- round(
+  comparison$Predictive_Probability,
+  4
+)
+
+comparison
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Use the displayed values to understand center, spread, frequency, and missingness; investigate any implausible or unexpected result.
+
+
+#### Visual Comparison of Posterior Distributions
+
+<!-- generated-learning-note -->
+This section uses **Visual Comparison of Posterior Distributions** to make patterns visible. Confirm what each axis, group, scale, and annotation represents.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r compare-posterior-distributions}
+plot(
+  density(p_post_beta),
+  lwd = 2,
+  xlim = c(0, 0.7),
+  main = "Comparison of Posterior Distributions",
+  xlab = "Response probability p"
+)
+
+lines(
+  density(p_post_stan),
+  lwd = 2,
+  lty = 2
+)
+
+abline(
+  v = success_threshold,
+  lty = 3,
+  lwd = 2
+)
+
+legend(
+  "topright",
+  legend = c(
+    "Beta-binomial",
+    "rstanarm",
+    "Success threshold"
+  ),
+  lty = c(1, 2, 3),
+  lwd = 2,
+  bty = "n"
+)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+#### Why the Results May Differ
+
+<!-- generated-learning-note -->
+This section focuses on **Why the Results May Differ**. Emphasize effect size, uncertainty, diagnostics, and scientific relevance rather than a single threshold.
+
+
+The two methods use the same likelihood but do not use the same prior distribution.
+
+#### Beta-binomial method
+
+<!-- generated-learning-note -->
+This section develops **Beta-binomial method**. Read the model specification together with its assumptions and the scale of each reported effect.
+
+
+The first method uses:
+
+$$
+p\sim\operatorname{Beta}(1,1).
+$$
+
+This is a uniform prior directly on the probability scale.
+
+#### rstanarm method
+
+<!-- generated-learning-note -->
+This section develops **rstanarm method**. Read the model specification together with its assumptions and the scale of each reported effect.
+
+
+The second method uses:
+
+$$
+\operatorname{logit}(p)
+\sim
+N\left(
+\operatorname{logit}(0.30),
+1^2
+\right).
+$$
+
+This is a logistic-normal prior.
+
+A logistic-normal prior is not equivalent to a Beta prior. Therefore, the two approaches can produce different posterior distributions and different predictive probabilities.
+
+The difference is caused by the prior specification, not by MCMC itself.
+
+#### More Comparable rstanarm Prior
+
+<!-- generated-learning-note -->
+This subsection explains **More Comparable rstanarm Prior** and shows how it contributes to the overall Bayesian Adaptive Design: Futility (Not Efficacy) Stopping Using Predictive Probability workflow.
+
+
+To make the two analyses more comparable, one could use a weakly informative prior centered near the same region as the Beta prior.
+
+However, a normal prior on the logit scale cannot exactly reproduce a (\operatorname{Beta}(1,1)) prior on the probability scale.
+
+The following is an example of a relatively weak logit-scale prior:
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r alternative-rstanarm-model, eval=FALSE}
+fit_stan_weak <- stan_glm(
+  cbind(responders, nonresponders) ~ 1,
+  family = binomial(link = "logit"),
+  data = dat,
+  prior_intercept = normal(
+    location = 0,
+    scale = 2.5,
+    autoscale = FALSE
+  ),
+  chains = 4,
+  iter = 5000,
+  warmup = 2500,
+  seed = 2026,
+  refresh = 0
+)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+This prior is centered at:
+
+$$
+p=0.50,
+$$
+
+because:
+
+$$
+\operatorname{logit}^{-1}(0)=0.50.
+$$
+
+It is still not identical to a (\operatorname{Beta}(1,1)) prior.
+
+#### Exact Beta-Binomial Predictive Probability
+
+<!-- generated-learning-note -->
+This subsection explains **Exact Beta-Binomial Predictive Probability** and shows how it contributes to the overall Bayesian Adaptive Design: Futility (Not Efficacy) Stopping Using Predictive Probability workflow.
+
+
+Because the Beta prior is conjugate to the binomial likelihood, the predictive probability can also be calculated without simulation.
+
+Under the posterior distribution:
+
+$$
+p\mid\text{data}
+\sim
+\operatorname{Beta}(16,36),
+$$
+
+the future number of responders follows a beta-binomial distribution:
+
+$$
+R_{\text{future}}
+\sim
+\operatorname{BetaBinomial}
+\left(
+150,16,36
+\right).
+$$
+
+The trial requires at least 56 future responders.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block defines a reusable function. Separate its inputs, calculations, and returned value before applying it to new data.
+
+```{r exact-beta-binomial}
+minimum_total_responders <-
+  floor(success_threshold * n_total) + 1
+
+minimum_future_responders <-
+  minimum_total_responders - responders_current
+
+beta_binomial_pmf <- function(k, n, alpha, beta) {
+
+  choose(n, k) *
+    beta(k + alpha, n - k + beta) /
+    beta(alpha, beta)
+}
+
+exact_predictive_probability <- sum(
+  sapply(
+    minimum_future_responders:n_remaining,
+    beta_binomial_pmf,
+    n = n_remaining,
+    alpha = posterior_alpha,
+    beta = posterior_beta
+  )
+)
+
+cat(
+  "Exact beta-binomial predictive probability:",
+  round(100 * exact_predictive_probability, 2),
+  "%\n"
+)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Test the function with simple inputs whose expected answer is known before relying on it in a larger workflow.
+
+
+The exact result should be close to the Monte Carlo estimate. Small differences are caused by Monte Carlo sampling error.
+
+#### Monte Carlo Error
+
+<!-- generated-learning-note -->
+This subsection explains **Monte Carlo Error** and shows how it contributes to the overall Bayesian Adaptive Design: Futility (Not Efficacy) Stopping Using Predictive Probability workflow.
+
+
+The posterior predictive probability is estimated as a sample proportion.
+
+Its approximate Monte Carlo standard error is:
+
+$$
+\operatorname{MCSE}
+=
+\sqrt{
+\frac{
+\widehat{P}(1-\widehat{P})
+}{
+M
+}
+},
+$$
+
+where (M) is the number of posterior predictive simulations.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r monte-carlo-error}
+mcse_beta <- sqrt(
+  predictive_probability_beta *
+    (1 - predictive_probability_beta) /
+    n_mcmc
+)
+
+cat(
+  "Approximate Monte Carlo standard error:",
+  round(mcse_beta, 5),
+  "\n"
+)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+Increasing `n_mcmc` will reduce Monte Carlo error.
+
+For example:
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r more-simulations, eval=FALSE}
+n_mcmc <- 100000
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+#### Important Interpretation
+
+<!-- generated-learning-note -->
+This section focuses on **Important Interpretation**. Emphasize effect size, uncertainty, diagnostics, and scientific relevance rather than a single threshold.
+
+
+The predictive probability answers the following question:
+
+> Given the currently observed data, the specified prior, and the assumed model, what is the probability that the final trial response rate will exceed 35% if enrollment continues to 200 patients?
+
+It is not the same as:
+
+$$
+P(p>0.35\mid\text{current data}).
+$$
+
+The posterior probability (P(p>0.35\mid\text{data})) describes uncertainty about the true response probability.
+
+The predictive probability additionally includes the future sampling variability from the remaining patients.
+
+#### Key Conclusions
+
+<!-- generated-learning-note -->
+This section focuses on **Key Conclusions**. Emphasize effect size, uncertainty, diagnostics, and scientific relevance rather than a single threshold.
+
+
+1. The Beta-binomial method provides a simple conjugate analysis for a single-arm binary endpoint.
+
+2. The posterior distribution under a (\operatorname{Beta}(1,1)) prior is:
+
+$$
+p\mid\text{data}
+\sim
+\operatorname{Beta}(16,36).
+$$
+
+3. Future responses are simulated from the posterior predictive distribution.
+
+4. The predictive probability is the proportion of simulated completed trials that meet the final success criterion.
+
+5. A futility rule may stop the trial when the predictive probability falls below a prespecified threshold such as 5%.
+
+6. The `rstanarm` approach uses a logistic regression representation and is more flexible when covariates, treatment groups, or hierarchical structures are needed.
+
+7. The Beta-binomial and `rstanarm` results may differ because the two examples use different prior distributions.
+
+8. Futility boundaries should be prespecified and evaluated through clinical-trial simulation before the trial begins.
+
+## Interpreting the Results
+
+Examine stopping probabilities, error rates, expected sample size, and behavior under several plausible treatment effects. Treat the output as evidence generated under the stated data, coding choices, and assumptions. Before using the workflow in practice, replace example inputs with validated data and confirm that the method targets the intended scientific question.
+
+## Key Takeaways
+
+- **Connect method to purpose.** Identify the question and target quantity before choosing code or a model.
+- **Read code and output together.** Confirm what each object, estimate, interval, table, or plot represents.
+- **Check assumptions and diagnostics.** A successful computation is not by itself evidence that the result is reliable.
+- **Adapt deliberately.** When applying the example elsewhere, document changes to data definitions, parameters, and analytical choices.

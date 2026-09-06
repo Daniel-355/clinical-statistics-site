@@ -1,0 +1,811 @@
+---
+title: "Epidemiologic Effect Study: Smoking and Cardiovascular Disease"
+description: "A practical R learning guide to Epidemiologic Effect Study: Smoking and Cardiovascular Disease, with concise explanations, reproducible examples, and interpretation guidance."
+date: 2026-08-31
+section: "Epidemiology & Real-World Evidence"
+category: "Epidemiologic Study Designs"
+topic: "Epidemiologic Effect Study: Smoking and Cardiovascular Disease"
+type: article
+tags: ["Epidemiologic Study Designs", "Epidemiology & Real-World Evidence", "Epidemiologic", "Effect", "Study"]
+status: published
+featured: true
+youtube: []
+pdf: []
+downloads: []
+validate-yaml: false
+execute:
+  echo: true
+  warning: false
+  error: true
+---
+
+## Why This Topic Matters
+
+Epidemiologic design determines how populations, exposures, outcomes, follow-up, and comparisons support a target scientific question.
+
+## Learning Objectives
+
+After working through this material, you should be able to:
+
+- explain the main ideas behind **Epidemiologic Effect Study: Smoking and Cardiovascular Disease**;
+- interpret the R workflow and its output; and
+- adapt the examples to a related analysis.
+
+## Lesson Roadmap
+
+The original material is organized around the following topics:
+
+1. 1. Background and Research Question
+2. 2. Study Design and Data Source
+3. 3. Define the Target Population and Study Cohort
+4. 4. Define Exposure, Outcome, and Time Zero
+5. Exposure
+6. Outcome
+
+## How to Use This Lesson
+
+Read the explanation before each workflow, then run the R chunks in sequence. Code and output are shown together so that each numerical or graphical result can be connected to the command that produced it. Some source examples require optional packages or external data. Those setup-dependent chunks remain visible for reference but are marked `eval: false` when they cannot be reproduced safely in a clean website build.
+
+## Reproducible Learning Check
+
+This short R chunk confirms the scope of the lesson and always produces a visible output.
+
+```{r}
+#| label: learning-overview
+learning_overview <- data.frame(
+  section = "Epidemiology & Real-World Evidence",
+  category = "Epidemiologic Study Designs",
+  topic = "Epidemiologic Effect Study: Smoking and Cardiovascular Disease"
+)
+learning_overview
+```
+
+## Learning Material
+
+The following material develops **Epidemiologic Effect Study: Smoking and Cardiovascular Disease** from core ideas to practical implementation. Definitions and assumptions come first; worked code then shows how the ideas are represented computationally.
+
+### Conceptual Foundation
+
+The material below closely follows the original R Markdown source, with its examples retained for study and reuse.
+
+#### 1. Background and Research Question
+
+<!-- generated-learning-note -->
+This subsection explains **1. Background and Research Question** and shows how it contributes to the overall Epidemiologic Effect Study: Smoking and Cardiovascular Disease workflow.
+
+
+This example demonstrates a typical **epidemiologic effect-estimation workflow** using a cohort-study framework.
+
+**Research question:**  
+Among adults initially free of cardiovascular disease, is baseline cigarette smoking associated with a higher risk of incident cardiovascular disease during follow-up?
+
+The causal question can be written conceptually as:
+
+\[
+Smoking \rightarrow Cardiovascular\ Disease
+\]
+
+Because smoking is not randomly assigned, the exposed and unexposed groups may differ in important baseline characteristics. Therefore, confounding must be considered carefully.
+
+```{r setup, message=FALSE, warning=FALSE}
+library(dplyr)
+library(survival)
+library(tableone)
+library(MatchIt)
+library(cobalt)
+
+set.seed(2026)
+```
+
+#### 2. Study Design and Data Source
+
+<!-- generated-learning-note -->
+This section prepares the information needed for **2. Study Design and Data Source**. Check variable definitions, units, coding, and missing values before moving to analysis.
+
+
+A common epidemiologic design for this question is a **prospective or retrospective cohort study**.
+
+In a real epidemiologic study, data might come from:
+
+- a population-based cohort,
+- an epidemiologic survey linked to outcomes,
+- EHR or claims data,
+- a disease registry,
+- or linked administrative databases.
+
+For teaching purposes, we simulate a cohort with the same basic structure.
+
+### R Workflow and Examples
+
+Run the examples in order because later blocks may reuse objects created earlier. Each block includes a short purpose statement and guidance for reading its output.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block generates controlled example data. Simulation makes the data-generating assumptions explicit and provides a known setting in which to study the method.
+
+```{r simulate-data}
+n <- 6000
+
+epi <- data.frame(
+  id = 1:n,
+  age = round(rnorm(n, 55, 10)),
+  male = rbinom(n, 1, 0.48),
+  bmi = round(rnorm(n, 28, 5), 1),
+  systolic_bp = round(rnorm(n, 128, 16)),
+  diabetes = rbinom(n, 1, 0.14),
+  hypertension = rbinom(n, 1, 0.38),
+  high_cholesterol = rbinom(n, 1, 0.32),
+  physical_inactivity = rbinom(n, 1, 0.35)
+)
+
+# Smoking probability depends on several baseline characteristics.
+# This intentionally creates confounding.
+lp_smoking <-
+  -1.1 +
+  0.012 * (epi$age - 55) +
+  0.25 * epi$male +
+  0.18 * epi$physical_inactivity +
+  0.15 * epi$hypertension -
+  0.08 * (epi$bmi - 28)
+
+p_smoking <- plogis(lp_smoking)
+
+epi$smoking <- rbinom(n, 1, p_smoking)
+
+epi$smoking <- factor(
+  epi$smoking,
+  levels = c(0, 1),
+  labels = c("Non-smoker", "Smoker")
+)
+
+table(epi$smoking)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the generated sample with the parameters used to create it. Differences reflect random variation unless the code intentionally introduces bias or structure.
+
+
+#### 3. Define the Target Population and Study Cohort
+
+<!-- generated-learning-note -->
+This subsection explains **3. Define the Target Population and Study Cohort** and shows how it contributes to the overall Epidemiologic Effect Study: Smoking and Cardiovascular Disease workflow.
+
+
+The cohort should be defined before outcome analysis.
+
+Example eligibility criteria:
+
+- adults aged 35 to 80 years,
+- no cardiovascular disease at baseline,
+- baseline smoking status available,
+- baseline covariates available,
+- eligible for follow-up.
+
+For this simulated example, we restrict the cohort to plausible baseline values.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block prepares the analysis data. Follow each transformation carefully because filtering, recoding, grouping, and reshaping determine the observations used downstream.
+
+```{r cohort-definition}
+cohort <- epi %>%
+  filter(
+    age >= 35,
+    age <= 80,
+    bmi >= 15,
+    bmi <= 55,
+    systolic_bp >= 80,
+    systolic_bp <= 220
+  )
+
+nrow(cohort)
+table(cohort$smoking)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the data before and after the transformation. Confirm that row counts, group sizes, missingness, and variable values changed as intended.
+
+
+#### 4. Define Exposure, Outcome, and Time Zero
+
+<!-- generated-learning-note -->
+This subsection explains **4. Define Exposure, Outcome, and Time Zero** and shows how it contributes to the overall Epidemiologic Effect Study: Smoking and Cardiovascular Disease workflow.
+
+
+#### Exposure
+
+<!-- generated-learning-note -->
+This subsection explains **Exposure** and shows how it contributes to the overall Epidemiologic Effect Study: Smoking and Cardiovascular Disease workflow.
+
+
+The exposure is **baseline cigarette smoking**:
+
+- Smoker
+- Non-smoker
+
+#### Outcome
+
+<!-- generated-learning-note -->
+This subsection explains **Outcome** and shows how it contributes to the overall Epidemiologic Effect Study: Smoking and Cardiovascular Disease workflow.
+
+
+The outcome is **incident cardiovascular disease (CVD)** during follow-up.
+
+#### Time zero
+
+<!-- generated-learning-note -->
+This subsection explains **Time zero** and shows how it contributes to the overall Epidemiologic Effect Study: Smoking and Cardiovascular Disease workflow.
+
+
+Time zero is the baseline study visit or cohort entry date.
+
+This is important because exposure and baseline covariates should be defined before follow-up begins.
+
+#### 5. Identify Potential Confounders
+
+<!-- generated-learning-note -->
+This subsection explains **5. Identify Potential Confounders** and shows how it contributes to the overall Epidemiologic Effect Study: Smoking and Cardiovascular Disease workflow.
+
+
+Potential confounders should be selected using:
+
+- subject-matter knowledge,
+- previous epidemiologic evidence,
+- temporal ordering,
+- and causal reasoning / DAGs.
+
+For illustration, we consider:
+
+- age,
+- sex,
+- BMI,
+- systolic blood pressure,
+- diabetes,
+- hypertension,
+- high cholesterol,
+- physical inactivity.
+
+A confounder is generally a variable that is associated with both the exposure and the outcome and is not a downstream consequence of the exposure for the causal effect being estimated.
+
+The goal is **not** to include every available variable automatically.
+
+#### 6. Generate Follow-up and Outcome
+
+<!-- generated-learning-note -->
+This subsection explains **6. Generate Follow-up and Outcome** and shows how it contributes to the overall Epidemiologic Effect Study: Smoking and Cardiovascular Disease workflow.
+
+
+We now simulate time to incident CVD.
+
+Smoking truly increases the event hazard in this simulated dataset. Several baseline covariates also affect CVD risk.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block generates controlled example data. Simulation makes the data-generating assumptions explicit and provides a known setting in which to study the method.
+
+```{r outcome-generation}
+lp_event <-
+  -4.2 +
+  0.45 * (cohort$smoking == "Smoker") +
+  0.035 * (cohort$age - 55) +
+  0.30 * cohort$male +
+  0.025 * (cohort$bmi - 28) +
+  0.012 * (cohort$systolic_bp - 128) +
+  0.55 * cohort$diabetes +
+  0.40 * cohort$hypertension +
+  0.30 * cohort$high_cholesterol +
+  0.18 * cohort$physical_inactivity
+
+event_rate <- exp(lp_event)
+
+true_event_time <- rexp(
+  nrow(cohort),
+  rate = event_rate
+)
+
+censor_time <- runif(
+  nrow(cohort),
+  min = 2,
+  max = 10
+)
+
+cohort$followup_time <- pmin(true_event_time, censor_time)
+cohort$cvd_event <- as.integer(true_event_time <= censor_time)
+
+table(cohort$cvd_event)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the generated sample with the parameters used to create it. Differences reflect random variation unless the code intentionally introduces bias or structure.
+
+
+#### 7. Data Quality Assessment
+
+<!-- generated-learning-note -->
+This section prepares the information needed for **7. Data Quality Assessment**. Check variable definitions, units, coding, and missing values before moving to analysis.
+
+
+Before estimating an exposure effect, assess the quality of the epidemiologic data.
+
+Important checks include:
+
+- duplicate participants,
+- missing data,
+- implausible values,
+- exposure misclassification,
+- outcome misclassification,
+- temporal consistency,
+- and completeness of follow-up.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block extracts inferential or predictive results from fitted objects. Match each estimate, interval, contrast, or diagnostic to the quantity it represents.
+
+```{r data-quality}
+# Duplicate participant IDs
+sum(duplicated(cohort$id))
+
+# Missingness
+colSums(is.na(cohort))
+
+# Basic distributions
+summary(
+  cohort[, c(
+    "age",
+    "bmi",
+    "systolic_bp",
+    "followup_time"
+  )]
+)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Interpret estimates on the scale reported by the function, and use intervals or other uncertainty measures when drawing conclusions.
+
+
+#### 8. Describe the Cohort and Compare Baseline Characteristics
+
+<!-- generated-learning-note -->
+This subsection explains **8. Describe the Cohort and Compare Baseline Characteristics** and shows how it contributes to the overall Epidemiologic Effect Study: Smoking and Cardiovascular Disease workflow.
+
+
+Before modeling the outcome, describe the exposed and unexposed groups.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r baseline-table}
+vars <- c(
+  "age",
+  "male",
+  "bmi",
+  "systolic_bp",
+  "diabetes",
+  "hypertension",
+  "high_cholesterol",
+  "physical_inactivity"
+)
+
+table1 <- CreateTableOne(
+  vars = vars,
+  strata = "smoking",
+  data = cohort,
+  test = FALSE
+)
+
+print(
+  table1,
+  smd = TRUE
+)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+The standardized mean difference (SMD) helps describe baseline differences between smokers and non-smokers.
+
+However, baseline imbalance alone does not determine whether a variable is a confounder. Confounder selection should primarily follow causal reasoning rather than statistical significance testing.
+
+#### 9. Estimate the Crude Association
+
+<!-- generated-learning-note -->
+This section develops **9. Estimate the Crude Association**. Read the model specification together with its assumptions and the scale of each reported effect.
+
+
+First estimate the unadjusted association between smoking and incident CVD.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block specifies and fits the statistical model. Identify the outcome, predictors, reference levels, link or distribution, and any correlation structure before interpreting coefficients.
+
+```{r crude-analysis}
+cox_crude <- coxph(
+  Surv(followup_time, cvd_event) ~ smoking,
+  data = cohort
+)
+
+summary(cox_crude)
+
+exp(
+  cbind(
+    HR = coef(cox_crude),
+    confint(cox_crude)
+  )
+)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Focus on coefficient direction and scale, uncertainty intervals, fit statistics, and diagnostics. Statistical significance alone does not establish practical importance or model adequacy.
+
+
+The crude hazard ratio compares the observed CVD hazard in smokers versus non-smokers without controlling for baseline differences.
+
+#### 10. Estimate the Adjusted Exposure Effect
+
+<!-- generated-learning-note -->
+This section develops **10. Estimate the Adjusted Exposure Effect**. Read the model specification together with its assumptions and the scale of each reported effect.
+
+
+Next fit a multivariable Cox model adjusting for prespecified baseline confounders.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block specifies and fits the statistical model. Identify the outcome, predictors, reference levels, link or distribution, and any correlation structure before interpreting coefficients.
+
+```{r adjusted-analysis}
+cox_adjusted <- coxph(
+  Surv(followup_time, cvd_event) ~
+    smoking +
+    age +
+    male +
+    bmi +
+    systolic_bp +
+    diabetes +
+    hypertension +
+    high_cholesterol +
+    physical_inactivity,
+  data = cohort
+)
+
+summary(cox_adjusted)
+
+exp(
+  cbind(
+    HR = coef(cox_adjusted),
+    confint(cox_adjusted)
+  )
+)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Focus on coefficient direction and scale, uncertainty intervals, fit statistics, and diagnostics. Statistical significance alone does not establish practical importance or model adequacy.
+
+
+The coefficient for `smokingSmoker` is the covariate-adjusted hazard ratio comparing smokers with non-smokers.
+
+Under the required causal assumptions, this adjusted estimate may be interpreted as an estimate of the exposure effect. Without those assumptions, it should be interpreted more cautiously as an adjusted association.
+
+#### 11. Compare Crude and Adjusted Estimates
+
+<!-- generated-learning-note -->
+This section develops **11. Compare Crude and Adjusted Estimates**. Read the model specification together with its assumptions and the scale of each reported effect.
+
+
+A useful epidemiologic step is to compare the crude and adjusted exposure estimates.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block extracts inferential or predictive results from fitted objects. Match each estimate, interval, contrast, or diagnostic to the quantity it represents.
+
+```{r compare-crude-adjusted}
+extract_hr <- function(model, term, label) {
+  est <- coef(model)[term]
+  ci <- confint(model)[term, ]
+
+  data.frame(
+    Model = label,
+    HR = exp(est),
+    Lower95 = exp(ci[1]),
+    Upper95 = exp(ci[2])
+  )
+}
+
+comparison <- bind_rows(
+  extract_hr(cox_crude, "smokingSmoker", "Crude"),
+  extract_hr(cox_adjusted, "smokingSmoker", "Adjusted")
+)
+
+comparison
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Interpret estimates on the scale reported by the function, and use intervals or other uncertainty measures when drawing conclusions.
+
+
+A difference between crude and adjusted estimates may indicate the impact of covariate adjustment, but it does **not** by itself prove which variables are true confounders.
+
+#### 12. Check Model Assumptions
+
+<!-- generated-learning-note -->
+This section establishes the concepts and assumptions needed to understand **12. Check Model Assumptions** in the context of Epidemiologic Effect Study: Smoking and Cardiovascular Disease.
+
+
+For a Cox proportional hazards model, assess the proportional hazards assumption.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r model-diagnostics}
+ph_test <- cox.zph(cox_adjusted)
+ph_test
+plot(ph_test)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+If the proportional hazards assumption is seriously violated, alternative modeling approaches may be needed.
+
+#### 13. Sensitivity Analysis 1: Propensity Score Weighting
+
+<!-- generated-learning-note -->
+This subsection explains **13. Sensitivity Analysis 1: Propensity Score Weighting** and shows how it contributes to the overall Epidemiologic Effect Study: Smoking and Cardiovascular Disease workflow.
+
+
+Propensity-score methods can also be used in epidemiologic exposure studies when appropriate.
+
+Here the propensity score is the probability of being a smoker conditional on measured baseline covariates.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block prepares the analysis data. Follow each transformation carefully because filtering, recoding, grouping, and reshaping determine the observations used downstream.
+
+```{r propensity-score}
+ps_model <- glm(
+  I(smoking == "Smoker") ~
+    age +
+    male +
+    bmi +
+    systolic_bp +
+    diabetes +
+    hypertension +
+    high_cholesterol +
+    physical_inactivity,
+  family = binomial(),
+  data = cohort
+)
+
+cohort$ps <- predict(
+  ps_model,
+  type = "response"
+)
+
+cohort <- cohort %>%
+  mutate(
+    exposed = as.integer(smoking == "Smoker"),
+    iptw = ifelse(
+      exposed == 1,
+      1 / ps,
+      1 / (1 - ps)
+    )
+  )
+
+summary(cohort$ps)
+summary(cohort$iptw)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the data before and after the transformation. Confirm that row counts, group sizes, missingness, and variable values changed as intended.
+
+
+#### 14. Check Covariate Balance After Weighting
+
+<!-- generated-learning-note -->
+This subsection explains **14. Check Covariate Balance After Weighting** and shows how it contributes to the overall Epidemiologic Effect Study: Smoking and Cardiovascular Disease workflow.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r weighting-balance}
+bal.tab(
+  smoking ~
+    age +
+    male +
+    bmi +
+    systolic_bp +
+    diabetes +
+    hypertension +
+    high_cholesterol +
+    physical_inactivity,
+  data = cohort,
+  weights = cohort$iptw,
+  method = "weighting",
+  un = TRUE,
+  thresholds = c(m = 0.10)
+)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+An absolute SMD below 0.10 is commonly used as a practical indicator of acceptable balance for a measured covariate.
+
+Good measured balance does not establish that unmeasured confounding is absent.
+
+#### 15. Sensitivity Analysis 1: IPTW Outcome Model
+
+<!-- generated-learning-note -->
+This section develops **15. Sensitivity Analysis 1: IPTW Outcome Model**. Read the model specification together with its assumptions and the scale of each reported effect.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block prepares the analysis data. Follow each transformation carefully because filtering, recoding, grouping, and reshaping determine the observations used downstream.
+
+```{r iptw-outcome}
+# Truncate extreme weights at the 1st and 99th percentiles
+limits <- quantile(
+  cohort$iptw,
+  probs = c(0.01, 0.99)
+)
+
+cohort <- cohort %>%
+  mutate(
+    iptw_trim = pmin(
+      pmax(iptw, limits[1]),
+      limits[2]
+    )
+  )
+
+cox_iptw <- coxph(
+  Surv(followup_time, cvd_event) ~ smoking,
+  data = cohort,
+  weights = iptw_trim,
+  robust = TRUE
+)
+
+summary(cox_iptw)
+
+exp(
+  cbind(
+    HR = coef(cox_iptw),
+    confint(cox_iptw)
+  )
+)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the data before and after the transformation. Confirm that row counts, group sizes, missingness, and variable values changed as intended.
+
+
+#### 16. Sensitivity Analysis 2: Alternative Covariate Specification
+
+<!-- generated-learning-note -->
+This subsection explains **16. Sensitivity Analysis 2: Alternative Covariate Specification** and shows how it contributes to the overall Epidemiologic Effect Study: Smoking and Cardiovascular Disease workflow.
+
+
+Suppose hypertension has uncertain temporal ordering relative to smoking history or disease development. We can examine how strongly the smoking estimate depends on adjustment for hypertension.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block specifies and fits the statistical model. Identify the outcome, predictors, reference levels, link or distribution, and any correlation structure before interpreting coefficients.
+
+```{r sensitivity-hypertension}
+cox_without_htn <- coxph(
+  Surv(followup_time, cvd_event) ~
+    smoking +
+    age +
+    male +
+    bmi +
+    systolic_bp +
+    diabetes +
+    high_cholesterol +
+    physical_inactivity,
+  data = cohort
+)
+
+bind_rows(
+  extract_hr(cox_adjusted, "smokingSmoker", "Adjusted including hypertension"),
+  extract_hr(cox_without_htn, "smokingSmoker", "Adjusted excluding hypertension")
+)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Focus on coefficient direction and scale, uncertainty intervals, fit statistics, and diagnostics. Statistical significance alone does not establish practical importance or model adequacy.
+
+
+If the results are similar, the exposure estimate is relatively robust to this particular modeling choice. If the results differ substantially, the conclusion is sensitive to assumptions about hypertension.
+
+This sensitivity analysis does not determine the true causal role of hypertension; it only shows how much the estimate depends on the assumption.
+
+#### 17. Compare Main and Sensitivity Analyses
+
+<!-- generated-learning-note -->
+This subsection explains **17. Compare Main and Sensitivity Analyses** and shows how it contributes to the overall Epidemiologic Effect Study: Smoking and Cardiovascular Disease workflow.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r final-comparison}
+results <- bind_rows(
+  extract_hr(cox_crude, "smokingSmoker", "Crude Cox"),
+  extract_hr(cox_adjusted, "smokingSmoker", "Multivariable-adjusted Cox"),
+  extract_hr(cox_iptw, "smokingSmoker", "IPTW Cox"),
+  extract_hr(cox_without_htn, "smokingSmoker", "Adjusted Cox without hypertension")
+)
+
+results
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+#### 18. Interpretation and Limitations
+
+<!-- generated-learning-note -->
+This section focuses on **18. Interpretation and Limitations**. Emphasize effect size, uncertainty, diagnostics, and scientific relevance rather than a single threshold.
+
+
+A typical epidemiologic effect-estimation workflow is:
+
+1. Define the epidemiologic / causal research question.
+2. Choose an appropriate study design and data source.
+3. Define the target population and analytic cohort.
+4. Define exposure, outcome, time zero, and follow-up.
+5. Identify potential confounders using temporal and causal reasoning.
+6. Assess data quality and missingness.
+7. Describe exposed and unexposed groups.
+8. Estimate the crude exposure-outcome association.
+9. Estimate the confounder-adjusted effect / association.
+10. Check model assumptions.
+11. Evaluate covariate balance when propensity-score methods are used.
+12. Perform sensitivity analyses under alternative reasonable assumptions.
+13. Interpret the estimate in light of residual confounding, measurement error, selection bias, and temporality uncertainty.
+
+The key epidemiologic idea is:
+
+> The objective is not simply to make two groups statistically similar. The objective is to estimate the exposure-outcome effect as validly as possible by using an appropriate design, defining time correctly, selecting covariates based on causal reasoning, and evaluating the robustness of the result.
+
+#### 19. Main Limitations of Observational Epidemiologic Effect Studies
+
+<!-- generated-learning-note -->
+This subsection explains **19. Main Limitations of Observational Epidemiologic Effect Studies** and shows how it contributes to the overall Epidemiologic Effect Study: Smoking and Cardiovascular Disease workflow.
+
+
+Even after careful adjustment, important limitations may remain:
+
+- unmeasured confounding,
+- residual confounding,
+- exposure misclassification,
+- outcome misclassification,
+- measurement error,
+- uncertain temporal ordering,
+- selection bias,
+- informative censoring,
+- missing data,
+- positivity / overlap problems,
+- model misspecification,
+- and limited generalizability.
+
+Therefore, an adjusted observational estimate should not automatically be interpreted as proof of causality.
+
+## Interpreting the Results
+
+Identify the source population, time zero, eligibility criteria, measurement process, and target effect before interpreting estimates. Treat the output as evidence generated under the stated data, coding choices, and assumptions. Before using the workflow in practice, replace example inputs with validated data and confirm that the method targets the intended scientific question.
+
+## Key Takeaways
+
+- **Connect method to purpose.** Identify the question and target quantity before choosing code or a model.
+- **Read code and output together.** Confirm what each object, estimate, interval, table, or plot represents.
+- **Check assumptions and diagnostics.** A successful computation is not by itself evidence that the result is reliable.
+- **Adapt deliberately.** When applying the example elsewhere, document changes to data definitions, parameters, and analytical choices.

@@ -1,0 +1,796 @@
+---
+title: "Standard Operating Procedure for Real-World Evidence Studies"
+author: "[Author / Study Team]"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    toc_depth: 2
+    number_sections: true
+  word_document:
+    toc: true
+    toc_depth: 2
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  warning = FALSE,
+  message = FALSE,
+  fig.width = 7,
+  fig.height = 5
+)
+```
+
+# 1. Purpose
+
+This SOP provides a standard framework for the design, conduct, analysis, and reporting of observational real-world evidence (RWE) studies using routinely collected data.
+
+It is intended for studies using:
+
+- electronic health records (EHR),
+- insurance claims,
+- pharmacy data,
+- registries,
+- laboratory databases,
+- administrative data,
+- population-based cohorts,
+- or linked real-world data sources.
+
+The primary objective is to estimate treatment, exposure, or comparative-effectiveness effects as validly as possible while addressing major sources of bias inherent in nonrandomized data.
+
+# 2. Research Question and Causal Objective
+
+The research question should be specified before analysis.
+
+**General form:**
+
+> Among [target population], what is the effect of [treatment/exposure A] compared with [treatment/exposure B] on [outcome] during [follow-up period]?
+
+The study should define:
+
+- target population,
+- treatment/exposure strategies,
+- comparator,
+- outcome,
+- time zero / index date,
+- follow-up period,
+- censoring rules,
+- effect measure,
+- and target estimand.
+
+When causal interpretation is intended, the analysis should emulate the key elements of a hypothetical target trial as closely as possible.
+
+# 3. Target Trial Framework
+
+Whenever applicable, prespecify the following target-trial components:
+
+1. eligibility criteria;
+2. treatment strategies;
+3. treatment assignment procedure;
+4. time zero;
+5. follow-up;
+6. outcome;
+7. causal contrast / estimand;
+8. analysis method.
+
+The observational emulation should align eligibility, treatment assignment, and start of follow-up at the same time point to minimize time-related biases.
+
+# 4. Data Source and Data Provenance
+
+Describe:
+
+- data source(s),
+- calendar period,
+- population coverage,
+- coding systems,
+- linkage procedures,
+- laboratory availability,
+- medication capture,
+- mortality capture,
+- and data refresh/cutoff date.
+
+Important limitations of each source should be documented.
+
+Examples include:
+
+- incomplete capture of outside care,
+- lack of over-the-counter medication use,
+- missing laboratory measurements,
+- changes in coding practices,
+- incomplete death information,
+- or limited medication adherence information.
+
+# 5. Study Population and Cohort Definition
+
+Define inclusion and exclusion criteria before outcome analysis.
+
+Typical criteria may include:
+
+- age range,
+- diagnosis or disease status,
+- minimum baseline observation period,
+- continuous enrollment when using claims data,
+- availability of treatment/exposure information,
+- no prior occurrence of an incident outcome if required,
+- and sufficient follow-up eligibility.
+
+A cohort flow diagram should document the number of individuals excluded at each step.
+
+# 6. Index Date / Time Zero
+
+The index date is the date on which:
+
+- eligibility is satisfied,
+- treatment/exposure strategy is assigned,
+- baseline covariates are defined,
+- and follow-up begins.
+
+These elements should be aligned as closely as possible.
+
+Incorrect alignment can produce:
+
+- immortal-time bias,
+- prevalent-user bias,
+- selection bias,
+- and temporal ambiguity.
+
+# 7. Exposure or Treatment Strategy Definition
+
+Specify:
+
+- exposure/treatment definition,
+- comparator,
+- coding algorithm,
+- washout or baseline period,
+- initiation date,
+- treatment switching rules,
+- discontinuation rules,
+- grace periods,
+- adherence definition if used,
+- and whether exposure is fixed or time-varying.
+
+For comparative-effectiveness studies, a **new-user active-comparator design** should be considered when feasible because it often improves comparability and temporal clarity.
+
+# 8. Outcome Definition
+
+Specify:
+
+- primary outcome,
+- secondary outcomes,
+- coding algorithm,
+- event date,
+- validation status,
+- adjudication procedure if available,
+- and outcome ascertainment window.
+
+Outcome definitions should be based on clinically meaningful and reproducible algorithms.
+
+Where possible, use validated diagnosis/procedure algorithms.
+
+# 9. Baseline Period and Covariates
+
+The baseline period should be prespecified, for example:
+
+- 180 days,
+- 365 days,
+- or another justified interval before index.
+
+Baseline covariates may include:
+
+- demographics,
+- disease severity,
+- prior diagnoses,
+- prior procedures,
+- prior medication use,
+- laboratory values,
+- vital signs,
+- healthcare utilization,
+- lifestyle factors,
+- socioeconomic characteristics,
+- and relevant comorbidities.
+
+Covariates should be defined using information available before or at time zero.
+
+# 10. Confounding Control
+
+Because treatment or exposure is not randomized, confounding must be explicitly addressed.
+
+## 10.1 Confounder Selection
+
+Potential confounders should be selected using:
+
+- clinical knowledge,
+- prior literature,
+- temporal ordering,
+- causal diagrams / DAGs,
+- and known predictors of treatment and outcome.
+
+Variables should not be included solely because they are statistically significant or imbalanced.
+
+## 10.2 Confounding by Indication
+
+Special attention should be given to **confounding by indication**.
+
+For example, patients receiving a more intensive therapy may be systematically sicker than patients receiving the comparator treatment.
+
+Important markers of disease severity should therefore be identified and included when available.
+
+## 10.3 Post-Exposure Variables
+
+Post-exposure variables should not automatically be adjusted for.
+
+If the target estimand is the **total treatment effect**, variables affected by treatment should generally not be included in the baseline confounder set.
+
+If the objective instead concerns a direct or hypothetical effect, the estimand and analytic method should be explicitly defined.
+
+# 11. Descriptive Analysis
+
+Baseline characteristics will be summarized by treatment/exposure group.
+
+Continuous variables:
+
+- mean and SD,
+- or median and IQR.
+
+Categorical variables:
+
+- frequency and percentage.
+
+Standardized mean differences (SMDs) should be used to assess baseline imbalance.
+
+An absolute SMD below approximately 0.10 is commonly used as a practical indicator of acceptable measured balance.
+
+Baseline imbalance alone does not determine whether a variable is a confounder.
+
+# 12. Propensity Score Estimation
+
+When propensity-score methods are used, estimate:
+
+\[
+PS(X) = P(A=1 \mid X)
+\]
+
+where \(A\) is treatment/exposure and \(X\) is the set of measured baseline covariates.
+
+Possible approaches include:
+
+- logistic regression,
+- generalized boosted models,
+- machine-learning propensity models,
+- high-dimensional propensity scores.
+
+Example:
+
+```{r ps-example, eval=FALSE}
+ps_model <- glm(
+  treatment ~ age + sex + bmi + hba1c +
+    prior_cvd + ckd + smoking,
+  family = binomial(),
+  data = analysis_data
+)
+
+analysis_data$ps <- predict(
+  ps_model,
+  type = "response"
+)
+```
+
+# 13. Propensity Score Adjustment Strategies
+
+Common methods include:
+
+## 13.1 Matching
+
+Examples:
+
+- 1:1 nearest-neighbor matching,
+- variable-ratio matching,
+- caliper matching.
+
+Balance should be assessed after matching.
+
+## 13.2 IPTW
+
+For estimation of the average treatment effect:
+
+\[
+w_i =
+\begin{cases}
+1/PS_i, & A_i=1 \\
+1/(1-PS_i), & A_i=0
+\end{cases}
+\]
+
+Stabilized weights may be preferred.
+
+Extreme weights should be evaluated and may be truncated or trimmed using prespecified rules.
+
+## 13.3 Overlap Weighting
+
+Overlap weighting may be considered when treatment groups have limited overlap or when the clinical target population is the region of common support.
+
+# 14. Positivity and Overlap
+
+Assess whether patients in all covariate strata have a reasonable probability of receiving each treatment.
+
+Evaluate:
+
+- propensity-score distributions,
+- common support,
+- extreme PS values,
+- extreme weights,
+- effective sample size,
+- and overlap plots.
+
+Serious positivity violations should be reported and may require:
+
+- restriction,
+- trimming,
+- alternative weighting,
+- or redefining the target population.
+
+# 15. Covariate Balance Assessment
+
+After matching or weighting, assess balance using:
+
+- standardized mean differences,
+- variance ratios when useful,
+- propensity-score overlap,
+- and love plots.
+
+Example:
+
+```{r balance-example, eval=FALSE}
+library(cobalt)
+
+bal.tab(
+  treatment ~ age + sex + bmi + hba1c +
+    prior_cvd + ckd + smoking,
+  data = analysis_data,
+  weights = analysis_data$weight,
+  un = TRUE,
+  thresholds = c(m = 0.10)
+)
+```
+
+Good measured balance does not establish the absence of unmeasured confounding.
+
+# 16. Primary Outcome Analysis
+
+The primary analysis method depends on outcome type.
+
+## 16.1 Time-to-Event Outcome
+
+Use Cox proportional hazards regression or another prespecified survival model.
+
+```{r cox-example, eval=FALSE}
+library(survival)
+
+fit <- coxph(
+  Surv(followup_time, event) ~ treatment,
+  data = analysis_data,
+  weights = weight,
+  robust = TRUE
+)
+```
+
+Report:
+
+- HR,
+- 95% CI,
+- and P-value when appropriate.
+
+## 16.2 Binary Outcome
+
+Possible methods:
+
+- logistic regression,
+- log-binomial regression,
+- modified Poisson regression.
+
+Report:
+
+- OR,
+- RR,
+- or RD,
+depending on the estimand.
+
+## 16.3 Continuous Outcome
+
+Possible methods:
+
+- linear regression,
+- weighted regression,
+- mixed models for repeated measurements.
+
+## 16.4 Count Outcome
+
+Possible methods:
+
+- Poisson regression,
+- negative binomial regression.
+
+# 17. Conditional vs Marginal Effect
+
+The analysis should distinguish between:
+
+- **conditional effects**, typically obtained from multivariable regression,
+- and **marginal population-level effects**, often estimated using standardization or weighting.
+
+For example:
+
+- multivariable Cox regression usually estimates a conditional HR,
+- IPTW more naturally targets a marginal population-level effect.
+
+The estimand should be specified in advance.
+
+# 18. Follow-up and Censoring
+
+Follow-up should begin at the index date and end at the earliest of:
+
+- outcome,
+- death,
+- treatment discontinuation when required by estimand,
+- treatment switching,
+- loss to follow-up,
+- disenrollment,
+- end of data availability,
+- or administrative study end.
+
+Censoring rules depend on the target estimand.
+
+For example:
+
+- **intention-to-treat-like / treatment-policy-like analysis** may ignore later switching,
+- **as-treated / per-protocol-like analysis** may censor at switching or discontinuation.
+
+Potential informative censoring should be evaluated.
+
+Inverse probability of censoring weighting may be considered when appropriate.
+
+# 19. Missing Data
+
+Summarize:
+
+- amount of missingness,
+- variables affected,
+- missingness by treatment group,
+- and likely missing-data mechanisms.
+
+Possible methods include:
+
+- complete-case analysis,
+- multiple imputation,
+- missing-indicator methods only when justified,
+- model-based approaches.
+
+The primary method should be prespecified.
+
+Sensitivity analyses should evaluate departures from missing-at-random assumptions when relevant.
+
+# 20. Measurement Error and Misclassification
+
+Evaluate the potential for:
+
+- exposure misclassification,
+- outcome misclassification,
+- inaccurate diagnosis codes,
+- incomplete medication capture,
+- imperfect adherence information,
+- laboratory measurement error,
+- and date uncertainty.
+
+When possible:
+
+- use validated coding algorithms,
+- require repeated codes,
+- use confirmation windows,
+- or perform quantitative bias analysis.
+
+# 21. Model Diagnostics
+
+Depending on the primary model, assess:
+
+- proportional hazards,
+- linearity,
+- goodness-of-fit,
+- influential observations,
+- sparse cells,
+- multicollinearity,
+- and model convergence.
+
+For Cox models:
+
+```{r ph-example, eval=FALSE}
+ph_test <- cox.zph(fit)
+print(ph_test)
+plot(ph_test)
+```
+
+# 22. Competing Risks
+
+When competing events are clinically important, consider:
+
+- cause-specific Cox regression,
+- Fine-Gray subdistribution hazards models,
+- and cumulative-incidence functions.
+
+Choice of method should reflect the scientific question.
+
+# 23. Effect Modification and Subgroup Analyses
+
+Prespecified subgroups may include:
+
+- age,
+- sex,
+- disease severity,
+- kidney function,
+- prior cardiovascular disease,
+- or other clinically justified factors.
+
+Effect modification should preferably be tested with interaction terms.
+
+Exploratory subgroup analyses should be labeled as such.
+
+# 24. Sensitivity Analyses
+
+Common RWE sensitivity analyses include:
+
+1. alternative exposure definitions;
+2. alternative outcome definitions;
+3. alternative baseline windows;
+4. alternative confounder sets;
+5. propensity-score matching;
+6. IPTW;
+7. overlap weighting;
+8. multivariable regression;
+9. weight trimming/truncation;
+10. alternative censoring rules;
+11. as-treated analysis;
+12. treatment-policy-like analysis;
+13. multiple imputation;
+14. negative-control outcomes or exposures;
+15. lagged exposure analyses;
+16. competing-risk analyses;
+17. inverse probability of censoring weighting;
+18. assessment of unmeasured confounding;
+19. quantitative bias analysis;
+20. E-value analysis when appropriate.
+
+Results should be compared across methods for:
+
+- direction,
+- magnitude,
+- precision,
+- and clinical interpretation.
+
+# 25. Negative Controls and Falsification Analyses
+
+When feasible, use:
+
+- negative-control outcomes,
+- negative-control exposures,
+- falsification endpoints.
+
+These analyses can help detect residual confounding, surveillance bias, or systematic error.
+
+A null negative-control result does not prove that confounding is absent.
+
+# 26. Unmeasured Confounding
+
+Residual and unmeasured confounding should be explicitly acknowledged.
+
+Possible approaches include:
+
+- E-values,
+- quantitative bias analysis,
+- negative controls,
+- instrumental-variable analysis when assumptions are defensible,
+- external validation data.
+
+No single method can prove the absence of unmeasured confounding.
+
+# 27. Generalizability and Transportability
+
+Describe the population to which results apply.
+
+Assess:
+
+- demographic representation,
+- healthcare setting,
+- insurance status,
+- geography,
+- disease severity,
+- and calendar period.
+
+The analytic population after matching or weighting may differ from the original source population.
+
+# 28. Statistical Inference
+
+Unless otherwise specified:
+
+- tests will be two-sided,
+- alpha = 0.05,
+- and 95% confidence intervals will be reported.
+
+The primary analysis should be distinguished from:
+
+- secondary analyses,
+- sensitivity analyses,
+- exploratory analyses.
+
+Multiplicity should be acknowledged when many outcomes or subgroup analyses are conducted.
+
+# 29. Reporting of Results
+
+Recommended outputs include:
+
+## Table 1
+Baseline characteristics before adjustment.
+
+## Table 2
+Baseline characteristics after matching or weighting.
+
+## Table 3
+Primary and sensitivity treatment-effect estimates.
+
+| Method | Effect Estimate | 95% CI | P-value |
+|---|---:|---:|---:|
+| Primary analysis | | | |
+| Propensity-score matching | | | |
+| IPTW | | | |
+| Multivariable regression | | | |
+| Sensitivity analysis | | | |
+
+## Figures
+
+Recommended figures include:
+
+1. cohort flow diagram;
+2. propensity-score overlap plot;
+3. love plot;
+4. Kaplan-Meier or cumulative-incidence plot if relevant;
+5. forest plot comparing primary and sensitivity estimates.
+
+# 30. Interpretation
+
+Interpretation should focus on:
+
+- effect size,
+- precision,
+- clinical relevance,
+- consistency across analyses,
+- and assumptions required for causal interpretation.
+
+Observational RWE findings should generally be described as adjusted associations unless sufficient design and causal assumptions support a causal interpretation.
+
+# 31. Key Limitations
+
+Common RWE limitations include:
+
+- confounding by indication,
+- unmeasured confounding,
+- residual confounding,
+- exposure misclassification,
+- outcome misclassification,
+- measurement error,
+- missing data,
+- incomplete medication adherence information,
+- selection bias,
+- immortal-time bias,
+- informative censoring,
+- positivity violations,
+- model misspecification,
+- data-source limitations,
+- and limited generalizability.
+
+# 32. Quality Control and Reproducibility
+
+All key analysis steps should be reproducible.
+
+Key variables requiring validation include:
+
+- patient identifier,
+- treatment/exposure,
+- index date,
+- baseline period,
+- outcome,
+- outcome date,
+- follow-up,
+- censoring,
+- and major confounders.
+
+Whenever feasible:
+
+- analysis code should be version controlled,
+- key outputs should be independently reviewed,
+- cohort counts should be reconciled,
+- and treatment/outcome algorithms should be validated.
+
+# 33. Documentation of Deviations
+
+Any material deviation from the prespecified protocol or SAP should be documented with:
+
+- original plan,
+- revised method,
+- rationale,
+- timing,
+- and possible impact on interpretation.
+
+# Appendix A. Minimal RWE Analysis Workflow
+
+```{r minimal-workflow, eval=FALSE}
+library(dplyr)
+library(MatchIt)
+library(cobalt)
+library(survival)
+
+# 1. Define analytic cohort
+analysis_data <- raw_data %>%
+  filter(
+    eligible == 1
+  )
+
+# 2. Propensity score
+ps_model <- glm(
+  treatment ~ age + sex + bmi + hba1c +
+    prior_cvd + ckd + smoking,
+  family = binomial(),
+  data = analysis_data
+)
+
+analysis_data$ps <- predict(
+  ps_model,
+  type = "response"
+)
+
+# 3. IPTW
+analysis_data <- analysis_data %>%
+  mutate(
+    treat_num = as.integer(treatment == "TreatmentA"),
+    iptw = ifelse(
+      treat_num == 1,
+      1 / ps,
+      1 / (1 - ps)
+    )
+  )
+
+# 4. Weighted outcome model
+fit_iptw <- coxph(
+  Surv(followup_time, event) ~ treatment,
+  data = analysis_data,
+  weights = iptw,
+  robust = TRUE
+)
+
+summary(fit_iptw)
+```
+
+# Appendix B. Pre-Analysis Checklist
+
+Before final analysis, confirm:
+
+- [ ] Research question is finalized
+- [ ] Target population is defined
+- [ ] Target trial elements are specified
+- [ ] Data source and study period are documented
+- [ ] Eligibility criteria are finalized
+- [ ] Index date is defined
+- [ ] Treatment/exposure strategies are defined
+- [ ] Comparator is defined
+- [ ] Baseline period is defined
+- [ ] Outcome algorithm is finalized
+- [ ] Follow-up and censoring rules are defined
+- [ ] Primary estimand is specified
+- [ ] Primary confounder set is prespecified
+- [ ] Post-exposure variables are classified
+- [ ] Propensity-score method is specified if used
+- [ ] Balance and positivity criteria are specified
+- [ ] Missing-data method is specified
+- [ ] Sensitivity analyses are prespecified
+- [ ] Negative controls are considered
+- [ ] Competing-risk strategy is specified if relevant
+- [ ] Subgroup analyses are prespecified
+- [ ] Data cutoff date is finalized
+- [ ] Final tables and figures are defined

@@ -27,11 +27,51 @@ toc: false
 <main>
 <section class="category-block" id="statistical-principles-estimands">
 <h2>Statistical Principles & Estimands</h2>
-<p class="text-muted">No published notes yet.</p>
+<div class="topic-group">
+<h3>Central Limit Theorem</h3>
+<ul>
+<li><a href="../../posts/Central Limit Theorem/index.qmd">Central Limit Theorem</a></li>
+</ul>
+</div>
+<div class="topic-group">
+<h3>Common statistical distribution</h3>
+<ul>
+<li><a href="../../posts/Common statistical distribution/index.qmd">Common statistical distribution</a></li>
+</ul>
+</div>
+<div class="topic-group">
+<h3>Expectation maximum</h3>
+<ul>
+<li><a href="../../posts/EM expectation maximam/index.qmd">Expectation maximum</a></li>
+</ul>
+</div>
+<div class="topic-group">
+<h3>Implementation of Estimand Strategies</h3>
+<ul>
+<li><a href="../../posts/Implementation of Estimand Strategies/index.qmd">Implementation of Estimand Strategies</a></li>
+</ul>
+</div>
+<div class="topic-group">
+<h3>Maximum likelihood estimation</h3>
+<ul>
+<li><a href="../../posts/Maximum likelihood estimation/index.qmd">Maximum likelihood estimation</a></li>
+</ul>
+</div>
+<div class="topic-group">
+<h3>Simulations and Bootstrapping</h3>
+<ul>
+<li><a href="../../posts/Simulations and Bootstrapping/index.qmd">Simulations and Bootstrapping</a></li>
+</ul>
+</div>
 </section>
 <section class="category-block" id="sample-size-power">
 <h2>Sample Size & Power</h2>
-<p class="text-muted">No published notes yet.</p>
+<div class="topic-group">
+<h3>Sample size calculation</h3>
+<ul>
+<li><a href="../../posts/Sample size calculation/index.qmd">Sample size calculation</a></li>
+</ul>
+</div>
 </section>
 <section class="category-block" id="analysis-populations">
 <h2>Analysis Populations</h2>
@@ -43,47 +83,312 @@ toc: false
 </section>
 <section class="category-block" id="statistical-models">
 <h2>Statistical Models</h2>
-<p class="text-muted">No published notes yet.</p>
+<div class="topic-group">
+<h3>Diagnostic test</h3>
+<ul>
+<li><a href="../../posts/Diagnostic test/index.qmd">Diagnostic test</a></li>
+</ul>
+</div>
+<div class="topic-group">
+<h3>Fit regression model from a fan-shaped relation</h3>
+<ul>
+<li><a href="../../posts/Fit regression model from a fan-shaped relation/index.qmd">Fit regression model from a fan-shaped relation</a></li>
+</ul>
+</div>
+<div class="topic-group">
+<h3>Linear regression</h3>
+<ul>
+<li><a href="../../posts/Linear regression theory/index.qmd">Linear regression</a></li>
+</ul>
+</div>
+<div class="topic-group">
+<h3>Multiple linear regression</h3>
+<ul>
+<li><a href="../../posts/Multiple linear regression practice/index.qmd">Multiple linear regression</a></li>
+</ul>
+</div>
+<div class="topic-group">
+<h3>Multiple linear regression theory</h3>
+<ul>
+<li><a href="../../posts/Multiple linear regression theory (repeat)/index.qmd">Multiple linear regression theory</a></li>
+</ul>
+</div>
+<div class="topic-group">
+<h3>Principle components analysis</h3>
+<ul>
+<li><a href="../../posts/Principle components analysis/index.qmd">Principle components analysis</a></li>
+</ul>
+</div>
+<div class="topic-group">
+<h3>Quantile Regression</h3>
+<ul>
+<li><a href="../../posts/Quantile Regression/index.qmd">Quantile Regression</a></li>
+</ul>
+</div>
+<div class="topic-group">
+<h3>Spline regression</h3>
+<ul>
+<li><a href="../../posts/Spline regression/index.qmd">Spline regression</a></li>
+</ul>
+</div>
+<div class="topic-group">
+<h3>Statistical modeling</h3>
+<ul>
+<li><a href="../../posts/Statistical modeling/index.qmd">Statistical modeling</a></li>
+</ul>
+</div>
+<div class="topic-group">
+<h3>Variable selection</h3>
+<ul>
+<li><a href="../../posts/Variable selection/index.qmd">Variable selection</a></li>
+</ul>
+</div>
+<div class="topic-group">
+<h3>Logistic distribution and logistic regression</h3>
+<ul>
+<li><a href="../../posts/logistic distribution and logistic regression/index.qmd">Logistic distribution and logistic regression</a></li>
+</ul>
+</div>
+<div class="topic-group">
+<h3>Poisson regression</h3>
+<ul>
+<li><a href="../../posts/poisson regression'/index.qmd">Poisson regression</a></li>
+</ul>
+</div>
 </section>
 <section class="category-block" id="longitudinal-repeated-measures">
 <h2>Longitudinal & Repeated Measures</h2>
-<p class="text-muted">No published notes yet.</p>
+<div class="topic-group">
+<h3>Fixed or Random Factors</h3>
+<ul>
+<li><a href="../../posts/Fixed or Random Factors/index.qmd">Fixed or Random Factors</a></li>
+</ul>
+</div>
+<div class="topic-group">
+<h3>How to calculate the prediction interval for LMM</h3>
+<ul>
+<li><a href="../../posts/How to calculate the prediction interval for LMM/index.qmd">How to calculate the prediction interval for LMM</a></li>
+</ul>
+</div>
+<div class="topic-group">
+<h3>Joint model with longitudinal and survival data</h3>
+<ul>
+<li><a href="../../posts/Joint model with longitudinal and survival data/index.qmd">Joint model with longitudinal and survival data</a></li>
+</ul>
+</div>
+<div class="topic-group">
+<h3>Linear mixed model covariance decomposition with random intercept- lme4</h3>
+<ul>
+<li><a href="../../posts/Linear mixed model covariance decomposition with random intercept (lme4)/index.qmd">Linear mixed model covariance decomposition with random intercept- lme4</a></li>
+</ul>
+</div>
+<div class="topic-group">
+<h3>Linear mixed model covariance decomposition with random slopes- lme4</h3>
+<ul>
+<li><a href="../../posts/Linear mixed model covariance decomposition with random slopes (lme4)/index.qmd">Linear mixed model covariance decomposition with random slopes- lme4</a></li>
+</ul>
+</div>
+<div class="topic-group">
+<h3>Linear mixed model theory</h3>
+<ul>
+<li><a href="../../posts/Linear mixed model theory/index.qmd">Linear mixed model theory</a></li>
+</ul>
+</div>
+<div class="topic-group">
+<h3>Linear mixed model covariance decomposition (nlme)</h3>
+<ul>
+<li><a href="../../posts/Linear mixed model variance decomposition (nlme)/index.qmd">Linear mixed model covariance decomposition (nlme)</a></li>
+</ul>
+</div>
+<div class="topic-group">
+<h3>Manual simulating data for linear mix model</h3>
+<ul>
+<li><a href="../../posts/Manual simulating data for linear mix model/index.qmd">Manual simulating data for linear mix model</a></li>
+</ul>
+</div>
+<div class="topic-group">
+<h3>Mixed-effects model</h3>
+<ul>
+<li><a href="../../posts/Mixed-effects model/index.qmd">Mixed-effects model</a></li>
+</ul>
+</div>
+<div class="topic-group">
+<h3>The comparison of output of SAS AND R for mixed model</h3>
+<ul>
+<li><a href="../../posts/comparison of mixed model results for sas and r/index.qmd">The comparison of output of SAS AND R for mixed model</a></li>
+</ul>
+</div>
+<div class="topic-group">
+<h3>Linear mixed model practice</h3>
+<ul>
+<li><a href="../../posts/linear mixed model practice/index.qmd">Linear mixed model practice</a></li>
+</ul>
+</div>
+<div class="topic-group">
+<h3>Nested mixed model</h3>
+<ul>
+<li><a href="../../posts/nested mixed model/index.qmd">Nested mixed model</a></li>
+</ul>
+</div>
 </section>
 <section class="category-block" id="time-to-event-analysis">
 <h2>Time-to-Event Analysis</h2>
-<p class="text-muted">No published notes yet.</p>
+<div class="topic-group">
+<h3>Competing Risk Cox Model</h3>
+<ul>
+<li><a href="../../posts/Competing Risk Cox Model/index.qmd">Competing Risk Cox Model</a></li>
+</ul>
+</div>
+<div class="topic-group">
+<h3>Survival Analysis</h3>
+<ul>
+<li><a href="../../posts/Survival analysis/index.qmd">Survival Analysis</a></li>
+</ul>
+</div>
+<div class="topic-group">
+<h3>Time-Dependent Cox Regression Model</h3>
+<ul>
+<li><a href="../../posts/time dependent cox model/index.qmd">Time-Dependent Cox Regression Model</a></li>
+</ul>
+</div>
 </section>
 <section class="category-block" id="missing-data-sensitivity-analysis">
 <h2>Missing Data & Sensitivity Analysis</h2>
-<p class="text-muted">No published notes yet.</p>
+<div class="topic-group">
+<h3>Combine estimates by pooling rules</h3>
+<ul>
+<li><a href="../../posts/Combine estimates by pooling rules/index.qmd">Combine estimates by pooling rules</a></li>
+</ul>
+</div>
+<div class="topic-group">
+<h3>Imputing Missing Data with MICE</h3>
+<ul>
+<li><a href="../../posts/Imputing Missing Data with MICE/index.qmd">Imputing Missing Data with MICE</a></li>
+</ul>
+</div>
+<div class="topic-group">
+<h3>Missing Data Analysis: MAR and MNAR Sensitivity</h3>
+<ul>
+<li><a href="../../posts/Missing_Data_MAR_MNAR_Sensitivity_Updated_v3/index.qmd">Missing Data Analysis: MAR and MNAR Sensitivity</a></li>
+</ul>
+</div>
 </section>
 <section class="category-block" id="multiplicity-type-i-error">
 <h2>Multiplicity & Type I Error</h2>
-<p class="text-muted">No published notes yet.</p>
+<div class="topic-group">
+<h3>O'Brien-Fleming and Alpha-Spending Methods</h3>
+<ul>
+<li><a href="../../posts/O'Brien-Fleming and Alpha-Spending Methods/index.qmd">O'Brien-Fleming and Alpha-Spending Methods</a></li>
+</ul>
+</div>
 </section>
 <section class="category-block" id="interim-analysis-stopping-rules">
 <h2>Interim Analysis & Stopping Rules</h2>
-<p class="text-muted">No published notes yet.</p>
+<div class="topic-group">
+<h3>Adaptive randomization probabilities and Interim Analysis</h3>
+<ul>
+<li><a href="../../posts/Adaptive and reestimation/index.qmd">Adaptive randomization probabilities and Interim Analysis</a></li>
+</ul>
+</div>
+<div class="topic-group">
+<h3>Bayesian Adaptive Design: Futility (Not Efficacy) Stopping Using Predictive Probability</h3>
+<ul>
+<li><a href="../../posts/Bayesian Adaptive Design- Futility (not efficacy) Stopping Using Predictive/index.qmd">Bayesian Adaptive Design: Futility (Not Efficacy) Stopping Using Predictive Probability</a></li>
+</ul>
+</div>
 </section>
 <section class="category-block" id="non-inferiority-equivalence">
 <h2>Non-Inferiority & Equivalence</h2>
-<p class="text-muted">No published notes yet.</p>
+<div class="topic-group">
+<h3>BE Simulation Report</h3>
+<ul>
+<li><a href="../../posts/BE Simulation Report/index.qmd">BE Simulation Report</a></li>
+</ul>
+</div>
+<div class="topic-group">
+<h3>BE_Comparision_Report</h3>
+<ul>
+<li><a href="../../posts/BE_Comparision_Report/index.qmd">BE_Comparision_Report</a></li>
+</ul>
+</div>
 </section>
 <section class="category-block" id="subgroup-interaction-analysis">
 <h2>Subgroup & Interaction Analysis</h2>
-<p class="text-muted">No published notes yet.</p>
+<div class="topic-group">
+<h3>Least-squares means with interaction</h3>
+<ul>
+<li><a href="../../posts/Least-squares means with interaction/index.qmd">Least-squares means with interaction</a></li>
+</ul>
+</div>
 </section>
 <section class="category-block" id="safety-analysis">
 <h2>Safety Analysis</h2>
-<p class="text-muted">No published notes yet.</p>
+<div class="topic-group">
+<h3>ISE/ISS pooling</h3>
+<ul>
+<li><a href="../../posts/ISE-ISS pooling/index.qmd">ISE/ISS pooling</a></li>
+</ul>
+</div>
 </section>
 <section class="category-block" id="adaptive-bayesian-methods">
 <h2>Adaptive & Bayesian Methods</h2>
-<p class="text-muted">No published notes yet.</p>
+<div class="topic-group">
+<h3>Bayesian Inference in R</h3>
+<ul>
+<li><a href="../../posts/Bayesian Inference in R/index.qmd">Bayesian Inference in R</a></li>
+</ul>
+</div>
+<div class="topic-group">
+<h3>Bayesian Linear Regression Using brms</h3>
+<ul>
+<li><a href="../../posts/Bayesian Linear Regression Using brms/index.qmd">Bayesian Linear Regression Using brms</a></li>
+</ul>
+</div>
+<div class="topic-group">
+<h3>Mixed model and linear model, Join model and Two stages model, MCMC</h3>
+<ul>
+<li><a href="../../posts/Join model, mixed model and linear model MCMC/index.qmd">Mixed model and linear model, Join model and Two stages model, MCMC</a></li>
+</ul>
+</div>
+<div class="topic-group">
+<h3>Linear mixed model MCMC</h3>
+<ul>
+<li><a href="../../posts/Linear mixed model MCMC/index.qmd">Linear mixed model MCMC</a></li>
+</ul>
+</div>
+<div class="topic-group">
+<h3>Linear regression MCMC</h3>
+<ul>
+<li><a href="../../posts/Linear regression MCMC/index.qmd">Linear regression MCMC</a></li>
+</ul>
+</div>
+<div class="topic-group">
+<h3>MCMC sampling</h3>
+<ul>
+<li><a href="../../posts/MC sampling/index.qmd">MCMC sampling</a></li>
+</ul>
+</div>
+<div class="topic-group">
+<h3>Seamless Phase II/III Adaptive Dose-Selection Design</h3>
+<ul>
+<li><a href="../../posts/Seamless Phase II-III Adaptive Dose-Selection Design/index.qmd">Seamless Phase II/III Adaptive Dose-Selection Design</a></li>
+</ul>
+</div>
+<div class="topic-group">
+<h3>Bayesian Linear Regression Using Metropolis–Hastings MCMC</h3>
+<ul>
+<li><a href="../../posts/bayesian_metropolis_linear_regression_english/index.qmd">Bayesian Linear Regression Using Metropolis–Hastings MCMC</a></li>
+</ul>
+</div>
 </section>
 <section class="category-block" id="statistical-interpretation">
 <h2>Statistical Interpretation</h2>
-<p class="text-muted">No published notes yet.</p>
+<div class="topic-group">
+<h3>Common issues in Statistics</h3>
+<ul>
+<li><a href="../../posts/Issues about Dividing a Continuous Variable into Categories/index.qmd">Common issues in Statistics</a></li>
+</ul>
+</div>
 </section>
 <section class="category-block" id="machine-learning">
 <h2>Machine Learning</h2>

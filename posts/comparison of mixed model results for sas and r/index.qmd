@@ -1,0 +1,238 @@
+---
+title: "The comparison of output of SAS AND R for mixed model"
+description: "A practical R learning guide to The comparison of output of SAS AND R for mixed model, with concise explanations, reproducible examples, and interpretation guidance."
+date: 2026-08-31
+section: "Biostatistics"
+category: "Longitudinal & Repeated Measures"
+topic: "The comparison of output of SAS AND R for mixed model"
+type: article
+tags: ["Longitudinal & Repeated Measures", "Biostatistics", "comparison", "output", "SAS"]
+status: published
+featured: true
+youtube: []
+pdf: []
+downloads: []
+validate-yaml: false
+execute:
+  echo: true
+  warning: false
+  error: true
+---
+
+## Why This Topic Matters
+
+Repeated observations from the same unit are correlated, so longitudinal models must represent both mean change and within-unit dependence.
+
+## Learning Objectives
+
+After working through this material, you should be able to:
+
+- explain the main ideas behind **The comparison of output of SAS AND R for mixed model**;
+- interpret the R workflow and its output; and
+- adapt the examples to a related analysis.
+
+## Lesson Roadmap
+
+The original material is organized around the following topics:
+
+1. The comparison of output of SAS AND R for mixed model
+2. Data process
+3. Fit the models with unstructured covariance structure- default
+4. In SAS, the corresponding agument: type = un
+5. Fit the models with compound symmetric covariance structure
+6. In SAS, the corresponding type = cs
+
+## How to Use This Lesson
+
+Read the explanation before each workflow, then run the R chunks in sequence. Code and output are shown together so that each numerical or graphical result can be connected to the command that produced it. Some source examples require optional packages or external data. Those setup-dependent chunks remain visible for reference but are marked `eval: false` when they cannot be reproduced safely in a clean website build.
+
+## Reproducible Learning Check
+
+This short R chunk confirms the scope of the lesson and always produces a visible output.
+
+```{r}
+#| label: learning-overview
+learning_overview <- data.frame(
+  section = "Biostatistics",
+  category = "Longitudinal & Repeated Measures",
+  topic = "The comparison of output of SAS AND R for mixed model"
+)
+learning_overview
+```
+
+## Learning Material
+
+The following material develops **The comparison of output of SAS AND R for mixed model** from core ideas to practical implementation. Definitions and assumptions come first; worked code then shows how the ideas are represented computationally.
+
+### Conceptual Foundation
+
+The material below closely follows the original R Markdown source, with its examples retained for study and reuse.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#### The comparison of output of SAS AND R for mixed model
+
+<!-- generated-learning-note -->
+This section develops **The comparison of output of SAS AND R for mixed model**. Read the model specification together with its assumptions and the scale of each reported effect.
+
+#### Data process
+
+<!-- generated-learning-note -->
+This section prepares the information needed for **Data process**. Check variable definitions, units, coding, and missing values before moving to analysis.
+
+### R Workflow and Examples
+
+Run the examples in order because later blocks may reuse objects created earlier. Each block includes a short purpose statement and guidance for reading its output.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This source block depends on optional software, external data, or a machine-specific path. It is retained as a reference and is not executed during the website build.
+
+```{r}
+#| eval: false
+#| code-fold: true
+library(nlme)
+setwd("C:\\Users\\hed2\\OneDrive - National Institutes of Health\\Mixed model by SAS and R")
+head(Orthodont)
+write.csv(Orthodont,  "Orthodont.csv" ,na="",row.names = FALSE)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Because this block is not executed, it produces no website output. Enable it only after its dependencies and input paths have been validated.
+
+
+#### Fit the models with unstructured covariance structure- default
+
+<!-- generated-learning-note -->
+This section develops **Fit the models with unstructured covariance structure- default**. Read the model specification together with its assumptions and the scale of each reported effect.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This source block depends on optional software, external data, or a machine-specific path. It is retained as a reference and is not executed during the website build.
+
+```{r}
+#| eval: false
+#| code-fold: true
+# fit the models with unstructured covariance structure of random effect
+model1 <- lme(distance ~ age+Sex, data=Orthodont, random= list(Subject = pdSymm(~ 1+age+Sex ))) 
+summary(model1)
+# https://rpubs.com/samuelkn/CovarianceStructuresInR
+
+model2 <- lme(distance ~ age + Sex  , random = ~1+age+Sex  | Subject, data = Orthodont) 
+summary(model2)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Because this block is not executed, it produces no website output. Enable it only after its dependencies and input paths have been validated.
+
+
+#### In SAS, the corresponding agument: type = un
+
+<!-- generated-learning-note -->
+This subsection explains **In SAS, the corresponding agument: type = un** and shows how it contributes to the overall The comparison of output of SAS AND R for mixed model workflow.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+# PROC IMPORT DATAFILE="...\Mixed model by SAS and R\orthodont.csv" DBMS=csv
+# OUT=orthodont;
+# RUN;
+
+# PROC MIXED DATA=orthodont ;
+# CLASS sex  subject   ;
+# MODEL distance =  sex age /solution;
+# RANDOM  sex age/ subject=subject type=un ;
+# RUN; QUIT;
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+#### Fit the models with compound symmetric covariance structure
+
+<!-- generated-learning-note -->
+This section develops **Fit the models with compound symmetric covariance structure**. Read the model specification together with its assumptions and the scale of each reported effect.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This source block depends on optional software, external data, or a machine-specific path. It is retained as a reference and is not executed during the website build.
+
+```{r}
+#| eval: false
+#| code-fold: true
+model11 <- lme(distance ~ age+Sex, data=Orthodont, random= list(Subject = pdCompSymm(~ 1+age+Sex ))) 
+summary(model1)
+# https://stats.stackexchange.com/questions/26556/equivalent-mixed-models-yielding-different-results-in-sas
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Because this block is not executed, it produces no website output. Enable it only after its dependencies and input paths have been validated.
+
+
+#### In SAS, the corresponding type = cs
+
+<!-- generated-learning-note -->
+This subsection explains **In SAS, the corresponding type = cs** and shows how it contributes to the overall The comparison of output of SAS AND R for mixed model workflow.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+# PROC MIXED DATA=orthodont ;
+# CLASS sex  subject   ;
+# MODEL distance =  sex age /solution;
+# RANDOM  sex age/ subject=subject type=CS ;
+# RUN; QUIT;
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+
+#### Other covariance structures
+
+<!-- generated-learning-note -->
+This subsection explains **Other covariance structures** and shows how it contributes to the overall The comparison of output of SAS AND R for mixed model workflow.
+
+
+| Name|	nlme	| 
+|----|-----|
+| Compound symmetry	|corCompSymm	|
+| AR1	|corAR1	|
+| CAR1	|corCAR1	|
+| Unstructured	|CorSymm|
+
+
+<!-- generated-learning-note -->
+**Purpose.** This source block depends on optional software, external data, or a machine-specific path. It is retained as a reference and is not executed during the website build.
+
+```{r}
+#| eval: false
+#| code-fold: true
+# Many covariance structures are reasonable for these data, such as unstructured (TYPE=UN), autoregressive (TYPE=AR(1)), compound symmetric (TYPE=CS), Toeplitz (TYPE=TOEP), etc. 
+# http://support.sas.com/kb/37/107.html
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Because this block is not executed, it produces no website output. Enable it only after its dependencies and input paths have been validated.
+
+
+**Variance Components (VC) is the default setting in proc mixed in SAS, but unstructured (UN) in R.**
+
+## Interpreting the Results
+
+Check fixed effects, random effects, covariance assumptions, and subject-specific versus population-level interpretation. Treat the output as evidence generated under the stated data, coding choices, and assumptions. Before using the workflow in practice, replace example inputs with validated data and confirm that the method targets the intended scientific question.
+
+## Key Takeaways
+
+- **Connect method to purpose.** Identify the question and target quantity before choosing code or a model.
+- **Read code and output together.** Confirm what each object, estimate, interval, table, or plot represents.
+- **Check assumptions and diagnostics.** A successful computation is not by itself evidence that the result is reliable.
+- **Adapt deliberately.** When applying the example elsewhere, document changes to data definitions, parameters, and analytical choices.

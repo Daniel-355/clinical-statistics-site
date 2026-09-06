@@ -20,31 +20,162 @@ toc: false
 <main>
 <section class="category-block" id="epidemiologic-study-designs">
 <h2>Epidemiologic Study Designs</h2>
-<p class="text-muted">No published notes yet.</p>
+<div class="topic-group">
+<h3>Standard Operating Procedure for Epidemiologic Survival Analysis</h3>
+<ul>
+<li><a href="../../posts/Epidemiologic_Survival_Analysis_SOP_v2/index.qmd">Standard Operating Procedure for Epidemiologic Survival Analysis</a></li>
+</ul>
+</div>
+<div class="topic-group">
+<h3>Epidemiology</h3>
+<ul>
+<li><a href="../../posts/Epidemiology/index.qmd">Epidemiology</a></li>
+</ul>
+</div>
+<div class="topic-group">
+<h3>Epidemiologic Effect Study: Smoking and Cardiovascular Disease</h3>
+<ul>
+<li><a href="../../posts/epidemiologic_effect_study_example/index.qmd">Epidemiologic Effect Study: Smoking and Cardiovascular Disease</a></li>
+</ul>
+</div>
 </section>
 <section class="category-block" id="real-world-data-evidence">
 <h2>Real-World Data & Evidence</h2>
-<p class="text-muted">No published notes yet.</p>
+<div class="topic-group">
+<h3>Real-World Study</h3>
+<ul>
+<li><a href="../../posts/Real-World Study/index.qmd">Real-World Study</a></li>
+</ul>
+</div>
+<div class="topic-group">
+<h3>Standard Operating Procedure for Real-World Evidence Studies</h3>
+<ul>
+<li><a href="../../posts/Real_World_Evidence_Study_SOP/index.qmd">Standard Operating Procedure for Real-World Evidence Studies</a></li>
+</ul>
+</div>
+<div class="topic-group">
+<h3>Real-World Evidence Study: Insulin vs Sulfonylurea After Metformin</h3>
+<ul>
+<li><a href="../../posts/real_world_study_example/index.qmd">Real-World Evidence Study: Insulin vs Sulfonylurea After Metformin</a></li>
+</ul>
+</div>
 </section>
 <section class="category-block" id="causal-inference">
 <h2>Causal Inference</h2>
-<p class="text-muted">No published notes yet.</p>
+<div class="topic-group">
+<h3>Causal inference introduction</h3>
+<ul>
+<li><a href="../../posts/Causal inference introduction/index.qmd">Causal inference introduction</a></li>
+</ul>
+</div>
+<div class="topic-group">
+<h3>Causal inference and associated regression</h3>
+<ul>
+<li><a href="../../posts/causal inference and association regression/index.qmd">Causal inference and associated regression</a></li>
+</ul>
+</div>
 </section>
 <section class="category-block" id="bias-confounding">
 <h2>Bias & Confounding</h2>
-<p class="text-muted">No published notes yet.</p>
+<div class="topic-group">
+<h3>Bias analysis and control</h3>
+<ul>
+<li><a href="../../posts/Bias analysis and control/index.qmd">Bias analysis and control</a></li>
+</ul>
+</div>
 </section>
 <section class="category-block" id="exposure-outcome-covariate-assessment">
 <h2>Exposure, Outcome & Covariate Assessment</h2>
-<p class="text-muted">No published notes yet.</p>
+<div class="topic-group">
+<h3>NHANES Diabetes Prediction: Complete Clinical Prediction Modeling Workflow in R</h3>
+<ul>
+<li><a href="../../posts/NHANES_Diabetes_Prediction_Complete_Tutorial/index.qmd">NHANES Diabetes Prediction: Complete Clinical Prediction Modeling Workflow in R</a></li>
+</ul>
+</div>
+<div class="topic-group">
+<h3>Which covariate should be adjusted</h3>
+<ul>
+<li><a href="../../posts/Which covariate should be adjusted/index.qmd">Which covariate should be adjusted</a></li>
+</ul>
+</div>
 </section>
 <section class="category-block" id="effect-measures-effect-modification">
 <h2>Effect Measures & Effect Modification</h2>
-<p class="text-muted">No published notes yet.</p>
+<div class="topic-group">
+<h3>Confounding and effect measure modification</h3>
+<ul>
+<li><a href="../../posts/Confounding and EMM/index.qmd">Confounding and effect measure modification</a></li>
+</ul>
+</div>
 </section>
 <section class="category-block" id="causal-methods">
 <h2>Causal Methods</h2>
-<p class="text-muted">No published notes yet.</p>
+<div class="topic-group">
+<h3>Double Robust Estimators</h3>
+<ul>
+<li><a href="../../posts/Double Robust Estimators/index.qmd">Double Robust Estimators</a></li>
+</ul>
+</div>
+<div class="topic-group">
+<h3>Doubly robust estimators_TMLE_Superlearner</h3>
+<ul>
+<li><a href="../../posts/Doubly robust estimators_TMLE/index.qmd">Doubly robust estimators_TMLE_Superlearner</a></li>
+</ul>
+</div>
+<div class="topic-group">
+<h3>G-estimation</h3>
+<ul>
+<li><a href="../../posts/G-estimation/index.qmd">G-estimation</a></li>
+</ul>
+</div>
+<div class="topic-group">
+<h3>IP Weighting and marginal structural models</h3>
+<ul>
+<li><a href="../../posts/IP Weighting/index.qmd">IP Weighting and marginal structural models</a></li>
+</ul>
+</div>
+<div class="topic-group">
+<h3>Instrumental variables</h3>
+<ul>
+<li><a href="../../posts/Instrumental variables/index.qmd">Instrumental variables</a></li>
+</ul>
+</div>
+<div class="topic-group">
+<h3>Longitudinal Targeted Maximum Likelihood Estimation</h3>
+<ul>
+<li><a href="../../posts/Longitudinal Targeted Maximum Likelihood Estimation/index.qmd">Longitudinal Targeted Maximum Likelihood Estimation</a></li>
+</ul>
+</div>
+<div class="topic-group">
+<h3>Matching and Weighting analyses</h3>
+<ul>
+<li><a href="../../posts/Matching and Weighting analyses/index.qmd">Matching and Weighting analyses</a></li>
+</ul>
+</div>
+<div class="topic-group">
+<h3>Mediation analysis</h3>
+<ul>
+<li><a href="../../posts/Mediation analysis/index.qmd">Mediation analysis</a></li>
+</ul>
+</div>
+<div class="topic-group">
+<h3>Outcome regression and propensity scores</h3>
+<ul>
+<li><a href="../../posts/Outcome regression and propensity scores/index.qmd">Outcome regression and propensity scores</a></li>
+</ul>
+</div>
+<div class="topic-group">
+<h3>Standardization and G estimation</h3>
+<ul>
+<li><a href="../../posts/Standardization and G formula/index.qmd">Standardization and G estimation</a></li>
+</ul>
+</div>
+<div class="topic-group">
+<h3>Machine learning in Causal inference</h3>
+<ul>
+<li><a href="../../posts/ml causal inference/index.qmd">Machine learning in Causal inference</a></li>
+</ul>
+</div>
 </section>
 <section class="category-block" id="target-trial-emulation">
 <h2>Target Trial Emulation</h2>

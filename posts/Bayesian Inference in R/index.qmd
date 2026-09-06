@@ -1,0 +1,846 @@
+---
+title: "Bayesian Inference in R"
+description: "A practical R learning guide to Bayesian Inference in R, with concise explanations, reproducible examples, and interpretation guidance."
+date: 2026-08-31
+section: "Biostatistics"
+category: "Adaptive & Bayesian Methods"
+topic: "Bayesian Inference in R"
+type: article
+tags: ["Adaptive & Bayesian Methods", "Biostatistics", "Bayesian", "Inference", "R"]
+status: published
+featured: true
+youtube: []
+pdf: []
+downloads: []
+validate-yaml: false
+execute:
+  echo: true
+  warning: false
+  error: true
+---
+
+## Why This Topic Matters
+
+Adaptive and Bayesian methods update evidence as data accumulate and express uncertainty through probability distributions or decision rules.
+
+## Learning Objectives
+
+After working through this material, you should be able to:
+
+- explain the main ideas behind **Bayesian Inference in R**;
+- interpret the R workflow and its output; and
+- adapt the examples to a related analysis.
+
+## Lesson Roadmap
+
+The original material is organized around the following topics:
+
+1. Bayesian inference
+2. Continuous distributions, estimating one parameter
+3. The prior
+4. Individual observation
+5. The likelihood
+6. The posterior
+
+## How to Use This Lesson
+
+Read the explanation before each workflow, then run the R chunks in sequence. Code and output are shown together so that each numerical or graphical result can be connected to the command that produced it. Some source examples require optional packages or external data. Those setup-dependent chunks remain visible for reference but are marked `eval: false` when they cannot be reproduced safely in a clean website build.
+
+## Reproducible Learning Check
+
+This short R chunk confirms the scope of the lesson and always produces a visible output.
+
+```{r}
+#| label: learning-overview
+learning_overview <- data.frame(
+  section = "Biostatistics",
+  category = "Adaptive & Bayesian Methods",
+  topic = "Bayesian Inference in R"
+)
+learning_overview
+```
+
+## Learning Material
+
+The following material develops **Bayesian Inference in R** from core ideas to practical implementation. Definitions and assumptions come first; worked code then shows how the ideas are represented computationally.
+
+### Conceptual Foundation
+
+The material below closely follows the original R Markdown source, with its examples retained for study and reuse.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+[Reference](https://www.boelstad.net/post/bayesian_statistics_introduction/) [etc](https://www.statlect.com/fundamentals-of-statistics/normal-distribution-Bayesian-estimation)
+
+#### Bayesian inference
+
+<!-- generated-learning-note -->
+This subsection explains **Bayesian inference** and shows how it contributes to the overall Bayesian Inference in R workflow.
+
+
+Let Y be a random variable representing the data. We have a (parametric) model for Y  with Y∼f(y∣θ),θ∈Θ, Θ  the parameter space. That is probability density function and can result in the likelihood function. Then we have a prior distribution represented by π(θ). Given an observation of Y, the posterior distribution of θ is
+
+$$
+f(\theta \mid y) =\frac{f(y\mid\theta) \pi(\theta)}{\int_\Theta f(y\mid\theta) \pi(\theta)\; d\theta}
+$$
+
+the posterior is proportional to the likelihood times the prior ($f(y)$is a constant).
+
+
+
+#### Continuous distributions, estimating one parameter
+
+<!-- generated-learning-note -->
+This subsection explains **Continuous distributions, estimating one parameter** and shows how it contributes to the overall Bayesian Inference in R workflow.
+
+
+To find the max probability of mu given some observations. 
+
+
+#### The prior
+
+<!-- generated-learning-note -->
+This subsection explains **The prior** and shows how it contributes to the overall Bayesian Inference in R workflow.
+
+
+Assign mu a arbitrary prior probability (or estimated by maximum likelihood method using a sample). To keep things simple and intuitive, we will assess our distributions (i.e. prior, likelihood, posterior) at equally spaced points . for each specific value approximate the probability $\pi$ that μ actually lies within a narrow interval (0.01) around this point (treating them as categorical distributions without gap).
+
+$$
+\int{f(y\mid\theta) }= \int_{-\infty}^\infty \frac1{\sqrt{2\pi}} e^{-\frac12 (y-\theta)^2}\; d\theta = 1
+$$
+
+### R Workflow and Examples
+
+Run the examples in order because later blocks may reuse objects created earlier. Each block includes a short purpose statement and guidance for reading its output.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+res <- 1 / 100              # Set resolution for the sequence of potential mu-values, 0.01 interval
+mu.h <- seq(-10, 10, res)   # Define values at which to assess the probability density
+
+density <- dnorm(mu.h, mean = -1, sd = 1.5) # Get the density for each value in mu.h
+prior <- density * res      # Multiply with resolution to get probability per interval
+
+length(mu.h)
+head(mu.h)
+
+sum(prior)
+length(prior)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+
+
+#### Individual observation
+
+<!-- generated-learning-note -->
+This subsection explains **Individual observation** and shows how it contributes to the overall Bayesian Inference in R workflow.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block generates controlled example data. Simulation makes the data-generating assumptions explicit and provides a known setting in which to study the method.
+
+```{r}
+set.seed(4)                 # Set seed for reproducibility
+n <- 100                      # Set number of observations
+y <- rnorm(n, mean = 1, sd = 2) # Generate data
+y                           # Take a look at the data
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the generated sample with the parameters used to create it. Differences reflect random variation unless the code intentionally introduces bias or structure.
+
+
+
+
+#### The likelihood
+
+<!-- generated-learning-note -->
+This subsection explains **The likelihood** and shows how it contributes to the overall Bayesian Inference in R workflow.
+
+
+Suppose we know the standard deviation is 2. For a single observation, $y_i$, the likelihood is then: $p\left(y_i \mid \mu\right)=N\left(y_i \mid \mu, 2^2\right)$. The likelihood for the whole dataset is the product of all the individual likelihoods:
+
+$$
+p(y \mid \mu)=\prod_{i=1}^n N\left(y_i \mid \mu, 2^2\right)
+$$
+
+we can calculate the likelihood across the set of potential values for $\mu$. 
+
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+likelihood <- vector()      # Create an empty vector
+
+for (s in mu.h) {           # Loop over each value in mu.h , 2001 MU
+  temp.lik <- 1             # Create a temporary likelihood scalar
+  
+  for (i in 1:n) {          # Loop over each individual data point, 30 observations
+    temp.lik <- temp.lik * dnorm(y[i], mean = s, sd = 2) # Multiply individual likelihoods
+  }
+  likelihood <- c(likelihood, temp.lik) # Store the likelihood for each value in mu.h
+}
+
+# output likelihood value
+head(likelihood)
+length(likelihood)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+# normalized.likelihood <- likelihood / sum(likelihood)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+#### The posterior
+
+<!-- generated-learning-note -->
+This subsection explains **The posterior** and shows how it contributes to the overall Bayesian Inference in R workflow.
+
+
+As we know from Bayes' theorem, we can obtain a distribution that is proportional (" $\propto$ ") to the posterior by multiplying the likelihood and the prior:
+
+$$
+p(\mu \mid y) \propto p(y \mid \mu) p(\mu)
+$$
+
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+unnormalized.posterior <- likelihood * prior
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+- Then divided by p(y)
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+normalizing.constant <-  sum(likelihood * prior) #p(y)
+normalizing.constant #integrate
+
+# head(unnormalized.posterior) #no integrate
+
+posterior <- unnormalized.posterior / sum(likelihood * prior)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+
+
+
+#### Determine which one having max posterior of mu
+
+<!-- generated-learning-note -->
+This subsection explains **Determine which one having max posterior of mu** and shows how it contributes to the overall Bayesian Inference in R workflow.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+which.max(posterior)
+mu.h[which.max(posterior)]
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+
+#### Plot
+
+<!-- generated-learning-note -->
+This section uses **Plot** to make patterns visible. Confirm what each axis, group, scale, and annotation represents.
+
+
+prior and posterior probability
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+plot(mu.h, posterior / res, type = "l", ylab = "")
+# lines(mu.h, normalized.likelihood / res, col = "red")
+lines(mu.h, prior / res, col = "green")
+
+#having a corresponding relationship for the two normal distributions 
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+
+#### Continuous distributions, estimating two parameters
+
+<!-- generated-learning-note -->
+This subsection explains **Continuous distributions, estimating two parameters** and shows how it contributes to the overall Bayesian Inference in R workflow.
+
+
+let us try to estimate both the mean, μ, and the standard deviation, σ. The standard deviation must be positive, let us give σ a flat prior over the range from 0 to 10, using a uniform distribution: p(σ)∼U(0,10).
+
+
+#### The joint prior
+
+<!-- generated-learning-note -->
+This subsection explains **The joint prior** and shows how it contributes to the overall Bayesian Inference in R workflow.
+
+
+$$
+p(\mu, \sigma)=p(\mu) p(\sigma)
+$$
+
+mu prior
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+res <- 1 / 100              # Set resolution for the sequence of potential mu-values, 0.01 interval
+mu.h <- seq(-10, 10, res)   # Define values at which to assess the probability density
+
+density <- dnorm(mu.h, mean = -1, sd = 1.5) # Get the density for each value in mu.h
+prior <- density * res      # Multiply with resolution to get probability per interval
+
+length(mu.h)
+head(mu.h)
+
+sum(prior)
+length(prior)
+
+mu.prior <- prior           
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+σ prior
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+sigma.h <- seq(0, 10, res)    # Define values at which to assess the probabilities for sigma
+sigma.density <- dunif(sigma.h, min(sigma.h), max(sigma.h)) # Density-values for a flat prior
+sigma.prior <- sigma.density * res # Multiply with res to get probability per interval
+
+
+length(sigma.h)
+head(sigma.h)
+
+sum(sigma.prior)
+length(sigma.prior)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+Now that we have specified priors for μ and σ, we can also specify their joint prior distribution, p(μ,σ).
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+joint.prior <- sapply(mu.prior, function(mu.s) { # Using sapply's instead of loops
+                sapply(sigma.prior, function(sigma.s) { mu.s * sigma.s })}) 
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+This gives us a two-dimensional grid of probabilities, representing all possible combinations of μ and σ values that we are considering.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+joint.prior[1:5,1:5]  
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+#### Individual observation
+
+<!-- generated-learning-note -->
+This subsection explains **Individual observation** and shows how it contributes to the overall Bayesian Inference in R workflow.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block generates controlled example data. Simulation makes the data-generating assumptions explicit and provides a known setting in which to study the method.
+
+```{r}
+set.seed(4)                 # Set seed for reproducibility
+n <- 200                      # Set number of observations
+y <- rnorm(n, mean = 1, sd = 2) # Generate data                           # Take a look at the data
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the generated sample with the parameters used to create it. Differences reflect random variation unless the code intentionally introduces bias or structure.
+
+
+
+#### The joint likelihood
+
+<!-- generated-learning-note -->
+This subsection explains **The joint likelihood** and shows how it contributes to the overall Bayesian Inference in R workflow.
+
+
+If we calculate the likelihood across the possible combinations of values for μ and σ,
+
+$$
+p(y \mid \mu,\sigma)=\prod_{i=1}^n N\left(y_i \mid \mu, \sigma^2\right)
+$$
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+joint.likelihood <- sapply(mu.h, function(mu.s) { # Sapply's instead of loops
+                      sapply(sigma.h, function(sigma.s) { prod(dnorm(y, mu.s, sigma.s)) })})
+# normalized.joint.likelihood <- joint.likelihood / sum(joint.likelihood) # Normalize 
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+#### The joint posterior
+
+<!-- generated-learning-note -->
+This subsection explains **The joint posterior** and shows how it contributes to the overall Bayesian Inference in R workflow.
+
+
+The posterior distribution is now a joint distribution for our two parameters. 
+
+$$
+p(\mu, \sigma \mid y) \propto p(y \mid \mu, \sigma) p(\mu, \sigma)
+$$
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+unnormalized.joint.posterior <- joint.likelihood * joint.prior
+normalizing.constant <- 1 / sum(joint.likelihood * joint.prior)
+
+joint.posterior <- unnormalized.joint.posterior * normalizing.constant  #have the same max as unnormalized.joint.posterior
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+
+#### Determine which one having max posterior of mu, sigma
+
+<!-- generated-learning-note -->
+This subsection explains **Determine which one having max posterior of mu, sigma** and shows how it contributes to the overall Bayesian Inference in R workflow.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+# find the position in the matrix
+df<-matrix(joint.posterior,nrow = 1001, byrow = F)
+dim(df)
+
+position=which(df==max(joint.posterior),arr.ind = T)
+position
+
+# then detect the ordinal mu and sigma by position
+mu.h[position[2]]
+
+sigma.h[position[1]]
+
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+Plot
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+contour(mu.h,sigma.h,t(joint.posterior))
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+#### Marginal distributions
+
+<!-- generated-learning-note -->
+This subsection explains **Marginal distributions** and shows how it contributes to the overall Bayesian Inference in R workflow.
+
+
+we often want to draw conclusions about the values of a given parameter without reference to the other parameter(s) in the model. a marginal posterior distribution is to average the joint distribution over the parameter(s).
+
+to get the marginal posterior for p(μ∣y), we integrate the joint posterior over σ: by summing the posterior probabilities in our grid for each potential value of σ.
+
+$$
+p(\mu \mid y)=\int p(\mu, \sigma \mid y) d(\sigma)
+$$
+
+#### marginal posterior for mu
+
+<!-- generated-learning-note -->
+This subsection explains **marginal posterior for mu** and shows how it contributes to the overall Bayesian Inference in R workflow.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+mu.marginal.posterior <- colSums(df) #integrate or sum
+
+which.max(mu.marginal.posterior)
+
+mu.h[which.max(mu.marginal.posterior)]
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+- Plot
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+plot(mu.h,mu.marginal.posterior/res,type = "l"); lines(mu.h,mu.prior/res,col=2)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+#### marginal posterior for sigma
+
+<!-- generated-learning-note -->
+This subsection explains **marginal posterior for sigma** and shows how it contributes to the overall Bayesian Inference in R workflow.
+
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+sigma.marginal.posterior <- rowSums(df) #integrate or sum
+
+which.max(sigma.marginal.posterior )
+
+sigma.h[which.max(sigma.marginal.posterior )]
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+- Plot
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+plot(sigma.h,sigma.marginal.posterior/res,type = "l"); lines(sigma.h,sigma.prior/res,col=2)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+ the number of elements in the grid increases exponentially with the number of parameters. For such problems, we would normally sample from the posterior distribution using a form of Markov Chain Monte Carlo (MCMC) or solved analytically.
+ 
+ 
+#### Beyes' theory
+
+<!-- generated-learning-note -->
+This section establishes the concepts and assumptions needed to understand **Beyes' theory** in the context of Bayesian Inference in R.
+
+
+The prevalence is 2.28%. Assume the test (94% and 98%, correspondingly for sensitivity and specificity). What is the probability with positive test result has the disease?
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+# d is disease and t is test
+
+#Prior p(theta1)
+p.d1 <- .0228
+p.d0 <- 1-p.d1
+
+#Sensitivity: p(tau1|theta1)
+p.t1.d1 <- .94
+
+#Specificity: p(tau0|theta0)
+p.t0.d0 <- .98
+p.t1.d0 <- 1-p.t0.d0
+
+#Bayes prob
+(p.d1.t1 <- p.t1.d1* p.d1 /( p.t1.d1 *p.d1+ p.t1.d0 *p.d0))
+
+# PPV = (sensitivity x prevalence) / [ (sensitivity x prevalence) + ((1 – specificity) x (1 – prevalence)) ]
+(p.t1.d1 * p.d1) / ( (p.t1.d1 * p.d1) + (1 - p.t0.d0) * (1 - p.d1) )
+
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+#### Binomilal distributions
+
+<!-- generated-learning-note -->
+This subsection explains **Binomilal distributions** and shows how it contributes to the overall Bayesian Inference in R workflow.
+
+
+ 
+$$
+P(x ; p, n)=\left(\begin{array}{c}
+n \\
+x
+\end{array}\right)(p)^x(1-p)^{(n-x)} \quad \text { for } x=0,1,2, \cdots, n
+$$
+
+#### The prior
+
+<!-- generated-learning-note -->
+This subsection explains **The prior** and shows how it contributes to the overall Bayesian Inference in R workflow.
+
+
+use the normal distribution as prior distribution 
+
+$$
+\int{f(y\mid\theta) }= \int_{-\infty}^\infty \frac1{\sqrt{2\pi}} e^{-\frac12 (y-\theta)^2}\; d\theta = 1
+$$
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+res <- 1 / 100              # Set resolution for the sequence of potential mu-values, 0.01 interval
+mu.h <- seq(0, 1, res)   # Define values at which to assess the probability density
+
+density <- dnorm(mu.h, mean = -1, sd = 1.5) # Get the density for each value in mu.h
+prior <- density * res      # Multiply with resolution to get probability per interval
+
+length(mu.h)
+head(mu.h)
+
+sum(prior)
+length(prior)
+        
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+# sigma.h <- seq(0, 10, res)    # Define values at which to assess the probabilities for sigma
+# sigma.density <- dunif(sigma.h, min(sigma.h), max(sigma.h)) # Density-values for a flat prior
+# sigma.prior <- sigma.density * res # Multiply with res to get probability per interval
+# 
+# 
+# length(sigma.h)
+# head(sigma.h)
+# 
+# sum(sigma.prior)
+# length(sigma.prior)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+
+#### Individual observation
+
+<!-- generated-learning-note -->
+This subsection explains **Individual observation** and shows how it contributes to the overall Bayesian Inference in R workflow.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block generates controlled example data. Simulation makes the data-generating assumptions explicit and provides a known setting in which to study the method.
+
+```{r}
+set.seed(4)                 # Set seed for reproducibility
+n <- 500                      # Set number of observations
+y <- rbinom(n, size=1, p = 0.26) # Generate data                           # Take a look at the data
+y
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the generated sample with the parameters used to create it. Differences reflect random variation unless the code intentionally introduces bias or structure.
+
+
+
+#### The likelihood
+
+<!-- generated-learning-note -->
+This subsection explains **The likelihood** and shows how it contributes to the overall Bayesian Inference in R workflow.
+
+
+use binomial distribution likelihood function. 
+
+$$
+p(y \mid p)=\prod_{i=1}^n B\left(y_i \mid p\right)
+$$
+
+Where n=1. 
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+joint.likelihood <- sapply(mu.h, function(s) prod(dbinom(y, 1, s)) )
+# normalized.joint.likelihood <- joint.likelihood / sum(joint.likelihood) # Normalize 
+
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+#### The posterior
+
+<!-- generated-learning-note -->
+This subsection explains **The posterior** and shows how it contributes to the overall Bayesian Inference in R workflow.
+
+
+$$
+p(p \mid y) \propto p(y \mid p) p(p)
+$$
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+unnormalized.joint.posterior <- joint.likelihood * prior
+normalizing.constant <- 1 / sum(joint.likelihood * prior)
+
+joint.posterior <- unnormalized.joint.posterior * normalizing.constant  #have the same max as unnormalized.joint.posterior
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+
+#### Determine which one having max posterior of p
+
+<!-- generated-learning-note -->
+This subsection explains **Determine which one having max posterior of p** and shows how it contributes to the overall Bayesian Inference in R workflow.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+# find the position in the matrix
+mu.h[which.max(joint.posterior)]
+
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+Plot
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+plot(mu.h, joint.posterior / res, type = "l", ylab = "")
+# lines(mu.h, normalized.likelihood / res, col = "red")
+lines(mu.h, prior / res, col = "green")
+ 
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+## Interpreting the Results
+
+Inspect priors, likelihoods, posterior summaries, convergence, simulations, and operating characteristics. Treat the output as evidence generated under the stated data, coding choices, and assumptions. Before using the workflow in practice, replace example inputs with validated data and confirm that the method targets the intended scientific question.
+
+## Key Takeaways
+
+- **Connect method to purpose.** Identify the question and target quantity before choosing code or a model.
+- **Read code and output together.** Confirm what each object, estimate, interval, table, or plot represents.
+- **Check assumptions and diagnostics.** A successful computation is not by itself evidence that the result is reliable.
+- **Adapt deliberately.** When applying the example elsewhere, document changes to data definitions, parameters, and analytical choices.

@@ -1,0 +1,282 @@
+---
+title: "Bayesian Linear Regression Using brms"
+description: "A practical R learning guide to Bayesian Linear Regression Using brms, with concise explanations, reproducible examples, and interpretation guidance."
+date: 2026-08-31
+section: "Biostatistics"
+category: "Adaptive & Bayesian Methods"
+topic: "Bayesian Linear Regression Using brms"
+type: article
+tags: ["Adaptive & Bayesian Methods", "Biostatistics", "Bayesian", "Linear", "Regression"]
+status: published
+featured: true
+youtube: []
+pdf: []
+downloads: []
+validate-yaml: false
+execute:
+  echo: true
+  warning: false
+  error: true
+---
+
+## Why This Topic Matters
+
+Adaptive and Bayesian methods update evidence as data accumulate and express uncertainty through probability distributions or decision rules.
+
+## Learning Objectives
+
+After working through this material, you should be able to:
+
+- explain the main ideas behind **Bayesian Linear Regression Using brms**;
+- interpret the R workflow and its output; and
+- adapt the examples to a related analysis.
+
+## Lesson Roadmap
+
+The original material is organized around the following topics:
+
+1. Introduction
+2. Load Package and Simulate Data
+3. Plot the Simulated Data
+4. Define Prior Distributions
+5. Fit the Bayesian Linear Regression Model
+6. Model Summary
+
+## How to Use This Lesson
+
+Read the explanation before each workflow, then run the R chunks in sequence. Code and output are shown together so that each numerical or graphical result can be connected to the command that produced it. Some source examples require optional packages or external data. Those setup-dependent chunks remain visible for reference but are marked `eval: false` when they cannot be reproduced safely in a clean website build.
+
+## Reproducible Learning Check
+
+This short R chunk confirms the scope of the lesson and always produces a visible output.
+
+```{r}
+#| label: learning-overview
+learning_overview <- data.frame(
+  section = "Biostatistics",
+  category = "Adaptive & Bayesian Methods",
+  topic = "Bayesian Linear Regression Using brms"
+)
+learning_overview
+```
+
+## Learning Material
+
+The following material develops **Bayesian Linear Regression Using brms** from core ideas to practical implementation. Definitions and assumptions come first; worked code then shows how the ideas are represented computationally.
+
+### Conceptual Foundation
+
+The material below closely follows the original R Markdown source, with its examples retained for study and reuse.
+
+#### Introduction
+
+<!-- generated-learning-note -->
+This section establishes the concepts and assumptions needed to understand **Introduction** in the context of Bayesian Linear Regression Using brms.
+
+
+This example fits a Bayesian linear regression model using the `brms` package.
+
+The model is
+
+$$
+y_i = \beta_0 + \beta_1 x_i + \epsilon_i,
+$$
+
+where
+
+$$
+\epsilon_i \sim N(0,\sigma^2).
+$$
+
+#### Load Package and Simulate Data
+
+<!-- generated-learning-note -->
+This section prepares the information needed for **Load Package and Simulate Data**. Check variable definitions, units, coding, and missing values before moving to analysis.
+
+
+```{r setup, message=FALSE, warning=FALSE}
+library(brms)
+
+set.seed(123)
+
+n <- 31
+
+dat <- data.frame(
+  x = seq(-15, 15, length.out = n)
+)
+
+dat$y <- 5 * dat$x + rnorm(
+  n,
+  mean = 0,
+  sd = 10
+)
+```
+
+#### Plot the Simulated Data
+
+<!-- generated-learning-note -->
+This section prepares the information needed for **Plot the Simulated Data**. Check variable definitions, units, coding, and missing values before moving to analysis.
+
+### R Workflow and Examples
+
+Run the examples in order because later blocks may reuse objects created earlier. Each block includes a short purpose statement and guidance for reading its output.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r data-plot}
+plot(
+  dat$x,
+  dat$y,
+  pch = 19,
+  xlab = "x",
+  ylab = "y",
+  main = "Simulated Data"
+)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+#### Define Prior Distributions
+
+<!-- generated-learning-note -->
+This subsection explains **Define Prior Distributions** and shows how it contributes to the overall Bayesian Linear Regression Using brms workflow.
+
+
+The prior distributions are
+
+$$
+\beta_1 \sim N(5,2^2),
+$$
+
+$$
+\beta_0 \sim N(0,5^2),
+$$
+
+and
+
+$$
+\sigma \sim \text{Exponential}(0.1).
+$$
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r priors}
+priors <- c(
+  brms::set_prior(
+    "normal(5, 2)",
+    class = "b"
+  ),
+  brms::set_prior(
+    "normal(0, 5)",
+    class = "Intercept"
+  ),
+  brms::set_prior(
+    "exponential(0.1)",
+    class = "sigma"
+  )
+)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+
+#### Fit the Bayesian Linear Regression Model
+
+<!-- generated-learning-note -->
+This section develops **Fit the Bayesian Linear Regression Model**. Read the model specification together with its assumptions and the scale of each reported effect.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r fit-model, results='hide'}
+fit <- brms::brm(
+  y ~ x,
+  data = dat,
+  family = gaussian(),
+  prior = priors,
+  chains = 4,
+  iter = 4000,
+  warmup = 2000,
+  cores = 4,
+  seed = 123,
+  refresh = 0
+)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+
+#### Model Summary
+
+<!-- generated-learning-note -->
+This section develops **Model Summary**. Read the model specification together with its assumptions and the scale of each reported effect.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block extracts inferential or predictive results from fitted objects. Match each estimate, interval, contrast, or diagnostic to the quantity it represents.
+
+```{r model-summary}
+summary(fit)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Interpret estimates on the scale reported by the function, and use intervals or other uncertainty measures when drawing conclusions.
+
+
+#### MCMC Diagnostic Plots
+
+<!-- generated-learning-note -->
+This section uses **MCMC Diagnostic Plots** to make patterns visible. Confirm what each axis, group, scale, and annotation represents.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r diagnostic-plots}
+# Close all active graphics devices
+while (dev.cur() > 1) {
+  dev.off()
+}
+
+# Draw brms diagnostic plots
+plot(fit)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+#### Interpretation
+
+<!-- generated-learning-note -->
+This section focuses on **Interpretation**. Emphasize effect size, uncertainty, diagnostics, and scientific relevance rather than a single threshold.
+
+
+The posterior estimate of `b_x` represents the slope of the relationship between `x` and `y`.
+
+The posterior estimate of `Intercept` represents the expected value of `y` when (x=0).
+
+The posterior estimate of `sigma` represents the residual standard deviation.
+
+## Interpreting the Results
+
+Inspect priors, likelihoods, posterior summaries, convergence, simulations, and operating characteristics. Treat the output as evidence generated under the stated data, coding choices, and assumptions. Before using the workflow in practice, replace example inputs with validated data and confirm that the method targets the intended scientific question.
+
+## Key Takeaways
+
+- **Connect method to purpose.** Identify the question and target quantity before choosing code or a model.
+- **Read code and output together.** Confirm what each object, estimate, interval, table, or plot represents.
+- **Check assumptions and diagnostics.** A successful computation is not by itself evidence that the result is reliable.
+- **Adapt deliberately.** When applying the example elsewhere, document changes to data definitions, parameters, and analytical choices.

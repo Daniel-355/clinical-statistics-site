@@ -1,0 +1,488 @@
+---
+title: "Mixed-effects model"
+output: html_document
+date: '2024-01-22'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+[Brief summary from the book](https://home.csulb.edu/~okoroste/)
+
+### Random Intercept Model
+
+It is assumed that there is a within-subject correlation of the response variable across time, whereas the between-subject correlation is negligible. 
+
+#### A random intercept model has the form
+
+$$
+y_{i j}=\beta_{0}+\beta_{1} x_{1 i j}+\cdots+\beta_{p} x_{p i j}+\beta_{p+1} t_{j}+u_{i}+\varepsilon_{i j}
+$$
+
+where $u_{i} \stackrel{i . i . d .}{\sim} \mathcal{N}\left(0, \sigma_{u}^{2}\right)$ are the random intercepts, and $\varepsilon_{i j} \stackrel{i . i . d .}{\sim} \mathcal{N}\left(0, \sigma^{2}\right)$ are the random errors. It is assumed that $u_{i}$ and $\varepsilon_{i j}$ are independent. 
+
+In this model, the variance of the observations is constant. Indeed, $\operatorname{Var}\left(y_{i j}\right)=\operatorname{Var}\left(u_{i}+\varepsilon_{i j}\right)=$ $\sigma_{u}^{2}+\sigma^{2}$. 
+
+Likewise, the covariance between the repeated observations at times $t_{j}$ and $t_{j^{\prime}}$ in the $i$ th subject is constant:
+
+$$
+\mathbb{C o v}\left(y_{i j}, y_{i j^{\prime}}\right)=\mathbb{C o v}\left(u_{i}+\varepsilon_{i j}, u_{i}+\varepsilon_{i j^{\prime}}\right)=\mathbb{V a r}\left(u_{i}\right)=\sigma_{u}^{2}
+$$
+
+
+#### In matrix notation, the random intercept model is written as
+
+$$
+\mathbf{y}=\mathbf{X} \boldsymbol{\beta}+\mathbf{u}+\varepsilon
+$$
+
+where
+
+$$
+\begin{gathered}
+\underset{n k \times 1}{\mathbf{y}}=\left[\begin{array}{c}
+y_{11} \\
+\ldots \\
+y_{1 k} \\
+\ldots \\
+y_{n 1} \\
+\ldots \\
+y_{n k}
+\end{array}\right], \underset{n k \times(p+2)}{\mathbf{X}}=\left[\begin{array}{ccccc}
+1 & x_{111} & \ldots & x_{p 11} & t_{1} \\
+\ldots & \ldots & & & \\
+1 & x_{11 k} & \ldots & x_{p 1 k} & t_{k} \\
+\ldots & \ldots & & & \\
+1 & x_{1 n 1} & \ldots & x_{p n 1} & t_{1} \\
+\ldots & \ldots & & & \\
+1 & x_{1 n k} & \ldots & x_{p n k} & t_{k}
+\end{array}\right], \\
+\underset{(p+2) \times 1}{\boldsymbol{\beta}}=\left[\begin{array}{c}
+\beta_{0} \\
+\ldots \\
+\beta_{p+1}
+\end{array}\right], \underset{n k \times 1}{\mathbf{u}}=\left[\begin{array}{c}
+u_{1} \\
+\ldots \\
+u_{1} \\
+\ldots \\
+u_{n} \\
+\ldots \\
+u_{n}
+\end{array}\right], \underset{n k \times 1}{\boldsymbol{\varepsilon}}=\left[\begin{array}{c}
+\varepsilon_{11} \\
+\ldots \\
+\varepsilon_{1 k} \\
+\ldots \\
+\varepsilon_{n 1} \\
+\ldots \\
+\varepsilon_{n k}
+\end{array}\right]
+\end{gathered}
+$$
+
+The covariance matrix $\mathbf{V}$ for the response vector $\mathbf{y}$ is a block-diagonal matrix with non-zero $k \times k$ blocks
+
+$$
+\underset{k \times k}{\mathbf{V}_{0}}=\left[\begin{array}{cccc}
+\sigma^{2}+\sigma_{u}^{2} & \sigma_{u}^{2} & \ldots & \sigma_{u}^{2} \\
+\sigma_{u}^{2} & \sigma^{2}+\sigma_{u}^{2} & \ldots & \sigma_{u}^{2} \\
+\sigma_{u}^{2} & \sigma_{u}^{2} & \ldots & \sigma^{2}+\sigma_{u}^{2}
+\end{array}\right]=\sigma^{2} \mathbf{I}_{k}+\sigma_{u}^{2} \mathbf{J}_{k}
+$$
+
+where $\mathbf{I}_{k}$ is the $k \times k$ identity matrix, and $\mathbf{J}_{k}$ denotes the $k \times k$ matrix with all unit entries.
+
+
+### Estimation of Parameters
+
+<!-- #### Maximum-Likelihood Method -->
+
+<!-- A usual approach to estimation of the model parameters $\beta_{0}, \ldots, \beta_{p+1}, \sigma^{2}$, and $\sigma_{u}^{2}$ is the maximum-likelihood method (ML). The distribution of the $n k \times n k$ response vector $\mathbf{y}$ is a multivariate normal with mean $\mathbf{X} \boldsymbol{\beta}$ and covariance matrix $\mathbf{V}$. The $n k \times n k$ matrix $\mathbf{V}$ is block-diagonal with $n$ blocks $\mathbf{V}_{0}$ of dimensions $k \times k$. Therefore, the log-likelihood function is proportional to -->
+
+<!-- $$ -->
+<!-- \ln L\left(\boldsymbol{\beta}, \mathbf{V}_{0}\right) \propto-\frac{n}{2} \ln \left|\mathbf{V}_{0}\right|-\frac{1}{2}(\mathbf{y}-\mathbf{X} \boldsymbol{\beta})^{\prime} \mathbf{V}^{-1}(\mathbf{y}-\mathbf{X} \boldsymbol{\beta}) -->
+<!-- $$ -->
+
+<!-- where $\left|\mathbf{V}_{0}\right|$ denotes the determinant of $\mathbf{V}_{\mathbf{0}}$, and the inverse matrix $\mathbf{V}^{-1}$ is -->
+
+<!-- block-diagonal with blocks $\mathbf{V}_{0}^{-1}$. It can be shown -->
+
+<!-- $$ -->
+<!-- \begin{aligned} -->
+<!-- & \left|\mathbf{V}_{0}\right|=\sigma^{2 k}+k \sigma^{2(k-1)} \sigma_{u}^{2} \\ -->
+<!-- & \mathbf{V}_{0}^{-1}=\frac{1}{\sigma^{4}+k \sigma^{2} \sigma_{u}^{2}}\left[\left(\sigma^{2}+k \sigma_{u}^{2}\right) \mathbf{I}_{k}-\sigma_{u}^{2} \mathbf{J}_{k}\right] -->
+<!-- \end{aligned} -->
+<!-- $$ -->
+
+<!-- If $\mathbf{V}_{0}$ is known, then the maximum-likelihood estimator of $\boldsymbol{\beta}$ is -->
+
+<!-- $$ -->
+<!-- \hat{\boldsymbol{\beta}}\left(\mathbf{V}_{0}\right)=\left(\mathbf{X}^{\prime} \mathbf{V}^{-1} \mathbf{X}\right)^{-1} \mathbf{X}^{\prime} \mathbf{V}^{-1} \mathbf{y} -->
+<!-- $$ -->
+
+<!-- Substituting this expression into Equation -->
+
+<!-- $$ -->
+<!-- \ln L\left(\hat{\boldsymbol{\beta}}\left(\mathbf{V}_{0}\right), \mathbf{V}_{0}\right) \propto-\frac{n}{2} \ln \left|\mathbf{V}_{0}\right|-\frac{1}{2} R S S\left(\mathbf{V}_{0}\right) -->
+<!-- $$ -->
+
+<!-- where $R S S\left(\mathbf{V}_{0}\right)=\left(\mathbf{y}-\mathbf{X} \hat{\boldsymbol{\beta}}\left(\mathbf{V}_{0}\right)\right)^{\prime} \mathbf{V}^{-1}\left(\mathbf{y}-\mathbf{X} \hat{\boldsymbol{\beta}}\left(\mathbf{V}_{0}\right)\right)$ denotes the residual sum of squares. -->
+
+<!-- This reduced log-likelihood function depends only on $\sigma^{2}$ and $\sigma_{u}^{2}$. Maximizing with respect to these variables produces the maximum-likelihood estimators $\hat{\sigma}^{2}$ and $\hat{\sigma}_{u}^{2}$ (and thus $\hat{\mathbf{V}}_{0}$ ), which are plugged into Equation -->
+
+<!-- $$ -->
+<!-- \hat{\boldsymbol{\beta}}\left(\mathbf{V}_{0}\right)=\left(\mathbf{X}^{\prime} \mathbf{V}^{-1} \mathbf{X}\right)^{-1} \mathbf{X}^{\prime} \mathbf{V}^{-1} \mathbf{y} -->
+<!-- $$ -->
+
+<!-- to obtain $\hat{\boldsymbol{\beta}}\left(\hat{\mathbf{V}}_{0}\right)$. -->
+
+#### Restricted Maximum-Likelihood Method
+
+The maximum-likelihood method produces a biased estimator of the variance. An alternative approach is the restricted maximum-likelihood method (REML). It does not depend on $\boldsymbol{\beta}$. 
+
+The REML estimators of $\sigma^{2}$ and $\sigma_{u}^{2}$ maximize the log-likelihood function of a certain linear transformation of $\mathbf{y}$. 
+
+Proposition: From the general theory of linear algebra, there exists an $(n k-p-2) \times n k$ matrix $\mathbf{A}$ with the properties $\mathbf{A}^{\prime} \mathbf{A}=\mathbf{I}_{n k}-\mathbf{X}\left(\mathbf{X}^{\prime} \mathbf{X}\right)^{-1} \mathbf{X}^{\prime}$ and $\mathbf{A} \mathbf{A}^{\prime}=\mathbf{I}_{n k-p-2}$, where $\mathbf{I}_{n k-p-2}$ is the $(n k-p-2) \times(n k-p-2)$ identity matrix.
+
+
+Introduce the REML transformation $\mathbf{Z}=\mathbf{A y}$. It is a random vector of length $n k-p-2$. Then its $\mathbf{Z}$ corresponding restricted log-likelihood function has the form
+
+$$
+\ln L_{r}\left(\mathbf{V}_{0}\right) \propto-\frac{n}{2} \ln \left|\mathbf{V}_{0}\right|-\frac{1}{2} \ln \left|\mathbf{X}^{\prime} \mathbf{V}^{-1} \mathbf{X}\right|-\frac{1}{2} R S S\left(\mathbf{V}_{0}\right)
+$$
+
+where the residual sum of squares $R S S\left(\mathbf{V}_{0}\right)=\left(\mathbf{y}-\mathbf{X} \hat{\boldsymbol{\beta}}\left(\mathbf{V}_{0}\right)\right)^{\prime} \mathbf{V}^{-1}\left(\mathbf{y}-\mathbf{X} \hat{\boldsymbol{\beta}}\left(\mathbf{V}_{0}\right)\right)$ .
+
+
+Consider the weighted least-squares estimator of $\boldsymbol{\beta}$ :
+
+$$
+\hat{\boldsymbol{\beta}}=\left(\mathbf{X}^{\prime} \mathbf{V}^{-1} \mathbf{X}\right)^{-1} \mathbf{X}^{\prime} \mathbf{V}^{-1} \mathbf{y}=\mathbf{B} \mathbf{y}
+$$
+where $\mathbf{B}=\left(\mathbf{X}^{\prime} \mathbf{V}^{-1} \mathbf{X}\right)^{-1} \mathbf{X}^{\prime} \mathbf{V}^{-1}$ is a $(p+2) \times n k$ matrix. It is a well-known result that $\hat{\boldsymbol{\beta}}$ has a multivariate normal distribution with mean $\boldsymbol{\beta}$ and covariance matrix $\left(\mathbf{X}^{\prime} \mathbf{V}^{-1} \mathbf{X}\right)^{-1}$. Thus the density of $\hat{\boldsymbol{\beta}}$ is
+
+$$
+f_{\hat{\boldsymbol{\beta}}}(\hat{\boldsymbol{\beta}})=(2 \pi)^{-\frac{p+2}{2}}\left|\mathbf{X}^{\prime} \mathbf{V}^{-1} \mathbf{X}\right|^{1 / 2} \exp \left\{-\frac{1}{2}(\hat{\boldsymbol{\beta}}-\boldsymbol{\beta})^{\prime}\left(\mathbf{X}^{\prime} \mathbf{V}^{-1} \mathbf{X}\right)(\hat{\boldsymbol{\beta}}-\boldsymbol{\beta})\right\}
+$$
+
+where $\left|\mathbf{X}^{\prime} \mathbf{V}^{-1} \mathbf{X}\right|$ denotes the determinant of the matrix $\mathbf{X}^{\prime} \mathbf{V}^{-1} \mathbf{X}$.
+
+
+<!-- Further, using the properties of $\mathbf{A}$, derive that -->
+
+<!-- $$ -->
+<!-- \begin{aligned} -->
+<!-- \mathbf{A} \mathbf{X} & =\mathbf{I}_{n k-p-2} \mathbf{A} \mathbf{X}=\left(\mathbf{A} \mathbf{A}^{\prime}\right) \mathbf{A} \mathbf{X}=\mathbf{A}\left(\mathbf{A}^{\prime} \mathbf{A}\right) \mathbf{X} \\ -->
+<!-- & =\mathbf{A}\left(\mathbf{I}_{n k}-\mathbf{X}\left(\mathbf{X}^{\prime} \mathbf{X}\right)^{-1} \mathbf{X}^{\prime}\right) \mathbf{X}=\mathbf{A}(\mathbf{X}-\mathbf{X})=\mathbf{0} -->
+<!-- \end{aligned} -->
+<!-- $$ -->
+
+
+<!-- Now recall that the response vector $\mathbf{y}$ has a multivariate normal distribution with mean $\mathbf{X} \boldsymbol{\beta}$ and covariance matrix $\mathbf{V}$. Because $\mathbf{Z}$ is a linear transformation of $\mathbf{y}$, its distribution is also multivariate normal. The mean of $\mathbf{Z}$ is $\mathbb{E}(\mathbf{Z})=$ $\mathbb{E}(\mathbf{A} \mathbf{y})=\mathbf{A} \mathbf{X} \boldsymbol{\beta}=\mathbf{0}$. Also,  -->
+
+since $\mathbf{Z}$ and $\hat{\boldsymbol{\beta}}$ are uncorrelated (and hence independent because they both are normally distributed).  
+
+
+<!-- $$ -->
+<!-- \begin{aligned} -->
+<!-- \mathbb{C o v}(\mathbf{Z}, \hat{\boldsymbol{\beta}}) & =\mathbb{E}\left[\mathbf{Z}(\hat{\boldsymbol{\beta}}-\boldsymbol{\beta})^{\prime}\right]=\mathbb{E}\left[\mathbf{A} \mathbf{y}\left(\mathbf{y}^{\prime} \mathbf{B}^{\prime}-\boldsymbol{\beta}^{\prime}\right)\right] \\ -->
+<!-- & =\mathbf{A} \mathbb{E}\left(\mathbf{y} \mathbf{y}^{\prime}\right) \mathbf{B}^{\prime}-\mathbf{A} \mathbb{E}(\mathbf{y}) \boldsymbol{\beta}^{\prime} \\ -->
+<!-- & =\mathbf{A}\left[\mathbb{V} a r(\mathbf{y})+\mathbb{E}(\mathbf{y}) \mathbb{E}(\mathbf{y})^{\prime}\right] \mathbf{B}^{\prime}-\mathbf{A} \mathbf{X} \boldsymbol{\beta} \boldsymbol{\beta}^{\prime} \\ -->
+<!-- & =\mathbf{A}\left[\mathbf{V}+\mathbf{X} \boldsymbol{\beta} \boldsymbol{\beta}^{\prime} \mathbf{X}^{\prime}\right] \mathbf{B}^{\prime}-\mathbf{A} \mathbf{X} \boldsymbol{\beta} \boldsymbol{\beta}^{\prime} \\ -->
+<!-- & =\mathbf{A} \mathbf{V} \mathbf{B}^{\prime}  \\ -->
+<!-- & =\mathbf{A} \mathbf{V} \mathbf{V}^{-1} \mathbf{X}\left(\mathbf{X}^{\prime} \mathbf{V}^{-1} \mathbf{X}\right)^{-1}=\mathbf{0} \quad   -->
+<!-- \end{aligned} -->
+<!-- $$ -->
+
+Next, write the introduced transformations in a matrix form
+
+$$
+\left[\begin{array}{l}
+\mathbf{Z} \\
+\hat{\boldsymbol{\beta}}
+\end{array}\right]=\left[\begin{array}{l}
+\mathbf{A} \\
+\mathbf{B}
+\end{array}\right] \mathbf{y}
+$$
+
+From linear algebra, the identity equating the respective differentials is
+
+$$
+d \mathbf{Z} d \hat{\boldsymbol{\beta}}=|J(\mathbf{A}, \mathbf{B})| d \mathbf{y}
+$$
+
+<!-- where $|J(\mathbf{A}, \mathbf{B})|=\left|\left[\begin{array}{l}\mathbf{A} \\ \mathbf{B}\end{array}\right]\right|$ denotes the Jacobian determinant that is computed as follows: -->
+
+<!-- $$ -->
+<!-- \begin{aligned} -->
+<!-- \left|\left[\begin{array}{l} -->
+<!-- \mathbf{A} \\ -->
+<!-- \mathbf{B} -->
+<!-- \end{array}\right]\right| & =\left(\left|\left[\begin{array}{l} -->
+<!-- \mathbf{A} \\ -->
+<!-- \mathbf{B} -->
+<!-- \end{array}\right]\right|\left|\left[\begin{array}{ll} -->
+<!-- \mathbf{A}^{\prime} & \mathbf{B}^{\prime} -->
+<!-- \end{array}\right]\right|\right)^{1 / 2} \\ -->
+<!-- & =\left|\left[\begin{array}{l} -->
+<!-- \mathbf{A} \\ -->
+<!-- \mathbf{B} -->
+<!-- \end{array}\right]\left[\begin{array}{ll} -->
+<!-- \mathbf{A}^{\prime} & \mathbf{B}^{\prime} -->
+<!-- \end{array}\right]\right|^{1 / 2}=\left|\left[\begin{array}{ll} -->
+<!-- \mathbf{A} \mathbf{A}^{\prime} & \mathbf{A} \mathbf{B}^{\prime} \\ -->
+<!-- \mathbf{B} \mathbf{A}^{\prime} & \mathbf{B} \mathbf{B}^{\prime} -->
+<!-- \end{array}\right]\right|^{1 / 2} -->
+<!-- \end{aligned} -->
+<!-- $$ -->
+
+<!-- Now make a use of the following result on determinants. For any matrices $\mathbf{F}, \mathbf{G}$, and $\mathbf{H}$, -->
+
+<!-- $$ -->
+<!-- \left|\left[\begin{array}{cc} -->
+<!-- \mathbf{F} & \mathbf{G} \\ -->
+<!-- \mathbf{G}^{\prime} & \mathbf{H} -->
+<!-- \end{array}\right]\right|=\left|\mathbf{F} \mathbf{H}-\mathbf{F} \mathbf{G}^{\prime} \mathbf{F}^{-1} \mathbf{G}\right| -->
+<!-- $$ -->
+
+<!-- Applying this result and the definitions of $\mathbf{A}$ and $\mathbf{B}$, yields -->
+
+where
+
+$$
+\begin{aligned}
+|J(\mathbf{A}, \mathbf{B})| & =\left|\left(\mathbf{A} \mathbf{A}^{\prime}\right) \mathbf{B} \mathbf{B}^{\prime}-\left(\mathbf{A} \mathbf{A}^{\prime}\right) \mathbf{B} \mathbf{A}^{\prime}\left(\mathbf{A} \mathbf{A}^{\prime}\right)^{-1} \mathbf{A} \mathbf{B}^{\prime}\right|^{1 / 2} \\
+& =\left|\mathbf{X}^{\prime} \mathbf{X}\right|^{-1 / 2}
+\end{aligned}
+$$
+
+Finally, it remains to express the density of $\mathbf{Z}$ in terms of $\mathbf{y}$. Write
+
+$$
+\begin{aligned}
+f(\mathbf{Z}, \hat{\boldsymbol{\beta}}) d \mathbf{Z} d \hat{\boldsymbol{\beta}} & =f_{\mathbf{Z}}(\mathbf{Z}) f_{\hat{\boldsymbol{\beta}}}(\hat{\boldsymbol{\beta}}) d \mathbf{Z} d \hat{\boldsymbol{\beta}} \quad \text { (by independence) } \\
+& \left.=f_{\mathbf{y}}(\mathbf{y})\left|\mathbf{X}^{\prime} \mathbf{X}\right|^{-1 / 2} d \mathbf{y} \quad \text { (by Equations } \right)
+\end{aligned}
+$$
+
+Consequently,  
+
+$$
+\begin{aligned}
+f_{\mathbf{Z}}(\mathbf{Z})= & \left|\mathbf{X}^{\prime} \mathbf{X}\right|^{-1 / 2} \frac{f_{\mathbf{y}}(\mathbf{y})}{f_{\hat{\boldsymbol{\beta}}}(\hat{\boldsymbol{\beta}})} \\
+= & (2 \pi)^{-\frac{(n k-p-2)}{2}}\left|\mathbf{X}^{\prime} \mathbf{X}\right|^{-1 / 2}|\mathbf{V}|^{-1 / 2}\left|\mathbf{X}^{\prime} \mathbf{V}^{-1} \mathbf{X}\right|^{-1 / 2} \\
+& \times \exp \left\{-\frac{1}{2}\left[(\mathbf{y}-\mathbf{X} \boldsymbol{\beta})^{\prime} \mathbf{V}^{-1}(\mathbf{y}-\mathbf{X} \boldsymbol{\beta})\right.\right. \\
+& \left.\left.-(\hat{\boldsymbol{\beta}}-\boldsymbol{\beta})^{\prime}\left(\mathbf{X}^{\prime} \mathbf{V}^{-1} \mathbf{X}\right)(\hat{\boldsymbol{\beta}}-\boldsymbol{\beta})\right]\right\} \\
+\propto & \left|\mathbf{X}^{\prime} \mathbf{X}\right|^{-1 / 2}|\mathbf{V}|^{-1 / 2}\left|\mathbf{X}^{\prime} \mathbf{V}^{-1} \mathbf{X}\right|^{-1 / 2} \\
+& \times \exp \left\{-\frac{1}{2}(\mathbf{y}-\mathbf{X} \hat{\boldsymbol{\beta}})^{\prime} \mathbf{V}^{-1}(\mathbf{y}-\mathbf{X} \hat{\boldsymbol{\beta}})\right\}
+\end{aligned}
+$$
+
+The expression for the restricted log-likelihood function. Maximizing with respect to these variables produces the maximum-likelihood estimators $\mathbf{V}_{0}$. 
+
+$$
+\ln L_{r}\left(\mathbf{V}_{0}\right) \propto-\frac{n}{2} \ln \left|\mathbf{V}_{0}\right|-\frac{1}{2} \ln \left|\mathbf{X}^{\prime} \mathbf{V}^{-1} \mathbf{X}\right|-\frac{1}{2} R S S\left(\mathbf{V}_{0}\right)
+$$
+
+### Random Slope and Intercept Model
+
+The random intercept model backs up the assumptions that variances and covariances remain constant over time. In this model, $y_{i j}$, is of the following form:
+
+$$
+y_{i j}=\beta_{0}+\beta_{1} x_{1 i j}+\cdots+\beta_{p} x_{p i j}+\beta_{p+1} t_{j}+u_{i 1}+u_{i 2} t_{j}+\varepsilon_{i j}
+$$
+
+where $u_{i 1} \stackrel{i . i . d .}{\sim} \mathcal{N}\left(0, \sigma_{u_{1}}^{2}\right)$ are the random intercepts, and $u_{i 2} \stackrel{\text { i.i.d. }}{\sim} \mathcal{N}\left(0, \sigma_{u_{2}}^{2}\right)$ are the random slopes. Also, $\operatorname{Cov}\left(u_{i 1}, u_{i 2}\right)=\sigma_{u_{1} u_{2}}, i=1, \ldots, n$, and $\mathbb{C o v}\left(u_{i 1}\right.$, $\left.u_{i^{\prime} 2}\right)=0$ for $i \neq i^{\prime}$. The error terms $\varepsilon_{i j} \stackrel{i . i . d .}{\sim} \mathcal{N}\left(0, \sigma^{2}\right)$ are independent of $u_{1}$ and $u_{2}$. In this model
+
+$$
+\operatorname{Var}\left(y_{i j}\right)=\mathbb{V} a r\left(u_{i 1}+u_{i 2} t_{j}+\varepsilon_{i j}\right)=\sigma_{u_{1}}^{2}+2 \sigma_{u_{1} u_{2}} t_{j}+\sigma_{u_{2}}^{2} t_{j}^{2}+\sigma^{2}
+$$
+
+and
+
+$$
+\begin{aligned}
+\mathbb{C o v}\left(y_{i j}, y_{i j^{\prime}}\right) & =\mathbb{C o v}\left(u_{i 1}+u_{i 2} t_{j}+\varepsilon_{i j}, u_{i 1}+u_{i 2} t_{j^{\prime}}+\varepsilon_{i j^{\prime}}\right) \\
+& =\sigma_{u_{1}}^{2}+\sigma_{u_{1} u_{2}}\left(t_{j}+t_{j^{\prime}}\right)+\sigma_{u_{2}}^{2} t_{j} t_{j^{\prime}} \quad \text { for } j \neq j^{\prime} \\
+\operatorname{Cov}\left(y_{i j}, y_{i^{\prime} j^{\prime}}\right) & =\mathbb{C o v}\left(u_{i 1}+u_{i 2} t_{j}+\varepsilon_{i j}, u_{i^{\prime} 1}+u_{i^{\prime} 2} t_{j^{\prime}}+\varepsilon_{i^{\prime} j^{\prime}}\right)=0 \quad \text { for } i \neq i^{\prime}
+\end{aligned}
+$$
+
+Notice that now the variances and the covariances depend on time. The covariance matrix $\mathbf{V}$ is still block-diagonal, but the block matrix $\mathbf{V}_{0}$ has a
+nonsymmetric structure.  
+
+The covariance matrix $\mathbf{V}$ for the response vector $\mathbf{y}$ is
+
+$$
+\underset{k \times k}{\mathbf{V}_{0}}=\left[\begin{array}{cccc}
+\mathbb{C o v}\left(y_{i j}, y_{i j^{\prime}}\right) & \mathbb{C o v}\left(y_{i j}, y_{i j^{\prime}}\right) & \ldots & \mathbb{C o v}\left(y_{i j}, y_{i j^{\prime}}\right) \\
+\mathbb{C o v}\left(y_{i j}, y_{i j^{\prime}}\right) & \mathbb{C o v}\left(y_{i j}, y_{i j^{\prime}}\right) & \ldots & \mathbb{C o v}\left(y_{i j}, y_{i j^{\prime}}\right) \\
+\mathbb{C o v}\left(y_{i j}, y_{i j^{\prime}}\right) & \mathbb{C o v}\left(y_{i j}, y_{i j^{\prime}}\right) & \ldots & \mathbb{C o v}\left(y_{i j}, y_{i j^{\prime}}\right)
+\end{array}\right]
+$$
+
+we use the covariance matrix to describe the relationship of measurements within subjects. 
+
+
+### Model with Spatial Power Covariance Structure for Error
+
+The observation $y_{i j}$ of the response variable on the $i$ th subject, $i=1, \ldots, n$, at time $t_{j}, j=1, \ldots, k$, is modeled as follows:
+
+$$
+y_{i j}=\beta_{0}+\beta_{1} x_{1 i j}+\cdots+\beta_{p} x_{p i j}+\beta_{p+1} t_{j}+u_{i 1}+u_{i 2} t_{j}+w_{i}\left(t_{j}\right)
+$$
+
+where $x_{1 i j}, \ldots, x_{p i j}$ are the fixed-effects covariates observed on the $i$ th subject at time $t_{j}$, and $u_{i 1}$ and $u_{i 2}$ are the random-effects terms. It is assumed that $u_{i 1} \stackrel{\text { i.i.d. }}{\sim}$ $\mathcal{N}\left(0, \sigma_{u_{1}}^{2}\right), u_{i 2} \stackrel{i . i . d .}{\sim} \mathcal{N}\left(0, \sigma_{u_{2}}^{2}\right), \operatorname{Cov}\left(u_{i 1}, u_{i 2}\right)=\sigma_{u_{1} u_{2}}$, and $\operatorname{Cov}\left(u_{i 1}, u_{i^{\prime} 2}\right)=0$ if $i \neq i^{\prime}$. 
+
+The component $w_{i}$ is a discrete-time process with a constant mean and constant variance. This process satisfies the recursive formula
+
+$$
+w_{i}\left(t_{j}\right)=\rho w_{i}\left(t_{j}-1\right)+z_{i}\left(t_{j}\right)
+$$
+
+Here $\rho,|\rho|<1$, is a fixed number, and $z_{i}\left(t_{j}\right) \stackrel{\text { i.i.d. }}{\sim} \mathcal{N}\left(0,\left(1-\rho^{2}\right) \sigma^{2}\right)$ are independent of $w_{i}\left(t_{1}\right)$, the initial observation on the $i$ th subject. It follows that for any $j^{\prime}>j, w_{i}\left(t_{j}\right)$ and $z_{i}\left(t_{j^{\prime}}\right)$ are independent.  
+
+
+$$
+\begin{aligned}
+w_{i}\left(t_{j}\right) & =\rho\left(\rho w_{i}\left(t_{j}-2\right)+z_{i}\left(t_{j}-1\right)\right)+z_{i}\left(t_{j}\right) \\
+& =\rho^{2}\left(\rho w_{i}\left(t_{j}-3\right)+z_{i}\left(t_{j}-2\right)\right)+\rho z_{i}\left(t_{j}-1\right)+z_{i}\left(t_{j}\right) \\
+& =\cdots=\rho^{t_{j}-t_{1}} w_{i}\left(t_{1}\right)+\rho^{t_{j}-t_{i}-1} z_{i}\left(t_{1}+1\right)+\cdots+\rho z_{i}\left(t_{j}-1\right)+z_{i}\left(t_{j}\right)
+\end{aligned}
+$$
+
+and every term in this sum is independent of $z_{i}\left(t_{j^{\prime}}\right)$.
+
+
+
+It can be shown that the process $w_{i}$ has mean zero and variance $\sigma^{2}$; that is, $\mathbb{E}\left(w_{i}\left(t_{j}\right)\right)=0$ and $\mathbb{E}\left(w_{i}\left(t_{j}\right)\right)^{2}=\sigma^{2}$. To compute the covariance matrix of this process, note that $\operatorname{Cov}\left(w_{i}\left(t_{j}\right), w_{i}\left(t_{j^{\prime}}\right)\right)=\mathbb{E}\left(w_{i}\left(t_{j}\right) w_{i}\left(t_{j^{\prime}}\right)\right)$ for any $j^{\prime}>j$. 
+
+$w_{i}\left(t_{j^{\prime}}\right)$ can be written as
+
+$$
+w_{i}\left(t_{j^{\prime}}\right)=\rho^{t_{j^{\prime}}-t_{j}} w_{i}\left(t_{j}\right)+\rho^{t_{j^{\prime}}-t_{j}-1} z_{i}\left(t_{j}+1\right)+\cdots+\rho z_{i}\left(t_{j^{\prime}}-1\right)+z_{i}\left(t_{j^{\prime}}\right)
+$$
+
+By independence of $w_{i}\left(t_{j}\right)$ and $z_{i}\left(t_{j^{\prime \prime}}\right)$ for any $j^{\prime \prime}>j, \mathbb{E}\left(w_{i}\left(t_{j}\right) z_{i}\left(t_{j^{\prime \prime}}\right)\right)=$ $\mathbb{E}\left(w_{i}\left(t_{j}\right)\right) \mathbb{E}\left(z_{i}\left(t_{j^{\prime \prime}}\right)\right)=0$. Therefore, the covariance between $w_{i}\left(t_{j}\right)$ and $w_{i}\left(t_{j^{\prime}}\right)$ is
+
+$$
+\mathbb{E}\left(w_{i}\left(t_{j}\right) w_{i}\left(t_{j^{\prime}}\right)\right)=\rho^{t_{j^{\prime}}-t_{j}} \mathbb{E}\left(w_{i}\left(t_{j}\right)\right)^{2}=\rho^{t_{j^{\prime}}-t_{j}} \sigma^{2}
+$$
+
+Consequently, the covariance matrix of the error terms is an $n k \times n k$ blockdiagonal matrix with $k \times k$ blocks
+
+$$
+\sigma^{2}\left[\begin{array}{ccccc}
+1 & \rho^{t_{2}-t_{1}} & \rho^{t_{3}-t_{1}} & \ldots & \rho^{t_{k}-t_{1}} \\
+\rho^{t_{2}-t_{1}} & 1 & \rho^{t_{3}-t_{2}} & \ldots & \rho^{t_{k}-t_{2}} \\
+& & \ldots & & \\
+\rho^{t_{k}-t_{1}} & \rho^{t_{k}-t_{2}} & \rho^{t_{k}-t_{3}} & \ldots & 1
+\end{array}\right]
+$$
+
+A matrix of this form is called a spatial power matrix, and the corresponding process is said to have a spatial power covariance structure. That is error covariance matrix. 
+
+The covariance matrix $\mathbf{V}$ of the response variable is an $n k \times n k$ blockdiagonal matrix, in which the $k \times k$ blocks $\mathbf{V}_{0}$ have diagonal entries of the following form:
+
+$$
+\operatorname{Var}\left(y_{i j}\right)=\mathbb{V} a r\left(u_{i 1}+u_{i 2} t_{j}+w_{i}\left(t_{j}\right)\right)=\sigma_{u_{1}}^{2}+2 \sigma_{u_{1} u_{2}} t_{j}+\sigma_{u_{2}}^{2} t_{j}^{2}+\sigma^{2}
+$$
+
+where $j=1, \ldots, k$, and the off-diagonal entries of $\mathbf{V}_{0}$ are  
+
+$$
+\begin{aligned}
+\operatorname{Cov}\left(y_{i j}, y_{i j^{\prime}}\right) & =\mathbb{C o v}\left(u_{i 1}+u_{i 2} t_{j}+w_{i}\left(t_{j}\right), u_{i 1}+u_{i 2} t_{j^{\prime}}+w_{i}\left(t_{j^{\prime}}\right)\right) \\
+& =\sigma_{u_{1}}^{2}+\sigma_{u_{1} u_{2}}\left(t_{j}+t_{j^{\prime}}\right)+\sigma_{u_{2}}^{2} t_{j} t_{j^{\prime}}+\rho^{t_{j^{\prime}}-t_{j}} \sigma^{2}
+\end{aligned}
+$$
+
+Thence, the covariance matrix $\mathbf{V}_{0}$ for the response vector $\mathbf{y}$ is
+
+$$
+\underset{k \times k}{\mathbf{V}_{0}}=\left[\begin{array}{cccc}
+\mathbb{C o v}\left(y_{i j}, y_{i j^{\prime}}\right) & \mathbb{C o v}\left(y_{i j}, y_{i j^{\prime}}\right) & \ldots & \mathbb{C o v}\left(y_{i j}, y_{i j^{\prime}}\right) \\
+\mathbb{C o v}\left(y_{i j}, y_{i j^{\prime}}\right) & \mathbb{C o v}\left(y_{i j}, y_{i j^{\prime}}\right) & \ldots & \mathbb{C o v}\left(y_{i j}, y_{i j^{\prime}}\right) \\
+\mathbb{C o v}\left(y_{i j}, y_{i j^{\prime}}\right) & \mathbb{C o v}\left(y_{i j}, y_{i j^{\prime}}\right) & \ldots & \mathbb{C o v}\left(y_{i j}, y_{i j^{\prime}}\right)
+\end{array}\right]
+$$
+
+**As in the random slope and intercept model, the variance and covariance of the response variable depend on time. However, unlike in the models discussed earlier, where no correlation between the error terms was assumed, in the model with spatial power covariance structure for error, a weak dependence between error terms for the same individual is present. In absolute value, the covariance between the error terms decays exponentially fast as the time span increases.**
+
+
+### Random Intercept Logistic Regression Model
+
+Denote by $\pi_{i j}(u)=\mathbb{P}\left(y_{i j}=1 \mid u\right)$ the conditional probability of $y_{i j}=1$ given some random variable $u$. The ratio
+
+$$
+\frac{\pi_{i j}(u)}{1-\pi_{i j}(u)}=\frac{\mathbb{P}\left(y_{i j}=1 \mid u\right)}{\mathbb{P}\left(y_{i j}=0 \mid u\right)}
+$$
+
+is called the conditional odds in favor of $y_{i j}=1$, given $u$. A logit transformation of $\pi_{i j}(u)$ is the natural logarithm of the odds in favor of $y_{i j}=1$ conditioned on $u$-that is,
+
+$$
+\operatorname{logit}\left(\pi_{i j}(u)\right)=\ln \left(\frac{\pi_{i j}(u)}{1-\pi_{i j}(u)}\right)
+$$
+
+The random intercept logistic regression model has the form
+
+$$
+\operatorname{logit}\left(\pi_{i j}\left(u_{i}\right)\right)=\beta_{0}+\beta_{1} x_{1 i j}+\cdots+\beta_{p} x_{p i j}+\beta_{p+1} t_{j}+u_{i}
+$$
+
+where $u_{i} \stackrel{i . i . d .}{\sim} \mathcal{N}\left(0, \sigma_{u}^{2}\right)$ are the random intercepts, $i=1, \ldots, n, j=1, \ldots, k$. Equivalently, the model can be written as
+
+$$
+\pi_{i j}\left(u_{i}\right)=\frac{\exp \left\{\beta_{0}+\beta_{1} x_{1 i j}+\cdots+\beta_{p} x_{p i j}+\beta_{p+1} t_{j}+u_{i}\right\}}{1+\exp \left\{\beta_{0}+\beta_{1} x_{1 i j}+\cdots+\beta_{p} x_{p i j}+\beta_{p+1} t_{j}+u_{i}\right\}}
+$$
+
+#### Estimation of Parameters
+
+The parameters of the model are $\beta_{0}, \ldots, \beta_{p+1}$ and $\sigma_{u}^{2}$. The maximum-likelihood method is commonly used to estimate these parameters. For given $u_{i}, i=$ $1, \ldots, n$, the distribution of $y_{i j}$ is Bernoulli with parameter $\pi_{i j}\left(u_{i}\right)$ (need to know the distribution when using ml method). Therefore, the conditional likelihood function is
+
+$$
+\begin{aligned}
+L\left(\beta_{0}, \ldots, \beta_{p+1} \mid u_{1}, \ldots, u_{n}\right)= & \prod_{i=1}^{n} \prod_{j=1}^{k}\left(\pi_{i j}\left(u_{i}\right)\right)^{y_{i j}}\left(1-\pi_{i j}\left(u_{i}\right)\right)^{1-y_{i j}} \\
+= & \prod_{i=1}^{n} \prod_{j=1}^{k}\left[\frac{\exp \left\{\beta_{0}+\cdots+\beta_{p+1} t_{j}+u_{i}\right\}}{1+\exp \left\{\beta_{0}+\cdots+\beta_{p+1} t_{j}+u_{i}\right\}}\right]^{y_{i j}} \\
+& \times\left[\frac{1}{1+\exp \left\{\beta_{0}+\cdots+\beta_{p+1} t_{j}+u_{i}\right\}}\right]^{1-y_{i j}} \\
+= & \prod_{i=1}^{n} \prod_{j=1}^{k} \frac{\exp \left\{\left(\beta_{0}+\cdots+\beta_{p+1} t_{j}+u_{i}\right) y_{i j}\right\}}{1+\exp \left\{\beta_{0}+\cdots+\beta_{p+1} t_{j}+u_{i}\right\}}
+\end{aligned}
+$$
+
+To obtain the conventional likelihood function, integrate this expression over all possible values of $u_{1}, \ldots, u_{n}$, which are independent $\mathcal{N}\left(0, \sigma_{u}^{2}\right)$ random variables:
+
+$$
+\begin{aligned}
+L\left(\beta_{0}, \ldots, \beta_{p+1}, \sigma_{u}^{2}\right)= & \left(2 \pi \sigma_{u}^{2}\right)^{-n / 2} \exp \left\{\sum_{i=1}^{n} \sum_{j=1}^{k}\left(\beta_{0}+\cdots+\beta_{p+1} t_{j}\right) y_{i j}\right\} \\
+& \times \prod_{i=1}^{n} \int_{-\infty}^{\infty} \frac{\exp \left\{\sum_{j=1}^{k} u_{i} y_{i j}-u_{i}^{2} /\left(2 \sigma_{u}^{2}\right)\right\}}{\prod_{j=1}^{k}\left(1+\exp \left\{\beta_{0}+\cdots+\beta_{p+1} t_{j}+u_{i}\right\}\right)} d u_{i} .
+\end{aligned}
+$$
+
+The estimators $\hat{\beta}_{0}, \hat{\beta}_{p+1}$, and $\hat{\sigma}_{u}^{2}$ are the numerical solution to the maximization problem for this function.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

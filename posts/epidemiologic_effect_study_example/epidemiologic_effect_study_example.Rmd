@@ -1,0 +1,537 @@
+---
+title: "Epidemiologic Effect Study: Smoking and Cardiovascular Disease"
+author: "Daniel He"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    toc_depth: 3
+    number_sections: true
+---
+
+# 1. Background and Research Question
+
+This example demonstrates a typical **epidemiologic effect-estimation workflow** using a cohort-study framework.
+
+**Research question:**  
+Among adults initially free of cardiovascular disease, is baseline cigarette smoking associated with a higher risk of incident cardiovascular disease during follow-up?
+
+The causal question can be written conceptually as:
+
+\[
+Smoking \rightarrow Cardiovascular\ Disease
+\]
+
+Because smoking is not randomly assigned, the exposed and unexposed groups may differ in important baseline characteristics. Therefore, confounding must be considered carefully.
+
+```{r setup, message=FALSE, warning=FALSE}
+library(dplyr)
+library(survival)
+library(tableone)
+library(MatchIt)
+library(cobalt)
+
+set.seed(2026)
+```
+
+# 2. Study Design and Data Source
+
+A common epidemiologic design for this question is a **prospective or retrospective cohort study**.
+
+In a real epidemiologic study, data might come from:
+
+- a population-based cohort,
+- an epidemiologic survey linked to outcomes,
+- EHR or claims data,
+- a disease registry,
+- or linked administrative databases.
+
+For teaching purposes, we simulate a cohort with the same basic structure.
+
+```{r simulate-data}
+n <- 6000
+
+epi <- data.frame(
+  id = 1:n,
+  age = round(rnorm(n, 55, 10)),
+  male = rbinom(n, 1, 0.48),
+  bmi = round(rnorm(n, 28, 5), 1),
+  systolic_bp = round(rnorm(n, 128, 16)),
+  diabetes = rbinom(n, 1, 0.14),
+  hypertension = rbinom(n, 1, 0.38),
+  high_cholesterol = rbinom(n, 1, 0.32),
+  physical_inactivity = rbinom(n, 1, 0.35)
+)
+
+# Smoking probability depends on several baseline characteristics.
+# This intentionally creates confounding.
+lp_smoking <-
+  -1.1 +
+  0.012 * (epi$age - 55) +
+  0.25 * epi$male +
+  0.18 * epi$physical_inactivity +
+  0.15 * epi$hypertension -
+  0.08 * (epi$bmi - 28)
+
+p_smoking <- plogis(lp_smoking)
+
+epi$smoking <- rbinom(n, 1, p_smoking)
+
+epi$smoking <- factor(
+  epi$smoking,
+  levels = c(0, 1),
+  labels = c("Non-smoker", "Smoker")
+)
+
+table(epi$smoking)
+```
+
+# 3. Define the Target Population and Study Cohort
+
+The cohort should be defined before outcome analysis.
+
+Example eligibility criteria:
+
+- adults aged 35 to 80 years,
+- no cardiovascular disease at baseline,
+- baseline smoking status available,
+- baseline covariates available,
+- eligible for follow-up.
+
+For this simulated example, we restrict the cohort to plausible baseline values.
+
+```{r cohort-definition}
+cohort <- epi %>%
+  filter(
+    age >= 35,
+    age <= 80,
+    bmi >= 15,
+    bmi <= 55,
+    systolic_bp >= 80,
+    systolic_bp <= 220
+  )
+
+nrow(cohort)
+table(cohort$smoking)
+```
+
+# 4. Define Exposure, Outcome, and Time Zero
+
+## Exposure
+
+The exposure is **baseline cigarette smoking**:
+
+- Smoker
+- Non-smoker
+
+## Outcome
+
+The outcome is **incident cardiovascular disease (CVD)** during follow-up.
+
+## Time zero
+
+Time zero is the baseline study visit or cohort entry date.
+
+This is important because exposure and baseline covariates should be defined before follow-up begins.
+
+# 5. Identify Potential Confounders
+
+Potential confounders should be selected using:
+
+- subject-matter knowledge,
+- previous epidemiologic evidence,
+- temporal ordering,
+- and causal reasoning / DAGs.
+
+For illustration, we consider:
+
+- age,
+- sex,
+- BMI,
+- systolic blood pressure,
+- diabetes,
+- hypertension,
+- high cholesterol,
+- physical inactivity.
+
+A confounder is generally a variable that is associated with both the exposure and the outcome and is not a downstream consequence of the exposure for the causal effect being estimated.
+
+The goal is **not** to include every available variable automatically.
+
+# 6. Generate Follow-up and Outcome
+
+We now simulate time to incident CVD.
+
+Smoking truly increases the event hazard in this simulated dataset. Several baseline covariates also affect CVD risk.
+
+```{r outcome-generation}
+lp_event <-
+  -4.2 +
+  0.45 * (cohort$smoking == "Smoker") +
+  0.035 * (cohort$age - 55) +
+  0.30 * cohort$male +
+  0.025 * (cohort$bmi - 28) +
+  0.012 * (cohort$systolic_bp - 128) +
+  0.55 * cohort$diabetes +
+  0.40 * cohort$hypertension +
+  0.30 * cohort$high_cholesterol +
+  0.18 * cohort$physical_inactivity
+
+event_rate <- exp(lp_event)
+
+true_event_time <- rexp(
+  nrow(cohort),
+  rate = event_rate
+)
+
+censor_time <- runif(
+  nrow(cohort),
+  min = 2,
+  max = 10
+)
+
+cohort$followup_time <- pmin(true_event_time, censor_time)
+cohort$cvd_event <- as.integer(true_event_time <= censor_time)
+
+table(cohort$cvd_event)
+```
+
+# 7. Data Quality Assessment
+
+Before estimating an exposure effect, assess the quality of the epidemiologic data.
+
+Important checks include:
+
+- duplicate participants,
+- missing data,
+- implausible values,
+- exposure misclassification,
+- outcome misclassification,
+- temporal consistency,
+- and completeness of follow-up.
+
+```{r data-quality}
+# Duplicate participant IDs
+sum(duplicated(cohort$id))
+
+# Missingness
+colSums(is.na(cohort))
+
+# Basic distributions
+summary(
+  cohort[, c(
+    "age",
+    "bmi",
+    "systolic_bp",
+    "followup_time"
+  )]
+)
+```
+
+# 8. Describe the Cohort and Compare Baseline Characteristics
+
+Before modeling the outcome, describe the exposed and unexposed groups.
+
+```{r baseline-table}
+vars <- c(
+  "age",
+  "male",
+  "bmi",
+  "systolic_bp",
+  "diabetes",
+  "hypertension",
+  "high_cholesterol",
+  "physical_inactivity"
+)
+
+table1 <- CreateTableOne(
+  vars = vars,
+  strata = "smoking",
+  data = cohort,
+  test = FALSE
+)
+
+print(
+  table1,
+  smd = TRUE
+)
+```
+
+The standardized mean difference (SMD) helps describe baseline differences between smokers and non-smokers.
+
+However, baseline imbalance alone does not determine whether a variable is a confounder. Confounder selection should primarily follow causal reasoning rather than statistical significance testing.
+
+# 9. Estimate the Crude Association
+
+First estimate the unadjusted association between smoking and incident CVD.
+
+```{r crude-analysis}
+cox_crude <- coxph(
+  Surv(followup_time, cvd_event) ~ smoking,
+  data = cohort
+)
+
+summary(cox_crude)
+
+exp(
+  cbind(
+    HR = coef(cox_crude),
+    confint(cox_crude)
+  )
+)
+```
+
+The crude hazard ratio compares the observed CVD hazard in smokers versus non-smokers without controlling for baseline differences.
+
+# 10. Estimate the Adjusted Exposure Effect
+
+Next fit a multivariable Cox model adjusting for prespecified baseline confounders.
+
+```{r adjusted-analysis}
+cox_adjusted <- coxph(
+  Surv(followup_time, cvd_event) ~
+    smoking +
+    age +
+    male +
+    bmi +
+    systolic_bp +
+    diabetes +
+    hypertension +
+    high_cholesterol +
+    physical_inactivity,
+  data = cohort
+)
+
+summary(cox_adjusted)
+
+exp(
+  cbind(
+    HR = coef(cox_adjusted),
+    confint(cox_adjusted)
+  )
+)
+```
+
+The coefficient for `smokingSmoker` is the covariate-adjusted hazard ratio comparing smokers with non-smokers.
+
+Under the required causal assumptions, this adjusted estimate may be interpreted as an estimate of the exposure effect. Without those assumptions, it should be interpreted more cautiously as an adjusted association.
+
+# 11. Compare Crude and Adjusted Estimates
+
+A useful epidemiologic step is to compare the crude and adjusted exposure estimates.
+
+```{r compare-crude-adjusted}
+extract_hr <- function(model, term, label) {
+  est <- coef(model)[term]
+  ci <- confint(model)[term, ]
+
+  data.frame(
+    Model = label,
+    HR = exp(est),
+    Lower95 = exp(ci[1]),
+    Upper95 = exp(ci[2])
+  )
+}
+
+comparison <- bind_rows(
+  extract_hr(cox_crude, "smokingSmoker", "Crude"),
+  extract_hr(cox_adjusted, "smokingSmoker", "Adjusted")
+)
+
+comparison
+```
+
+A difference between crude and adjusted estimates may indicate the impact of covariate adjustment, but it does **not** by itself prove which variables are true confounders.
+
+# 12. Check Model Assumptions
+
+For a Cox proportional hazards model, assess the proportional hazards assumption.
+
+```{r model-diagnostics}
+ph_test <- cox.zph(cox_adjusted)
+ph_test
+plot(ph_test)
+```
+
+If the proportional hazards assumption is seriously violated, alternative modeling approaches may be needed.
+
+# 13. Sensitivity Analysis 1: Propensity Score Weighting
+
+Propensity-score methods can also be used in epidemiologic exposure studies when appropriate.
+
+Here the propensity score is the probability of being a smoker conditional on measured baseline covariates.
+
+```{r propensity-score}
+ps_model <- glm(
+  I(smoking == "Smoker") ~
+    age +
+    male +
+    bmi +
+    systolic_bp +
+    diabetes +
+    hypertension +
+    high_cholesterol +
+    physical_inactivity,
+  family = binomial(),
+  data = cohort
+)
+
+cohort$ps <- predict(
+  ps_model,
+  type = "response"
+)
+
+cohort <- cohort %>%
+  mutate(
+    exposed = as.integer(smoking == "Smoker"),
+    iptw = ifelse(
+      exposed == 1,
+      1 / ps,
+      1 / (1 - ps)
+    )
+  )
+
+summary(cohort$ps)
+summary(cohort$iptw)
+```
+
+# 14. Check Covariate Balance After Weighting
+
+```{r weighting-balance}
+bal.tab(
+  smoking ~
+    age +
+    male +
+    bmi +
+    systolic_bp +
+    diabetes +
+    hypertension +
+    high_cholesterol +
+    physical_inactivity,
+  data = cohort,
+  weights = cohort$iptw,
+  method = "weighting",
+  un = TRUE,
+  thresholds = c(m = 0.10)
+)
+```
+
+An absolute SMD below 0.10 is commonly used as a practical indicator of acceptable balance for a measured covariate.
+
+Good measured balance does not establish that unmeasured confounding is absent.
+
+# 15. Sensitivity Analysis 1: IPTW Outcome Model
+
+```{r iptw-outcome}
+# Truncate extreme weights at the 1st and 99th percentiles
+limits <- quantile(
+  cohort$iptw,
+  probs = c(0.01, 0.99)
+)
+
+cohort <- cohort %>%
+  mutate(
+    iptw_trim = pmin(
+      pmax(iptw, limits[1]),
+      limits[2]
+    )
+  )
+
+cox_iptw <- coxph(
+  Surv(followup_time, cvd_event) ~ smoking,
+  data = cohort,
+  weights = iptw_trim,
+  robust = TRUE
+)
+
+summary(cox_iptw)
+
+exp(
+  cbind(
+    HR = coef(cox_iptw),
+    confint(cox_iptw)
+  )
+)
+```
+
+# 16. Sensitivity Analysis 2: Alternative Covariate Specification
+
+Suppose hypertension has uncertain temporal ordering relative to smoking history or disease development. We can examine how strongly the smoking estimate depends on adjustment for hypertension.
+
+```{r sensitivity-hypertension}
+cox_without_htn <- coxph(
+  Surv(followup_time, cvd_event) ~
+    smoking +
+    age +
+    male +
+    bmi +
+    systolic_bp +
+    diabetes +
+    high_cholesterol +
+    physical_inactivity,
+  data = cohort
+)
+
+bind_rows(
+  extract_hr(cox_adjusted, "smokingSmoker", "Adjusted including hypertension"),
+  extract_hr(cox_without_htn, "smokingSmoker", "Adjusted excluding hypertension")
+)
+```
+
+If the results are similar, the exposure estimate is relatively robust to this particular modeling choice. If the results differ substantially, the conclusion is sensitive to assumptions about hypertension.
+
+This sensitivity analysis does not determine the true causal role of hypertension; it only shows how much the estimate depends on the assumption.
+
+# 17. Compare Main and Sensitivity Analyses
+
+```{r final-comparison}
+results <- bind_rows(
+  extract_hr(cox_crude, "smokingSmoker", "Crude Cox"),
+  extract_hr(cox_adjusted, "smokingSmoker", "Multivariable-adjusted Cox"),
+  extract_hr(cox_iptw, "smokingSmoker", "IPTW Cox"),
+  extract_hr(cox_without_htn, "smokingSmoker", "Adjusted Cox without hypertension")
+)
+
+results
+```
+
+# 18. Interpretation and Limitations
+
+A typical epidemiologic effect-estimation workflow is:
+
+1. Define the epidemiologic / causal research question.
+2. Choose an appropriate study design and data source.
+3. Define the target population and analytic cohort.
+4. Define exposure, outcome, time zero, and follow-up.
+5. Identify potential confounders using temporal and causal reasoning.
+6. Assess data quality and missingness.
+7. Describe exposed and unexposed groups.
+8. Estimate the crude exposure-outcome association.
+9. Estimate the confounder-adjusted effect / association.
+10. Check model assumptions.
+11. Evaluate covariate balance when propensity-score methods are used.
+12. Perform sensitivity analyses under alternative reasonable assumptions.
+13. Interpret the estimate in light of residual confounding, measurement error, selection bias, and temporality uncertainty.
+
+The key epidemiologic idea is:
+
+> The objective is not simply to make two groups statistically similar. The objective is to estimate the exposure-outcome effect as validly as possible by using an appropriate design, defining time correctly, selecting covariates based on causal reasoning, and evaluating the robustness of the result.
+
+# 19. Main Limitations of Observational Epidemiologic Effect Studies
+
+Even after careful adjustment, important limitations may remain:
+
+- unmeasured confounding,
+- residual confounding,
+- exposure misclassification,
+- outcome misclassification,
+- measurement error,
+- uncertain temporal ordering,
+- selection bias,
+- informative censoring,
+- missing data,
+- positivity / overlap problems,
+- model misspecification,
+- and limited generalizability.
+
+Therefore, an adjusted observational estimate should not automatically be interpreted as proof of causality.

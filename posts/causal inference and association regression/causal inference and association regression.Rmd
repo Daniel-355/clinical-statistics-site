@@ -1,0 +1,264 @@
+---
+title: "Causal inference and associated regression"
+output: html_document
+date: '2024-01-08'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+### Causal inference and association regression
+
+- Still need to consider the chronological order in design;
+- Well designed observation study is suitable for causal inference;
+- Generally associated analysis estimate is larger or smaller than the causal inference; 
+- Associated analysis is used for strata and it is hard to deal with interaction (with exposure) and noncollapsibility so CI should be recommended;
+- Data imputation is also needed;
+- Double robust estimate is more robust;
+- Bootstrapping sampling should be more than 80% with more than 1000 samples and the statistic is not necessarily normal distribution;
+- Categorizing should be based on the special knowledge not quartile/tertile/ ROC/ ;
+- Ltmle longitudinal study should be less than 30 times measurements; 
+- Nonparameter method has fewer assumptions but is computation resource consuming (sometimes less precise); 
+- The distribution will be changed after normalization;
+
+#### Why RCT is gold standard
+
+In a randomized control trial (RCT) we assume [that](https://stats.stackexchange.com/questions/308397/why-is-average-treatment-effect-different-from-average-treatment-effect-on-the-t). 
+
+$$
+\mathrm{E}[Y^0|D=1] = \mathrm{E}[Y^0|D=0]
+$$
+and
+$$
+\mathrm{E}[Y^1|D=1] = \mathrm{E}[Y^1|D=0]
+$$
+
+
+Since
+$$
+\begin{align}
+\mathrm{E}[\delta] =& \{ \pi \mathrm{E}[Y^1|D=1] + (1-\pi) \mathrm{E}[Y^1|D=0] \} \\ -& \{ \pi \mathrm{E}[Y^0|D=1] + (1-\pi) \mathrm{E}[Y^0|D=0] \}=ATE
+\end{align}
+$$
+
+then
+
+$$
+\mathrm{E}[Y^1|D=1] - \mathrm{E}[Y^0|D=0]=ATE
+$$
+
+
+```{r, message=F, warning=F}
+# load packages
+pacman::p_load(tidyverse, here, sandwich, lmtest, boot, ranger,
+               ggplot2, broom, SuperLearner, tmle, AIPW,
+               ranger, xgboost, e1071, nnet, glmnet, remotes)
+
+
+library(tlverse)
+library(tmle3)
+library(sl3)
+library(data.table)
+```
+
+Data preparation 
+```{r}
+nhefs <- read_csv("C:\\Users\\hed2\\Downloads\\mlci_shortcourse-main\\mlci_shortcourse-main\\data\\nhefs.csv") %>% 
+  mutate(wt_delta = as.numeric(wt82_71>median(wt82_71)))
+```
+
+#### Fit a regression model
+```{r}
+formulaVars <- "qsmk + sex + age + income + sbp + dbp + price71 + tax71 + race"
+modelForm0 <- as.formula(paste0("wt_delta ~", formulaVars))
+modelForm0
+
+#' This model can be used to quantify a conditionally adjusted 
+#' odds ratio with correct standard error
+modelOR <- glm(modelForm0,data=nhefs,family = binomial("logit"))
+
+# summary(modelOR)
+
+exp(tidy(modelOR)[2,2])
+```
+
+#### G compute and confidence interval
+```{r}
+# modeling account for any "potential" exposure-covariates interactions
+formulaVars <- "sex + age + income + sbp + dbp + price71 + tax71 + race"
+modelForm <- as.formula(paste0("wt_delta ~", formulaVars))
+modelForm
+
+#' Regress the outcome against the confounders among the unexposed and exposed sub datasets 
+model0 <- glm(modelForm,data=subset(nhefs,qsmk==0),family=binomial("logit"))
+model1 <- glm(modelForm,data=subset(nhefs,qsmk==1),family=binomial("logit"))
+
+##' Generate predictions for everyone in the sample using the models
+mu1 <- predict(model1,newdata=nhefs,type="response")
+mu0 <- predict(model0,newdata=nhefs,type="response")
+
+#' Marginally adjusted odds ratio
+marg_stand_OR <- (mean(mu1)/mean(1-mu1))/(mean(mu0)/mean(1-mu0))
+#' Marginally adjusted risk ratio
+marg_stand_RR <- mean(mu1)/mean(mu0)
+#' Marginally adjusted risk difference
+marg_stand_RD <- mean(mu1)-mean(mu0)
+
+#' Using the bootstrap to obtain confidence intervals 
+bootfunc <- function(data,index){
+  boot_dat <- data[index,]
+  model0 <- glm(modelForm,data=subset(boot_dat,qsmk==0),family=binomial("logit"))
+  model1 <- glm(modelForm,data=subset(boot_dat,qsmk==1),family=binomial("logit"))
+  mu1 <- predict(model1,newdata=boot_dat,type="response")
+  mu0 <- predict(model0,newdata=boot_dat,type="response")
+  
+  marg_stand_OR_ <- (mean(mu1)/mean(1-mu1))/(mean(mu0)/mean(1-mu0))
+  marg_stand_RR_ <- mean(mu1)/mean(mu0)
+  marg_stand_RD_ <- mean(mu1)-mean(mu0)
+  res <- c(marg_stand_RD_,marg_stand_RR_,marg_stand_OR_)
+  return(res)
+}
+
+#' Run the boot function. Set a seed to obtain reproducibility
+set.seed(123)
+boot_res <- boot(nhefs,bootfunc,R=2000)
+
+boot_RD <- boot.ci(boot_res,index=1)
+boot_RR <- boot.ci(boot_res,index=2)
+boot_OR <- boot.ci(boot_res,index=3)
+
+marg_stand_OR
+# marg_stand_RD
+```
+
+#### Inverse probability weight
+
+```{r}
+# create the propensity score in the dataset
+nhefs$propensity_score <- glm(qsmk ~ sex + age + income + sbp + dbp + price71 + tax71 + race, data = nhefs, family = binomial("logit"))$fitted.values
+
+# stabilized inverse probability weights
+nhefs$sw <- (mean(nhefs$qsmk)/nhefs$propensity_score)*nhefs$qsmk + 
+  ((1-mean(nhefs$qsmk))/(1-nhefs$propensity_score))*(1-nhefs$qsmk)
+
+# summary(nhefs$sw)
+
+# F----------------------------------------------------------------------------
+
+model_RD_weighted <- glm(wt_delta ~ qsmk, data = nhefs, weights=sw, family = quasibinomial("identity"))
+
+# summary(model_RD_weighted)$coefficients
+
+exp(summary(model_RD_weighted)$coefficients[2])
+
+# t test----------------------------------------------------------------------------
+library(lmtest)
+library(sandwich)
+# coeftest(model_RD_weighted, vcov. = vcovHC)
+```
+
+#### Double robust estimation- 1
+```{r}
+# using the sl3 function create the super learner, that contains a simple
+# average estimator and a glm estimator.
+lrnr_glm <- make_learner(Lrnr_glm)
+lrnr_mean <- make_learner(Lrnr_mean)
+sl <- Lrnr_sl$new(learners = list(lrnr_glm,lrnr_mean))
+
+learner_list <- list(Y = sl, A = sl)
+
+# PREPARE THE THINGS WE WANT TO FEED IN TO TMLE3
+# ate_spec defines the exposure levels we want 
+# to compare
+ate_spec <- tmle_ATE(treatment_level = 1, control_level = 0)
+
+# nodes define the variables we want to adjsut for, and the exposure and the outcome
+nodes <- list(W = c("sex", "age", "income", "sbp", "dbp", "price71", "tax71", "race"), 
+              A = "qsmk", 
+              Y = "wt_delta")
+
+# Run the tmle3 function using the pieces defined above 
+tmle_fit <- tmle3(ate_spec, nhefs, nodes, learner_list)
+
+exp(tmle_fit$summary$psi_transformed)
+
+# tmle_fit$summary$lower_transformed
+# 
+# tmle_fit$summary$upper_transformed
+```
+
+#### Double robust estimation- 2
+```{r}
+# using the SuperLearner function with simple average estimator and a glm estimator.
+sl <- c("SL.mean","SL.glm")
+
+outcome <- nhefs$wt_delta
+exposure <- nhefs$qsmk
+covariates <- nhefs[,c("sex", "age", "income", "sbp", "dbp", "price71", "tax71", "race")]
+
+AIPW_SL <- AIPW$new(Y = outcome,
+                    A = exposure,
+                    W = covariates,
+                    Q.SL.library = sl,
+                    g.SL.library = sl,
+                    k_split = 3,
+                    verbose=FALSE)$
+  fit()$
+  summary(g.bound = 0.025)$ 
+  plot.p_score()$
+  plot.ip_weights()
+
+exp(AIPW_SL$result[3,1])
+```
+
+#### Non parameter- association 
+```{r}
+# random Forrest
+#' Marginal Standardization with Random Forest
+model0 <- ranger(modelForm0, num.trees=500, mtry=3, min.node.size = 50, data=(nhefs))
+
+nhefs$mu0 <- predict(model0, data=nhefs, type="response")$pred
+
+marg_stand_OR_reg <- mean(nhefs$mu0[nhefs$qsmk==1])/mean(1-nhefs$mu0[nhefs$qsmk==1])/( mean(nhefs$mu0[nhefs$qsmk==0])/mean(1-nhefs$mu0[nhefs$qsmk==0]))
+
+marg_stand_OR_reg
+```
+
+`Non parameter- potential outcome`
+```{r}
+# random Forrest
+#' Marginal Standardization with Random Forest
+# model0 <- ranger(modelForm, num.trees=500, mtry=3, min.node.size = 50, data=subset(nhefs, qsmk==0))
+# model1 <- ranger(modelForm, num.trees=500, mtry=3, min.node.size = 50, data=subset(nhefs, qsmk==1))
+# 
+# mu1 <- predict(model1, data=nhefs, type="response")$pred
+# mu0 <- predict(model0, data=nhefs, type="response")$pred
+# 
+# marg_stand_RDrf <- mean(mu1) - mean(mu0)
+
+# bootfunc <- function(data,index){
+#   boot_dat <- data[index,]
+#   model0 <- ranger(modelForm, num.trees=500, mtry=5, data=subset(boot_dat, qsmk==0))
+#   model1 <- ranger(modelForm, num.trees=500, mtry=5, data=subset(boot_dat, qsmk==1))
+#   mu1 <- predict(model1,data=boot_dat,type="response")$pred
+#   mu0 <- predict(model0,data=boot_dat,type="response")$pred
+#   
+#   marg_stand_RD_ <- mean(mu1)-mean(mu0)
+#   return(marg_stand_RD_)
+# }
+# 
+# #' Run the boot function.  
+# set.seed(123)
+# boot_res <- boot(nhefs,bootfunc,R=200)
+# boot_RDrf <- boot.ci(boot_res)
+
+# boot_RDrf$bca
+# marg_stand_RDrf 
+
+```
+
+
+
+

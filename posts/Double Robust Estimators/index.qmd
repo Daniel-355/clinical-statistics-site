@@ -1,0 +1,406 @@
+---
+title: "Double Robust Estimators"
+description: "A practical R learning guide to Double Robust Estimators, with concise explanations, reproducible examples, and interpretation guidance."
+date: 2026-08-31
+section: "Epidemiology & Real-World Evidence"
+category: "Causal Methods"
+topic: "Double Robust Estimators"
+type: article
+tags: ["Causal Methods", "Epidemiology & Real-World Evidence", "Double", "Robust", "Estimators"]
+status: published
+featured: true
+youtube: []
+pdf: []
+downloads: []
+validate-yaml: false
+execute:
+  enabled: false
+  echo: true
+  warning: false
+  error: true
+---
+
+## Why This Topic Matters
+
+Causal methods combine design assumptions and statistical adjustment to estimate well-defined treatment or exposure contrasts.
+
+## Learning Objectives
+
+After working through this material, you should be able to:
+
+- explain the main ideas behind **Double Robust Estimators**;
+- interpret the R workflow and its output; and
+- adapt the examples to a related analysis.
+
+## Lesson Roadmap
+
+The original material is organized around the following topics:
+
+1. Using sl3 with AIPW
+2. Using sl3 with tmle3
+
+## How to Use This Lesson
+
+Read the explanation before each workflow, then run the R chunks in sequence. Code and output are shown together so that each numerical or graphical result can be connected to the command that produced it. Some source examples require optional packages or external data. Those setup-dependent chunks remain visible for reference but are marked `eval: false` when they cannot be reproduced safely in a clean website build.
+
+## Reproducible Learning Check
+
+This short R chunk confirms the scope of the lesson and always produces a visible output.
+
+```{r}
+#| label: learning-overview
+learning_overview <- data.frame(
+  section = "Epidemiology & Real-World Evidence",
+  category = "Causal Methods",
+  topic = "Double Robust Estimators"
+)
+learning_overview
+```
+
+## Learning Material
+
+The following material develops **Double Robust Estimators** from core ideas to practical implementation. Definitions and assumptions come first; worked code then shows how the ideas are represented computationally.
+
+### Conceptual Foundation
+
+The material below closely follows the original R Markdown source, with its examples retained for study and reuse.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#### Using sl3 with AIPW
+
+<!-- generated-learning-note -->
+This subsection explains **Using sl3 with AIPW** and shows how it contributes to the overall Double Robust Estimators workflow.
+
+
+In detail please see the reference by [Ashley I Naimi](https://github.com/ainaimi/mlci_shortcourse).
+
+### R Workflow and Examples
+
+Run the examples in order because later blocks may reuse objects created earlier. Each block includes a short purpose statement and guidance for reading its output.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r}
+library(AIPW)
+library(tmle3)
+library(sl3)
+library(tidyverse)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+
+Scale the variables 
+
+<!-- generated-learning-note -->
+**Purpose.** This source block depends on optional software, external data, or a machine-specific path. It is retained as a reference and is not executed during the website build.
+
+```{r}
+#| eval: false
+#| code-fold: true
+# data manipulate,  standardization or centralization
+scale_ <- function(x) {
+(x - mean(x, na.rm = TRUE))/sd(x, na.rm = TRUE)
+}
+
+nhefs <- read.csv("C:\\Users\\hed2\\Downloads\\mybook2\\mybook2\\nhefs_an.csv") %>%
+mutate(wt_delta = as.numeric(wt82_71 >
+median(wt82_71)), age = scale_(age),
+sbp = scale_(sbp), dbp = scale_(dbp),
+price71 = scale_(price71), tax71 = scale_(tax71)) %>%
+select(-wt82_71)
+
+head(nhefs)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Because this block is not executed, it produces no website output. Enable it only after its dependencies and input paths have been validated.
+
+
+Choose learners and configuration
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+lrnr_mean <- make_learner(Lrnr_mean)
+lrnr_glm <- make_learner(Lrnr_glm)
+
+# ranger learner
+grid_params <- list(num.trees = c(250, 500,
+1000, 2000), mtry = c(2, 4, 6), min.node.size = c(50,
+100))
+grid <- expand.grid(grid_params, KEEP.OUT.ATTRS = FALSE)
+lrnr_ranger <- vector("list", length = nrow(grid))
+for (i in 1:nrow(grid)) {
+lrnr_ranger[[i]] <- make_learner(Lrnr_ranger,
+num.trees = grid[i, ]$num.trees,
+mtry = grid[i, ]$mtry, min.node.size = grid[i,
+]$min.node.size)
+}
+lrnr_ranger <- make_learner(Lrnr_ranger) ########### FLAG! ###########
+
+# glmnet learner
+grid_params <- seq(0, 1, by = 0.25)
+lrnr_glmnet <- vector("list", length = length(grid_params))
+for (i in 1:length(grid_params)) {
+lrnr_glmnet[[i]] <- make_learner(Lrnr_glmnet,
+                                 alpha = grid_params[i])
+}
+lrnr_glmnet <- make_learner(Lrnr_glmnet) ########### FLAG! ###########
+
+# xgboost learner
+grid_params <- list(max_depth = c(2, 4, 6,
+8), eta = c(0.01, 0.1, 0.2), nrounds = c(50,
+100, 500))
+grid <- expand.grid(grid_params, KEEP.OUT.ATTRS = FALSE)
+lrnr_xgboost <- vector("list", length = nrow(grid))
+for (i in 1:nrow(grid)) {
+lrnr_xgboost[[i]] <- make_learner(Lrnr_xgboost,
+max_depth = grid[i, ]$max_depth,
+eta = grid[i, ]$eta)
+}
+lrnr_xgboost <- make_learner(Lrnr_xgboost) ########## FLAG! ##########
+
+# earth learner
+grid_params <- c(2, 3, 4, 5, 6)
+lrnr_earth <- vector("list", length = length(grid_params))
+for (i in 1:length(grid_params)) {
+lrnr_earth[[i]] <- make_learner(Lrnr_earth,
+degree = grid_params[i])
+}
+lrnr_earth <- make_learner(Lrnr_earth) ############ FLAG! ############
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+Set a stack learners library
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+stacklearner <- Stack$new(lrnr_mean, lrnr_glm,
+lrnr_ranger, lrnr_glmnet, lrnr_xgboost,
+lrnr_earth)
+
+metalearner <- Lrnr_nnls$new(convex = T)
+
+sl.lib <- Lrnr_sl$new(learners = stacklearner,
+metalearner = metalearner)
+
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+Set parameters of the model
+
+<!-- generated-learning-note -->
+**Purpose.** This block extracts inferential or predictive results from fitted objects. Match each estimate, interval, contrast, or diagnostic to the quantity it represents.
+
+```{r}
+outcome <- nhefs$wt_delta
+exposure <- nhefs$qsmk
+covariates <- nhefs[, c("age", "sbp", "dbp",
+"price71", "tax71", "sex", "income",
+"race")]
+
+# set parameters
+set.seed(123)
+AIPW_SL <- AIPW$new(Y = outcome, A = exposure,
+W = covariates, Q.SL.library = sl.lib,
+g.SL.library = sl.lib, k_split = 10,
+verbose = FALSE)$fit()$summary(g.bound = 0.025)$plot.p_score()
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Interpret estimates on the scale reported by the function, and use intervals or other uncertainty measures when drawing conclusions.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+# ouput ATE
+print(AIPW_SL$result, digits = 2)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+
+#### Using sl3 with tmle3
+
+<!-- generated-learning-note -->
+This subsection explains **Using sl3 with tmle3** and shows how it contributes to the overall Double Robust Estimators workflow.
+
+
+Stack learners
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+sl_ <- make_learner(Stack, unlist(list(lrnr_mean,
+lrnr_glm, lrnr_ranger, lrnr_glmnet, lrnr_xgboost,lrnr_earth), recursive = TRUE))
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+# DEFINE SL_Y AND SL_A We only need
+# one, because they're the same
+Q_learner <- Lrnr_sl$new(learners = sl_,  #stacking learners
+metalearner = Lrnr_nnls$new(convex = T))
+
+g_learner <- Lrnr_sl$new(learners = sl_,
+metalearner = Lrnr_nnls$new(convex = T))
+
+learner_list <- list(Y = Q_learner, A = g_learner)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+Setup the TMLE3 model
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+# PREPARE THE THINGS WE WANT TO FEED IN
+# TO TMLE3
+ate_spec <- tmle_ATE(treatment_level = 1,
+control_level = 0)
+
+nodes_ <- list(W = c("age", "sbp", "dbp",
+"price71", "tax71", "sex", "income",
+"race"), A = "qsmk", Y = "wt_delta")
+ 
+# RUN TMLE3
+set.seed(123)
+tmle_fit_ <- tmle3(ate_spec, nhefs, nodes_,
+learner_list)
+print(tmle_fit_)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+Model properties to diagnose (calculate PS and stabilized weights)
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+tmle_task <- ate_spec$make_tmle_task(nhefs,
+nodes_)
+
+initial_likelihood <- ate_spec$make_initial_likelihood(tmle_task,
+learner_list)
+
+## save propensity score for diagnosis
+# initial ps
+propensity_score <- initial_likelihood$get_likelihoods(tmle_task)$A
+# updated ps
+propensity_score <- propensity_score * nhefs$qsmk +
+(1 - propensity_score) * (1 - nhefs$qsmk)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block prepares the analysis data. Follow each transformation carefully because filtering, recoding, grouping, and reshaping determine the observations used downstream.
+
+```{r}
+plap_ <- tibble(exposure = nhefs$qsmk, pscore = propensity_score)
+
+# updated weight
+plap_ <- plap_ %>%
+mutate(sw = exposure * (mean(exposure)/propensity_score) +
+(1 - exposure) * ((1 - mean(exposure))/(1 -
+propensity_score)))
+
+# distribution of 
+summary(plap_$sw)
+summary(propensity_score)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the data before and after the transformation. Confirm that row counts, group sizes, missingness, and variable values changed as intended.
+
+
+plot the final pscore  
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+# ps overlap plot
+ggplot(plap_) + geom_density(aes(pscore,
+color = factor(exposure))) + scale_fill_manual(values = c("blue",
+"orange")) + scale_x_continuous(expand = c(0,
+0)) + scale_y_continuous(expand = c(0,
+0))
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+Output p and q weights respectively by different learners
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+# super learner coefficients for PS
+# model
+g_fit <- tmle_fit_$likelihood$factor_list[["A"]]$learner
+
+g_fit$fit_object$full_fit$learner_fits$Lrnr_nnls_TRUE
+
+# super learner coefficients for
+# outcome model
+Q_fit <- tmle_fit_$likelihood$factor_list[["Y"]]$learner
+Q_fit$fit_object$full_fit$learner_fits$Lrnr_nnls_TRUE
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+## Interpreting the Results
+
+Check nuisance models, overlap, weights, balance, diagnostics, estimand alignment, and sensitivity to modeling choices. Treat the output as evidence generated under the stated data, coding choices, and assumptions. Before using the workflow in practice, replace example inputs with validated data and confirm that the method targets the intended scientific question.
+
+## Key Takeaways
+
+- **Connect method to purpose.** Identify the question and target quantity before choosing code or a model.
+- **Read code and output together.** Confirm what each object, estimate, interval, table, or plot represents.
+- **Check assumptions and diagnostics.** A successful computation is not by itself evidence that the result is reliable.
+- **Adapt deliberately.** When applying the example elsewhere, document changes to data definitions, parameters, and analytical choices.

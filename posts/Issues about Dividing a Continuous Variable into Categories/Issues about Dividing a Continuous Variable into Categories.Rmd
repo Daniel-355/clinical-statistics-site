@@ -1,0 +1,264 @@
+---
+title: "Common issues in Statistics"
+output: html_document
+date: '2024-02-01'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+[reference](https://web.ma.utexas.edu/users/mks/statmistakes/StatisticsMistakes.html)
+
+
+### No plotting before analysis
+
+- Plot is sometimes better to check the assumptions than hypothesis test. 
+
+- Instead, use a probability plot (also know as a quantile plot or Q-Q plot). it is very hard to tell whether or not a small data set comes from a particular distribution. Histogram varies by the number of bins. 
+
+- Plot original lowess plots or other types of plots
+
+- Plot residuals (instead of response) vs. predictor. A non-random pattern suggests that a simple linear model is not appropriate. Plot residuals against fitted values (This would show up as a funnel or megaphone shape to the residual plot.)
+
+- First check any independence assumptions, then any equal variance assumption, then any assumption on distribution (e.g., normal) of variables. Techniques are usually least robust to departures from independence and most robust to departures from normality. To check independence, plot residuals against any time variables present (e.g., order of observation), any spatial variables present(should consider a technique incorporating additional time or spatial variables), and any variables used in the technique (e.g., factors, regressors). A pattern that is not random suggests lack of independence . 
+
+ 
+
+
+
+
+### Measurement issues
+
+- "Even the most elementary statistical methods have their practical effectiveness limited by measurement variation."  please see the section "Bias analysis and control" about adjusting the measurement bias. 
+
+
+### Representative 
+
+- Many research studies involving people study a fairly restricted group. 
+
+
+- A sample can be biased, even though there is some randomness in the selection of the sample. In fact, a random sample might have a pattern (like normal distribution, or it might not). there is no way we can tell from looking at the sample whether or not it qualifies as a random sample.
+
+- Considering statistical significance but not practical significance. 
+
+ 
+
+
+**The mathematical theorems which justify most frequentist statistical procedures apply only to random samples. The similar thing to independence= unrelated= randomization at certain degree. **
+
+
+
+### Sample size and Power
+
+- The larger the sample size, the more likely a hypothesis test will detect a small difference. Thus it is especially important to consider practical significance when sample size is large. please see the affected factors of the sample size. 
+
+
+- p-value = the probability of obtaining a test statistic at least as extreme as the one from the data at hand, but not  is "the probability that the null hypothesis is true".
+
+
+- Neglecting to do a power analysis/sample size calculation before collecting data. Being convinced by a research study with low power. 
+
+- Power as defined above for a hypothesis test is also called prospective or a priori power. (In fact, it is best calculated before even gathering the data, and taken into account in the data-gathering plan.) However, some methods of calculating retrospective power calculate the power to detect the effect observed in the data -- which misses the whole point of considering practical significance.  
+
+- The most straightforward consequence of underpowered studies is that effects of practical importance are not detected. More generally, an overpowered study may be considered unethical if it wastes resources. 
+
+- increasing the sample size by a factor of 4 increases the power by a factor of about 2. 
+
+
+### Interpreting results 
+
+- "The only legitimate way to try to establish a causal connection statistically is through the use of randomized experiments." 
+
+
+- "The rate of change of the `conditional mean` of Y with respect to x is estimated to be between 1.80 and 2.56" is usually preferable."
+
+- The more experiments that give the same result, the stronger the evidence. it can be based on the Bayesian theory. 
+
+- I type error; the sample in the study is giving an unusually extreme test statistic.
+
+- There is also the possibility that the sample is biased or the method of analysis was inappropriate. 
+
+
+
+### Multiple comparisons
+
+- Performing multiple inference without adjusting the (overall) Type I error rate/family-wise error rate (FWER) accordingly is a common error in research using statistics.
+ 
+
+- Many stepwise variable selection methods involve multiple inference. so that exists in ensitivity analyses. 
+
+- An analysis may involve inference for more than one regression coefficient.
+
+- Considering confidence intervals for conditional means at more than one value of the predictors. are automatically given by most software. [ref](https://web.ma.utexas.edu/users/mks/statmistakes/multipleinference.html)
+
+- Bounding the False Discovery Rate (FDR) will usually give higher power than bounding the overall Type I error rate (FWER).
+
+  - Researchers could reasonably decide to ignore overall Type I error in the initial screening tests, since there would be no harm or excessive expense (or to be publised) in having a high Type I error rate. 
+
+
+- Data Snooping, the problems with data snooping are essentially the problems of multiple inference (the number of data-snooping inferences by stratifications).
+
+ 
+
+
+
+### Dividing a Continuous Variable into Categories
+
+- Modern regression models do not require categorization.
+In general, continuous variables should remain continuous in
+regression models. --by O. Naggara
+
+- When doing hypothesis tests, the loss of information when dividing continuous variables into categories typically translates into losing power. 
+
+- Choosing bins to make a histogram can result in a misleading histogram and causes fake realtionship trend. 
+
+- If a continuous variable such as size is to be dichotomized,
+the choice of cut-point should be made before analysis and
+with some theoretic or clinical justification. Data-driven
+cut-points should be avoided. Never choose an optimal
+cut-point based on minimizing the P value (AUC) or maximizing
+statistics such as odds ratios.
+
+- If a continuous variable is categorized, having 3 groups is
+preferable to just 2. Again, prespecification of cut-points is
+strongly recommended.
+
+
+- Non-linear modeling of continuous variables can be used 
+
+- Categorizing may also sometimes be appropriate for explaining an idea to an audience. However, this should only be done when the full analysis has been done. 
+
+- Can not evaluate continuous variables by a confusion matrix 
+
+- Treating ordinal variables like quantitative variables without thinking about whether this is appropriate in the particular situation at hand. 
+
+
+
+### Inappropriate Method of Analysis
+
+ 
+
+- Each frequentist inference technique (hypothesis test or confidence interval) involves model assumptions. Bayesian statistical techniques also involve assumptions. 
+
+- What are the model assumptions for that technique? What reason is there to believe that the model assumptions are true?
+
+- Is the technique robust to some departures from the model assumptions? Techniques are least likely to be robust to departures from assumptions of independence. `The independence assumption is fragile. `Even modest violations of independence can introduce substantial biases into conventional procedures. 
+
+- Robust statistical methods are designed even when the data contains outliers or is not strictly normally distributed (homogeneity of variance...), like robust linear regression, robust anova, yuen's t test, mm-estimators (for multiple regression), robust pca and Robustifying penalized methods. t test and anova are robust to deviations from the normal distribution and homogeneity of variance thanks to central limit theorem when large sample size. nonparametric analyses resist the effects of outliers but not heteroscedasticity.
+
+- For large enough sample size, the least squares estimate of the conditional mean is fairly robust to departures from the model assumption of normality of errors. 
+
+- Sometimes a rough idea of whether or not model assumptions might fit can be obtained by either plotting the data or plotting residuals obtained from a tentative use of the model.
+
+
+#### Pseudoreplication (not independent)
+
+- Most models for statistical inference require true replication. True replication permits the estimation of variability within a treatment. Without estimating variability within treatments, it is impossible to do statistical inference. Here, replication refers to having more than one experimental (or observational) unit with the same treatment. a treatment is independently applied.
+
+- If not, variability will probably be underestimated.  
+
+- If not, confidence intervals that are too small.
+
+- An inflated probability of a Type I error (falsely rejecting a true null hypothesis).
+
+- Do whatever is possible to minimize lack of independence in the the pseudo-replicates and increase randomization. 
+
+- Observational studies are particularly prone to pseudoreplication.
+
+
+### Using confidence intervals when prediction intervals are needed
+
+
+- The confidence interval for the conditional mean measures our degree of uncertainty in our estimate of the conditional mean; but the prediction interval must also take into account the variability in the conditional distribution. the latter usually be called percentile. 
+
+
+
+### Overinterpreting High R2
+
+In many areas of the social and biological sciences, an R2 of about 0.50 or 0.60 is considered high. vice versa. where the response was independent of all the predictors (so all regressors have coefficient zero in the true mean function), but R2 = 0.59.2. [ref](https://web.ma.utexas.edu/users/mks/statmistakes/Rsquared.html)
+
+
+### Alternatives to Stepwise Selection variables (may pitfall)
+
+- Select variables using cross validation method. 
+
+- C-statistic. It is an estimate of Mean Square Error, and can also be regarded as a measure that accounts for both bias and variance. Other aids include Akaike's Information Criterion (AIC) and variations. 
+
+- Context can be important to consider in deciding on a model. For example, the questions of interest can dictate that certain variables need to remain in the model; or quality of data can help decide which of two variables to retain.  
+
+
+### Suggestions for Researchers
+
+
+#### planning research
+
+- involve a experienced statistician at the begin of the study.  
+
+- it may be wise to limit your study.
+
+- think about how you will gather and analyze it before you start to gather the data.
+
+- design affects what method of analysis is appropriate.
+
+- Be sure to record any time and spatial variables present, whether or not you initially plan to use them in your analysis.
+
+- Also think about any factors that might make the sample biased.
+
+- Think carefully about what measures you will use.
+
+- If you are gathering observational data, think about possible confounding factors and plan your data gathering to reduce confounding.
+
+- Think carefully about how you will randomize or sample
+
+- Think carefully about whether or not the model assumptions of your intended method of analysis are likely to be reasonable.
+
+- Conduct a pilot study to trouble shoot and obtain variance estimates for a power analysis.
+
+- Decide on appropriate levels of Type I and Type II error, taking into account consequences of each type of error.
+
+- Plan how to deal with multiple inferences, including "data snooping" questions 
+
+- How you plan to handle missing data.
+
+#### analyzing data
+
+- ask whether or not the model assumptions of the procedure are plausible in the context of the data.
+
+- Plot the data as possible to get additional checks on whether or not model assumptions hold.
+
+- if model assumptions appear to be violated, consider transformations of the data, or use alternate methods of analysis as appropriate.
+
+- be sure to take that into account by using appropriate methodology for multiple comparisons.
+
+- Keep careful records of decisions made in data cleaning and in using software.
+
+#### writing
+
+- Include enough detail so the reader can critique both the data gathering and the analysis.
+
+- Look for and report possible sources of bias
+
+- be sure to reiterate or summarize the limitations in stating conclusions 
+
+- a website to accompany the article.
+
+- Include discussion of why the analyses used are appropriate. 
+
+- Have the authors taken practical significance as well as statistical significance into account in drawing conclusions?
+
+- follow items to Evidence Based Medicine reports
+
+
+
+
+
+
+
+
+
+
+
+
+
+

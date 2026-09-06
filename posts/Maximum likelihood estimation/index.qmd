@@ -1,0 +1,395 @@
+---
+title: "Maximum likelihood estimation"
+description: "A practical R learning guide to Maximum likelihood estimation, with concise explanations, reproducible examples, and interpretation guidance."
+date: 2026-08-31
+section: "Biostatistics"
+category: "Statistical Principles & Estimands"
+topic: "Maximum likelihood estimation"
+type: article
+tags: ["Statistical Principles & Estimands", "Biostatistics", "Maximum", "likelihood", "estimation"]
+status: published
+featured: true
+youtube: []
+pdf: []
+downloads: []
+validate-yaml: false
+execute:
+  echo: true
+  warning: false
+  error: true
+---
+
+## Why This Topic Matters
+
+Statistical principles define what is being estimated, under which assumptions, and how uncertainty should be represented.
+
+## Learning Objectives
+
+After working through this material, you should be able to:
+
+- explain the main ideas behind **Maximum likelihood estimation**;
+- interpret the R workflow and its output; and
+- adapt the examples to a related analysis.
+
+## Lesson Roadmap
+
+The original material is organized around the following topics:
+
+1. Maximum likelihood estimation
+2. Likelihood estimation
+3. R demonstration
+4. Estimate confidence intervals using the likelihood
+5. The profile likelihood
+
+## How to Use This Lesson
+
+Read the explanation before each workflow, then run the R chunks in sequence. Code and output are shown together so that each numerical or graphical result can be connected to the command that produced it. Some source examples require optional packages or external data. Those setup-dependent chunks remain visible for reference but are marked `eval: false` when they cannot be reproduced safely in a clean website build.
+
+## Reproducible Learning Check
+
+This short R chunk confirms the scope of the lesson and always produces a visible output.
+
+```{r}
+#| label: learning-overview
+learning_overview <- data.frame(
+  section = "Biostatistics",
+  category = "Statistical Principles & Estimands",
+  topic = "Maximum likelihood estimation"
+)
+learning_overview
+```
+
+## Learning Material
+
+The following material develops **Maximum likelihood estimation** from core ideas to practical implementation. Definitions and assumptions come first; worked code then shows how the ideas are represented computationally.
+
+### Conceptual Foundation
+
+The material below closely follows the original R Markdown source, with its examples retained for study and reuse.
+
+---
+title: "Maximum likelihood estimation"
+date: "`r Sys.Date()`"
+author: Daniel 
+output: 
+  html_document:
+    theme: cerulean
+    toc: true 
+    toc_float: true
+---
+
+#### Maximum likelihood estimation
+
+<!-- generated-learning-note -->
+This subsection explains **Maximum likelihood estimation** and shows how it contributes to the overall Maximum likelihood estimation workflow.
+
+#### Likelihood estimation
+
+<!-- generated-learning-note -->
+This subsection explains **Likelihood estimation** and shows how it contributes to the overall Maximum likelihood estimation workflow.
+
+
+`(without random effects)`
+
+With the normal distribution of errors, likelihood can be expressed explicitly as the product of the densities of each of the $n$ independent **normal** observations.  
+$$\ell=-\log L$$
+<!-- $$ -->
+<!-- L\left(\left(y_{1}, \ldots, y_{n}\right), \mu, \sigma^{2}\right)=\prod_{i=1}^{n} \frac{1}{\sqrt{2 \pi \sigma^{2}}} \exp \left(-\frac{\left(y_{i}-\mu\right)^{2}}{2 \sigma^{2}}\right) -->
+<!-- $$ -->
+
+- the negative log-likelihood 
+$$
+\begin{aligned}
+\ell\left(\left(y_{1}, \ldots, y_{n}\right), \mu, \sigma^{2}\right) &=-\log \left[\prod_{i=1}^{n} \frac{1}{\sqrt{2 \pi \sigma^{2}}} \exp \left(-\frac{\left(y_{i}-\mu\right)^{2}}{2 \sigma^{2}}\right)\right] \\
+&=-\sum_{i=1}^{n}\left[\log \left(\frac{1}{\sqrt{2 \pi \sigma^{2}}}\right)+\left(-\frac{\left(y_{i}-\mu\right)^{2}}{2 \sigma^{2}}\right)\right]
+\end{aligned}
+$$
+then, 
+
+- for matrix format 
+
+$$
+\begin{aligned}
+\ell(\mathbf{y}, \beta, \gamma) &=\frac{1}{2}\left\{n \log (2 \pi)+\log \left|\sigma^{2} \mathbf{I}\right|+(\mathbf{y}-\mathbf{X} \beta)^{\prime}\left(\sigma^{2} \mathbf{I}\right)^{-1}(\mathbf{y}-\mathbf{X} \beta)\right\} \\
+&=\frac{1}{2}\left\{n \log (2 \pi)+\log \left(\prod_{i=1}^{n} \sigma^{2}\right)+(\mathbf{y}-\mathbf{X} \beta)^{\prime}(\mathbf{y}-\mathbf{X} \beta) / \sigma^{2}\right\} \\
+&=\frac{1}{2}\left\{n \log (2 \pi)+n \log \left(\sigma^{2}\right)+(\mathbf{y}-\mu)^{\prime}(\mathbf{y}-\mu) / \sigma^{2}\right\} \\
+&=\frac{1}{2}\left\{n \log (2 \pi)+n \log \left(\sigma^{2}\right)+\sum_{i=1}^{n}\left(y_{i}-\mu\right)^{2} / \sigma^{2}\right\}
+\end{aligned}
+$$
+    *where $\gamma$ derived from $\sigma^{2} \mathbf{I}$.* 
+
+- minimize $\ell$ by taking the derivative
+$$
+argmin(\ell(\mathbf{y}, \beta, \gamma))
+$$
+
+
+`taking the derivatives of the negative log-likelihood function. `
+
+$$
+\begin{aligned}
+\frac{\partial \ell\left(\mu, \sigma^{2}\right)}{\partial \mu} &=\frac{1}{2}\left[\sum_{i=1}^{n}(-2)\left(y_{i}-\mu\right) / \sigma^{2}\right] \\
+&=\left(n \mu-\sum_{i=1}^{n} y_{i}\right) / \sigma^{2}=0
+\end{aligned}
+$$
+
+$$
+\frac{\partial \ell\left(\mu, \sigma^{2}\right)}{\partial \sigma^{2}}=\frac{1}{2}\left[\frac{n}{\sigma^{2}}-\frac{\sum_{i=1}^{n}\left(y_{i}-\mu\right)^{2}}{\left(\sigma^{2}\right)^{2}}\right]=0
+$$
+
+`setting the derivatives equal to zero and solving for the parameters `
+
+$$
+\begin{aligned}
+\hat{\mu} &=\bar{y} \\
+\hat{\sigma}^{2} &=\frac{1}{n} \sum_{i=1}^{n}\left(y_{i}-\mu\right)^{2} \\
+&=\frac{1}{n} \sum_{i=1}^{n}\left(y_{i}-\bar{y}\right)^{2}
+\end{aligned}
+$$
+
+`but for REML`
+$$
+\begin{aligned}
+\hat{\sigma}^{2} &=\frac{1}{n-1} \sum_{i=1}^{n}\left(y_{i}-\mu\right)^{2} \\
+&=\frac{1}{n-1} \sum_{i=1}^{n}\left(y_{i}-\bar{y}\right)^{2}
+\end{aligned}
+$$
+
+#### R demonstration
+
+<!-- generated-learning-note -->
+This subsection explains **R demonstration** and shows how it contributes to the overall Maximum likelihood estimation workflow.
+
+
+- toy data
+
+### R Workflow and Examples
+
+Run the examples in order because later blocks may reuse objects created earlier. Each block includes a short purpose statement and guidance for reading its output.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block generates controlled example data. Simulation makes the data-generating assumptions explicit and provides a known setting in which to study the method.
+
+```{r}
+set.seed(123)
+n <- 20000
+x <- rnorm(n, 2, sqrt(2))
+s <- rnorm(n, 0, 0.8)
+y <- 1.5+x*3+s
+mydata <- data.frame(y,x)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the generated sample with the parameters used to create it. Differences reflect random variation unless the code intentionally introduces bias or structure.
+
+
+- using linear regression
+
+<!-- generated-learning-note -->
+**Purpose.** This block specifies and fits the statistical model. Identify the outcome, predictors, reference levels, link or distribution, and any correlation structure before interpreting coefficients.
+
+```{r,warning=F}
+lmfit <- lm(y~., data=mydata)
+# logLik(lmfit)
+coefficients(lmfit)
+(summary(lmfit)$sigma**2)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Focus on coefficient direction and scale, uncertainty intervals, fit statistics, and diagnostics. Statistical significance alone does not establish practical importance or model adequacy.
+
+- using `-log max likelihood estimate` formula 
+
+**notice, using vector and matrix notation**
+
+<!-- generated-learning-note -->
+**Purpose.** This block defines a reusable function. Separate its inputs, calculations, and returned value before applying it to new data.
+
+```{r}
+ ## Using the mathematical expression:
+ minusloglik <- function(param){
+   beta <- param[-1] #Regression Coefficients
+   sigma <- param[1] #Variance
+   y <- as.vector(mydata$y) #DV
+   x <- cbind(1, mydata$x) #IV
+   mu <- x%*%beta #multiply matrices
+   0.5*(n*log(2*pi) + n*log(sigma) + sum((y-mu)^2)/sigma)
+ }
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Test the function with simple inputs whose expected answer is known before relying on it in a larger workflow.
+
+ 
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r,warning=F}
+MLoptimize <- optim(  c (1,  1, 1 ), minusloglik)
+## The results:
+MLoptimize$par
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+- using max likelihood estimate directly (normal distribution)
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r,warning=F,message=F}
+# max 
+library(maxLik)
+ols.lf <- function(param) {
+  beta <- param[-1] #Regression Coefficients
+  sigma <- param[1] #Variance
+  y <- as.vector(mydata$y) #DV
+  x <- cbind(1, mydata$x) #IV
+  mu <- x%*%beta #multiply matrices
+  sum(dnorm(y, mu, sqrt(sigma), log = TRUE)) #normal distribution(vector of observations, mean, sd)
+}  
+
+mle_ols <- maxLik(logLik = ols.lf, start = c(sigma = 1, beta1 = 1, beta2 = 1 ))
+summary(mle_ols)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+
+- another example
+
+<!-- generated-learning-note -->
+**Purpose.** This block specifies and fits the statistical model. Identify the outcome, predictors, reference levels, link or distribution, and any correlation structure before interpreting coefficients.
+
+```{r,warning=F}
+ols.lf <- function(param) {
+  beta <- param[-1] #Regression Coefficients
+  sigma <- param[1] #Variance
+  y <- as.vector(mtcars$mpg) #DV
+  x <- cbind(1, mtcars$cyl, mtcars$disp) #IV
+  mu <- x%*%beta #multiply matrices
+  sum(dnorm(y, mu, sqrt(sigma), log = TRUE)) #normal distribution(vector of observations, mean, sd)
+}  
+
+mle_ols <- maxLik(logLik = ols.lf, start = c(sigma = 1, beta1 = 1, beta2 = 1, beta3=1))
+summary(mle_ols)
+
+#Checking against linear regression
+lmfit2 <- (lm(mpg~cyl+disp, data=mtcars))
+lmfit2
+(summary(lmfit2)$sigma**2)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Focus on coefficient direction and scale, uncertainty intervals, fit statistics, and diagnostics. Statistical significance alone does not establish practical importance or model adequacy.
+
+
+ 
+#### Estimate confidence intervals using the likelihood
+
+<!-- generated-learning-note -->
+This section develops **Estimate confidence intervals using the likelihood**. Read the model specification together with its assumptions and the scale of each reported effect.
+
+
+Most classical confidence intervals for parameters are estimated using the likelihood approach, the Wald interval (or the asymptotic normality property).  
+
+$$
+\hat{\theta}_{i} \pm z_{1-\alpha / 2} S E_{\hat{\theta}_{i}}
+$$
+
+where the standard error is from the **second derivative of the log-likelihood function**. This is the **Hessian matrix/(observed) Information matrix** if there is more than one single model parameter.
+
+- take second derivative of the log-likelihood function
+
+$$
+I(\theta)=\ell^{\prime \prime}(\theta)
+$$
+
+*e.g. for one independent variable (with parameters: $\beta$ and $\sigma^2$ in the model).*
+
+*Here, giving the four entries of the $2 \times 2$ Hessian matrix *
+$$
+\frac{\partial^{2} \ell\left(\mu, \sigma^{2}\right)}{\partial \mu^{2}}=\frac{n}{\sigma^{2}}
+$$
+$$
+\frac{\partial^{2} \ell\left(\mu, \sigma^{2}\right)}{ \partial\left(\sigma^{2}\right) }=\sqrt{\frac{2\left(\hat{\sigma}^{2}\right)^{2}}{n}}
+$$
+
+$$
+\frac{\partial^{2} \ell\left(\mu, \sigma^{2}\right)}{\partial \mu \partial\left(\sigma^{2}\right)}=0\\
+\frac{\partial^{2} \ell\left(\mu, \sigma^{2}\right)}{ \partial\left(\sigma^{2}\right)\partial \mu}=0
+$$
+
+therefore
+$$
+S E_{\hat{\theta}_{i}}=\sqrt{\left(I(\hat{\theta})^{-1}\right)_{i}}
+$$
+
+`the inverse of the Fisher information is just each diagonal element, so`
+
+- For $\beta$
+$$
+S E_{\hat{\mu}}=\sqrt{\left(I\left(\hat{\mu}, \hat{\sigma}^{2}\right)^{-1}\right)_{11}}=\sqrt{\frac{\hat{\sigma}^{2}}{n}}
+$$
+`Thus, the Wald confidence interval for the mean would be`
+$$
+\hat{u}^{2} \pm z_{1-\alpha / 2} \sqrt{\frac{\hat{\sigma}^{2}}{n}}
+$$
+
+- For variance 
+$$
+S E_{\hat{\sigma}^{2}}=\sqrt{\left(I\left(\hat{\mu}, \hat{\sigma}^{2}\right)^{-1}\right)_{22}}=\sqrt{\frac{2\left(\hat{\sigma}^{2}\right)^{2}}{n}}
+$$
+
+`Thus, the Wald confidence interval for the variance would be` 
+$$
+\hat{\sigma}^{2} \pm z_{1-\alpha / 2} \hat{\sigma}^{2} \sqrt{\frac{2}{n}}
+$$
+
+**However, the following approach confidence interval will generally
+have much better small sample properties than the Wald interval.**
+
+$$\left\{\theta \mid \frac{L(\theta)}{L(\hat{\theta})}>\exp (-3.84 / 2)\right\}$$
+
+#### The profile likelihood
+
+<!-- generated-learning-note -->
+This subsection explains **The profile likelihood** and shows how it contributes to the overall Maximum likelihood estimation workflow.
+
+
+It can be profiled by maximizing the likelihood function with respect to all the other parameters.
+
+In the following equation,  $\sigma^{2}$ expressed by $\mu$ 
+ 
+$$
+\begin{aligned}
+L_{p}(\mu) &=L\left(\mu, \frac{1}{n} \sum_{i=1}^{n}\left(y_{i}-\mu\right)^{2}\right) \\
+&=\prod_{i=1}^{n} \frac{1}{\sqrt{2 \pi \frac{1}{n} \sum_{i=1}^{n}\left(y_{i}-\mu\right)^{2}}} \exp \left(-\frac{\left(y_{i}-\mu\right)^{2}}{2 \frac{1}{n} \sum_{i=1}^{n}\left(y_{i}-\mu\right)^{2}}\right)
+\end{aligned}
+$$
+  
+Similarly, the profile likelihood for the variance $\sigma^{2}$ can be expressed 
+$$
+\begin{aligned}
+L_{p}\left(\sigma^{2}\right) &=L\left(\hat{\mu}\left(\sigma^{2}\right), \sigma^{2}\right) \\
+&=L\left(\bar{y}, \sigma^{2}\right)
+\end{aligned}
+$$
+
+This becomes particularly simple, as the $u$-estimate does not depend on the $\sigma$.
+
+## Interpreting the Results
+
+Link every numerical result to its target quantity, assumptions, and sampling interpretation. Treat the output as evidence generated under the stated data, coding choices, and assumptions. Before using the workflow in practice, replace example inputs with validated data and confirm that the method targets the intended scientific question.
+
+## Key Takeaways
+
+- **Connect method to purpose.** Identify the question and target quantity before choosing code or a model.
+- **Read code and output together.** Confirm what each object, estimate, interval, table, or plot represents.
+- **Check assumptions and diagnostics.** A successful computation is not by itself evidence that the result is reliable.
+- **Adapt deliberately.** When applying the example elsewhere, document changes to data definitions, parameters, and analytical choices.

@@ -1,0 +1,407 @@
+---
+title: "MCMC sampling"
+description: "A practical R learning guide to MCMC sampling, with concise explanations, reproducible examples, and interpretation guidance."
+date: 2026-08-31
+section: "Biostatistics"
+category: "Adaptive & Bayesian Methods"
+topic: "MCMC sampling"
+type: article
+tags: ["Adaptive & Bayesian Methods", "Biostatistics", "MCMC", "sampling"]
+status: published
+featured: true
+youtube: []
+pdf: []
+downloads: []
+validate-yaml: false
+execute:
+  enabled: false
+  echo: true
+  warning: false
+  error: true
+---
+
+## Why This Topic Matters
+
+Adaptive and Bayesian methods update evidence as data accumulate and express uncertainty through probability distributions or decision rules.
+
+## Learning Objectives
+
+After working through this material, you should be able to:
+
+- explain the main ideas behind **MCMC sampling**;
+- interpret the R workflow and its output; and
+- adapt the examples to a related analysis.
+
+## Lesson Roadmap
+
+The original material is organized around the following topics:
+
+1. Introduction
+
+## How to Use This Lesson
+
+Read the explanation before each workflow, then run the R chunks in sequence. Code and output are shown together so that each numerical or graphical result can be connected to the command that produced it. Some source examples require optional packages or external data. Those setup-dependent chunks remain visible for reference but are marked `eval: false` when they cannot be reproduced safely in a clean website build.
+
+## Reproducible Learning Check
+
+This short R chunk confirms the scope of the lesson and always produces a visible output.
+
+```{r}
+#| label: learning-overview
+learning_overview <- data.frame(
+  section = "Biostatistics",
+  category = "Adaptive & Bayesian Methods",
+  topic = "MCMC sampling"
+)
+learning_overview
+```
+
+## Learning Material
+
+The following material develops **MCMC sampling** from core ideas to practical implementation. Definitions and assumptions come first; worked code then shows how the ideas are represented computationally.
+
+### Conceptual Foundation
+
+The material below closely follows the original R Markdown source, with its examples retained for study and reuse.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#### Introduction
+
+<!-- generated-learning-note -->
+This section establishes the concepts and assumptions needed to understand **Introduction** in the context of MCMC sampling.
+
+
+If the new solution costs less than the old solution then it is guaranteed to be accepted and a poorer solution is unlikely to be accepted. it is to calculate the integral, proportion, and sampling.
+ 
+Data simulation
+
+### R Workflow and Examples
+
+Run the examples in order because later blocks may reuse objects created earlier. Each block includes a short purpose statement and guidance for reading its output.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+# Plot the exponential distribution:
+x <- seq(from = 0, to = 10, length=20)
+y <- exp(-x)  #y is only density function
+plot(x,y)
+lines(x,y)
+
+mean(x )
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+Set up a target function
+
+<!-- generated-learning-note -->
+**Purpose.** This block defines a reusable function. Separate its inputs, calculations, and returned value before applying it to new data.
+
+```{r}
+# set up a target function, we want to sample from in this case, is exponent function 
+target <- function(x){
+  if (x < 0) {
+    return(0)
+  } else {
+    return(exp(-x))   #target function
+  }
+}
+
+target(3)
+target(-1)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Test the function with simple inputs whose expected answer is known before relying on it in a larger workflow.
+
+Sampling from a proposal distribution proportional =normal to the target =exponent
+
+<!-- generated-learning-note -->
+**Purpose.** This block generates controlled example data. Simulation makes the data-generating assumptions explicit and provides a known setting in which to study the method.
+
+```{r}
+# program a Metropolis–Hastings scheme to sample 
+x <- rep(0, 1000)
+x[1] <- 30     # this is just a starting value, which I’ve set arbitrarily to 3
+
+for (i in 2:1000) {
+  # i=2
+  currentx <- x[i - 1]
+  proposedx <-   rnorm(1, mean = currentx, sd = 1)
+  A <- target(proposedx) / target(currentx)
+  if (runif(1) < A) {
+    x[i] <- proposedx
+  } else {
+    x[i] <- currentx
+  }
+}
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the generated sample with the parameters used to create it. Differences reflect random variation unless the code intentionally introduces bias or structure.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+hist(x )
+plot(x)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+Wrap this up in a function
+
+<!-- generated-learning-note -->
+**Purpose.** This block generates controlled example data. Simulation makes the data-generating assumptions explicit and provides a known setting in which to study the method.
+
+```{r}
+easyMCMC <- function(niter, startval, proposalsd) {
+  x <- rep(0, niter)
+  x[1] <- startval
+  for (i in 2:niter) {
+    currentx <- x[i - 1]  #status 1
+    proposedx <-  rnorm(1, mean = currentx, sd = proposalsd)  #status 2
+    #transform matrix, that is the matter, to sample target sampling
+    
+    A <- target(proposedx) / target(currentx)  
+    if (runif(1) < A) {
+      x[i] <- proposedx
+    } else {
+      x[i] <- currentx
+    }
+  }
+  return(x)
+}
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the generated sample with the parameters used to create it. Differences reflect random variation unless the code intentionally introduces bias or structure.
+
+
+Run the MCMC scheme 3 times with different start values
+
+It will be stable even if the start value is large. 
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+# 
+par(mfrow = c(1, 1))
+z1 <- easyMCMC(1000,50,1)
+z2 <- easyMCMC(1000,5,1)
+z3 <- easyMCMC(1000,0.5,1)
+plot(z1, type = "l",col = "red")
+lines(z2, col = "black")
+lines(z3, col = "green")
+
+# posterior mean
+mean(z1)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+How to calculate pie
+
+<!-- generated-learning-note -->
+**Purpose.** This block generates controlled example data. Simulation makes the data-generating assumptions explicit and provides a known setting in which to study the method.
+
+```{r}
+# generate random sample based on normal distribution or uniform
+# x=rnorm(10000, 0, 1.7) 
+x=runif(10000, -1, 1) 
+
+# target function
+y= sqrt (1-x^2)
+plot(x,y)
+
+# create uniform random numbers based on the value of density function
+s=numeric()
+for (i in 1:10000){
+  s[i]=runif(1, min = 0, max = 1)
+}
+s <- unlist(s)  
+plot(x,s)
+
+# calculate the dots including in the target function
+diff=y-s
+data=data.frame(x,s,y,diff)
+
+# select the qualified sample
+data2=data[data$diff>=0,]
+plot(data2$x,data2$s)
+hist(data2$x,100)
+
+# calculate the approximate integral, p* common function integral 
+p=nrow(data2)/10000
+
+# area of half circle
+p*2
+# vs
+pi/2
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the generated sample with the parameters used to create it. Differences reflect random variation unless the code intentionally introduces bias or structure.
+
+
+Monte Carlo Simulations Using the MonteCarlo Package 
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r MonteCarlo-package}
+library(pacman)
+pacman::p_load(data.table, fixest, stargazer, dplyr, magrittr, MonteCarlo)
+ 
+## Define the function for our OLS estimator
+
+ols_estimator <- function(n, beta_0, beta_1){
+  
+  # Generate data
+  U_i = rnorm(n, mean = 0, sd = 2) # Error
+  X_i = rnorm(n, mean = 5, sd = 5) # Independent variable
+  Y_i = beta_0 + beta_1*X_i + U_i  # Dependent variable
+  
+  # Formulate data.table
+  data_i = data.table(Y = Y_i, X = X_i)
+  
+  # Run regressions
+  ols_i <- feols(data = data_i, Y ~ X)
+  
+  # Extract slope coefficient and save
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r MonteCarlo-package-2}
+slope
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r MonteCarlo-package-3}
+<- ols_i$coefficients[2]
+  
+  # Return Results in a list
+  return(list("beta_1" = unname(slope)))
+  
+  
+}
+
+# set start values at only one interation 
+ols_estimator(n = 100, beta_0 = 1.5, beta_1 = 2.0)
+# $beta_1
+# [1] 1.947254
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+MonteCarlo interation
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+## Define parameter grid for MonteCarlo interation
+n_grid <- c(100, 500, 1000)   # Sample sizes
+beta0_grid <- c(2.0)          # Intercept
+beta1_grid <- c(1.5)          # Slope coefficient
+
+## Collect parameter grids in list
+param_list = list("n" = n_grid, "beta_0" = beta0_grid, "beta_1" = beta1_grid)
+
+## Run simulation
+MC_result_OLS <- MonteCarlo(func = ols_estimator,    #  iteration estimator
+                            nrep = 500,              
+                            ######## set times of iterates, 500 results
+                            
+                            param_list = param_list, # Parameter grid (Sample size and betas)
+                            ncpus = 1,               # Number of computers
+                            time_n_test = TRUE)      
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r review-results, warning = FALSE, message = FALSE}
+## View results
+res <- MC_result_OLS$results
+res <- res$beta_1
+
+n_100 <- res[1,,,]   # Sample size of 100
+n_500 <- res[2,,,]   # Sample size of 500
+n_1000 <- res[3,,,]  # Sample size of 1000 
+
+hist(n_100, xlim = c(1.20,1.70))
+hist(n_500, xlim = c(1.20,1.70))
+hist(n_1000, xlim = c(1.20,1.70))
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block calculates descriptive summaries. Check the denominator, grouping variables, units, and treatment of missing values.
+
+```{r}
+# Summary statistics
+estimates_DT <- data.table(n_100 = n_100, n_500 = n_500, n_1000=n_1000)
+
+stargazer(estimates_DT[, c("n_100", "n_500","n_1000")], type = "text")
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Use the displayed values to understand center, spread, frequency, and missingness; investigate any implausible or unexpected result.
+
+## Interpreting the Results
+
+Inspect priors, likelihoods, posterior summaries, convergence, simulations, and operating characteristics. Treat the output as evidence generated under the stated data, coding choices, and assumptions. Before using the workflow in practice, replace example inputs with validated data and confirm that the method targets the intended scientific question.
+
+## Key Takeaways
+
+- **Connect method to purpose.** Identify the question and target quantity before choosing code or a model.
+- **Read code and output together.** Confirm what each object, estimate, interval, table, or plot represents.
+- **Check assumptions and diagnostics.** A successful computation is not by itself evidence that the result is reliable.
+- **Adapt deliberately.** When applying the example elsewhere, document changes to data definitions, parameters, and analytical choices.

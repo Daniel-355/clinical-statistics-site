@@ -1,0 +1,526 @@
+---
+title: "Linear mixed model covariance decomposition with random intercept- lme4"
+description: "A practical R learning guide to Linear mixed model covariance decomposition with random intercept- lme4, with concise explanations, reproducible examples, and interpretation guidance."
+date: 2026-08-31
+section: "Biostatistics"
+category: "Longitudinal & Repeated Measures"
+topic: "Linear mixed model covariance decomposition with random intercept- lme4"
+type: article
+tags: ["Longitudinal & Repeated Measures", "Biostatistics", "Linear", "mixed", "covariance"]
+status: published
+featured: true
+youtube: []
+pdf: []
+downloads: []
+validate-yaml: false
+execute:
+  echo: true
+  warning: false
+  error: true
+---
+
+## Why This Topic Matters
+
+Repeated observations from the same unit are correlated, so longitudinal models must represent both mean change and within-unit dependence.
+
+## Learning Objectives
+
+After working through this material, you should be able to:
+
+- explain the main ideas behind **Linear mixed model covariance decomposition with random intercept- lme4**;
+- interpret the R workflow and its output; and
+- adapt the examples to a related analysis.
+
+## Lesson Roadmap
+
+The original material is organized around the following topics:
+
+1. Linear mixed model covariance decomposition with random intercept- lme4
+2. Load data
+3. Using glm
+4. Using glm with random slopes
+5. Using lmm
+6. Get x,y,z
+
+## How to Use This Lesson
+
+Read the explanation before each workflow, then run the R chunks in sequence. Code and output are shown together so that each numerical or graphical result can be connected to the command that produced it. Some source examples require optional packages or external data. Those setup-dependent chunks remain visible for reference but are marked `eval: false` when they cannot be reproduced safely in a clean website build.
+
+## Reproducible Learning Check
+
+This short R chunk confirms the scope of the lesson and always produces a visible output.
+
+```{r}
+#| label: learning-overview
+learning_overview <- data.frame(
+  section = "Biostatistics",
+  category = "Longitudinal & Repeated Measures",
+  topic = "Linear mixed model covariance decomposition with random intercept- lme4"
+)
+learning_overview
+```
+
+## Learning Material
+
+The following material develops **Linear mixed model covariance decomposition with random intercept- lme4** from core ideas to practical implementation. Definitions and assumptions come first; worked code then shows how the ideas are represented computationally.
+
+### Conceptual Foundation
+
+The material below closely follows the original R Markdown source, with its examples retained for study and reuse.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#### Linear mixed model covariance decomposition with random intercept- lme4
+
+<!-- generated-learning-note -->
+This section develops **Linear mixed model covariance decomposition with random intercept- lme4**. Read the model specification together with its assumptions and the scale of each reported effect.
+
+
+#### Load data
+
+<!-- generated-learning-note -->
+This section prepares the information needed for **Load data**. Check variable definitions, units, coding, and missing values before moving to analysis.
+
+### R Workflow and Examples
+
+Run the examples in order because later blocks may reuse objects created earlier. Each block includes a short purpose statement and guidance for reading its output.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block imports or selects the data used in the example. Verify the file location, column types, coding, and missing values when substituting your own data.
+
+```{r}
+data(Orthodont, package="nlme")
+Data <- Orthodont
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Inspect dimensions, names, types, and several rows of the imported data. Unexpected structure at this stage will propagate into every later result.
+
+
+plot means and variances by higher level variable (grouping)
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+barplot(with(Data, tapply(distance, list(subject = Subject), mean)))
+barplot(with(Data, tapply(distance, list(subject = Subject), var)))
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+#### Using glm
+
+<!-- generated-learning-note -->
+This subsection explains **Using glm** and shows how it contributes to the overall Linear mixed model covariance decomposition with random intercept- lme4 workflow.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block specifies and fits the statistical model. Identify the outcome, predictors, reference levels, link or distribution, and any correlation structure before interpreting coefficients.
+
+```{r}
+fit.lm <- lm(distance ~ age+ Sex + Subject, data = Data) 
+anova(fit.lm)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Focus on coefficient direction and scale, uncertainty intervals, fit statistics, and diagnostics. Statistical significance alone does not establish practical importance or model adequacy.
+
+
+#### Using glm with random slopes
+
+<!-- generated-learning-note -->
+This subsection explains **Using glm with random slopes** and shows how it contributes to the overall Linear mixed model covariance decomposition with random intercept- lme4 workflow.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block extracts inferential or predictive results from fitted objects. Match each estimate, interval, contrast, or diagnostic to the quantity it represents.
+
+```{r}
+fit.aov <- aov(distance ~ age+ Sex + Error(Subject), data = Data) 
+summary(fit.aov)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Interpret estimates on the scale reported by the function, and use intervals or other uncertainty measures when drawing conclusions.
+
+*how can we compute $σ^2$ a from this output? note that $σ^2$= MSE  , and E(MSA) = $(σ_a)^2$ +n·$σ^2$ ,therefore$(σ_a)^2$ = (MSA−MSE)/n*
+
+#### Using lmm
+
+<!-- generated-learning-note -->
+This subsection explains **Using lmm** and shows how it contributes to the overall Linear mixed model covariance decomposition with random intercept- lme4 workflow.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r}
+library(lme4) 
+fit.lmer <- lmer(distance ~ age + Sex  +(1 | Subject), data = Data) 
+summary(fit.lmer)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+
+**default is compound symmetry**
+
+#### Get x,y,z
+
+<!-- generated-learning-note -->
+This subsection explains **Get x,y,z** and shows how it contributes to the overall Linear mixed model covariance decomposition with random intercept- lme4 workflow.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+X=(getME(fit.lmer, "X"))
+head(X)
+y=getME(fit.lmer, "y")
+head(y)
+
+Z <- getME(fit.lmer, "Z")
+head(Z)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+#### Get fixed effect and random effect coefficients
+
+<!-- generated-learning-note -->
+This subsection explains **Get fixed effect and random effect coefficients** and shows how it contributes to the overall Linear mixed model covariance decomposition with random intercept- lme4 workflow.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+bhat <- getME(fit.lmer, "fixef") #getME(fit.lmer, "beta")  # fixef(fit.lmer)
+bhat 
+uhat <- ranef(fit.lmer) 
+uhat
+
+coef(fit.lmer)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+#### Get random effect covariance structure (covariance matrix expandation)
+
+<!-- generated-learning-note -->
+This subsection explains **Get random effect covariance structure (covariance matrix expandation)** and shows how it contributes to the overall Linear mixed model covariance decomposition with random intercept- lme4 workflow.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+# theta <- getME(fit.lmer, "theta") # $r$
+# theta**2+ getME(fit.lmer, "sigma")**2 
+# 
+# theta**2
+# lwr <- getME(fit.lmer, "lower")
+# lwr
+
+# Lambda <- getME(fit.lmer, "Lambda") #  matrix
+# # head(Lambda)
+# # dim(Lambda)
+# Lambda%*%t(Lambda)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+`the relationship $\Sigma = TSST'$`
+ <!-- https://stats.stackexchange.com/questions/242759/calculate-random-effect-predictions-manually-for-a-linear-mixed-model -->
+ 
+<!-- # ```{r} -->
+<!-- # # getME(fit.lmer, "ST") -->
+<!-- # ``` -->
+
+`the relationship of theta and covariance` 
+$$
+\Sigma = \left(
+\begin{array}{cc}
+\theta_1 & 0 \\
+\theta_2 & \theta_3 
+\end{array}
+\right)
+\left(
+\begin{array}{cc}
+\theta_1 & \theta_2 \\
+0 & \theta_3 
+\end{array}
+\right) =
+\left(
+\begin{array}{cc}
+\theta_1^2 & \theta_1 \theta_2 \\
+\theta_1 \theta_2 & \theta_2^2 + \theta_3^2 
+\end{array}
+\right) = 
+\left(
+\begin{array}{cc}
+\sigma_1^2 & \sigma_{12} \\
+\sigma_{12} & \sigma_2^2 
+\end{array}
+\right)
+
+$$
+
+`we can equate θ1 with σ1 (the standard deviation of the intercept), θ2 with σ12/σ1 (the covariance scaled by the SD) ... θ3 is a little more complicated. in particular, in a model with only random-intercept terms, the θ vector is just the vector of RE standard deviations.`
+
+`The way lme4 works is that, given a value of θ, we can determine Σ`  
+ 
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+vc <- VarCorr(fit.lmer) 
+Lambda_new <-vc[["Subject"]][1]*diag(length(levels(Data$Subject)))
+head(Lambda_new)
+dim(Lambda_new)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+- **"theta": random-effects parameter estimates: these are parameterized as the relative Cholesky factors of each random effect term**
+
+- **use other cov structure by nlme**
+
+- **lme4 does not allow to specify it, and it can only fit LMMs with independent residual errors. However, the range of available variance-covariance matrices for the random effects are restricted to diagonal or general matrices. **
+
+<!--   Get  ST    -->
+<!-- ```{r} -->
+<!-- ST <- getME(fit.lmer, "ST") # $r$  -->
+
+<!-- ``` -->
+<!-- https://rdrr.io/cran/lme4/man/getME.html -->
+<!-- https://en.wikipedia.org/wiki/Cholesky_decomposition -->
+
+<!--   Get lower   -->
+<!-- ```{r} -->
+<!-- lower <- getME(fit.lmer, "lower") # $r$  -->
+<!-- lower -->
+<!-- ``` -->
+
+#### Get residual variance and its identity matrix
+
+<!-- generated-learning-note -->
+This subsection explains **Get residual variance and its identity matrix** and shows how it contributes to the overall Linear mixed model covariance decomposition with random intercept- lme4 workflow.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+sigma <- getME(fit.lmer, "sigma")**2 
+sigma
+head(sigma*diag(nrow(Data)))
+ 
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+#### Get y covariance matrix
+
+<!-- generated-learning-note -->
+This subsection explains **Get y covariance matrix** and shows how it contributes to the overall Linear mixed model covariance decomposition with random intercept- lme4 workflow.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+VM <- Z%*%Lambda_new%*%t(Z)+sigma*diag(nrow(Data)) 
+head(VM)
+dim(VM)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+#### Get fixed effect coefficients covariance matrix
+
+<!-- generated-learning-note -->
+This subsection explains **Get fixed effect coefficients covariance matrix** and shows how it contributes to the overall Linear mixed model covariance decomposition with random intercept- lme4 workflow.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+vcov <- vcov(fit.lmer) #fixed cov
+vcov
+# computer correlation coefficients 
+vcov@x[2]/prod(sqrt( diag(vcov(fit.lmer))[-3] ))
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+#### Get random effect coefficients covariance matrix (standard deviation)
+
+<!-- generated-learning-note -->
+This subsection explains **Get random effect coefficients covariance matrix (standard deviation)** and shows how it contributes to the overall Linear mixed model covariance decomposition with random intercept- lme4 workflow.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This source block depends on optional software, external data, or a machine-specific path. It is retained as a reference and is not executed during the website build.
+
+```{r}
+#| eval: false
+#| code-fold: true
+vc <- VarCorr(fit.lmer) 
+vc ## default print method: standard dev and corr
+as.matrix(Matrix::bdiag(vc)) #random effect covariance matrix
+ 
+# https://stackoverflow.com/questions/47307340/extracting-the-i-estimated-variance-covariance-matrix-of-random-effects-and-or
+# https://support.sas.com/documentation/cdl/en/statug/63033/HTML/default/viewer.htm#statug_mixed_sect022.htm
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Because this block is not executed, it produces no website output. Enable it only after its dependencies and input paths have been validated.
+
+
+`approximate above sd`  
+
+<!-- generated-learning-note -->
+**Purpose.** This block calculates descriptive summaries. Check the denominator, grouping variables, units, and treatment of missing values.
+
+```{r}
+uintercept <- (uhat[["Subject"]])
+sd(uintercept[,1])
+
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Use the displayed values to understand center, spread, frequency, and missingness; investigate any implausible or unexpected result.
+
+
+
+#### Computer fixed effect coefficients
+
+<!-- generated-learning-note -->
+This subsection explains **Computer fixed effect coefficients** and shows how it contributes to the overall Linear mixed model covariance decomposition with random intercept- lme4 workflow.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r}
+library(matlib)
+inv(t(as.matrix(X))%*%inv(as.matrix(VM))%*%as.matrix(X))%*%t(as.matrix(X))%*%inv(as.matrix(VM))%*%y
+bhat
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+
+#### Computer covariance of fixed efffect coefficients
+
+<!-- generated-learning-note -->
+This subsection explains **Computer covariance of fixed efffect coefficients** and shows how it contributes to the overall Linear mixed model covariance decomposition with random intercept- lme4 workflow.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+inv(t(as.matrix(X))%*%inv(as.matrix(VM))%*%as.matrix(X))
+# standard error
+sqrt(inv(t(as.matrix(X))%*%inv(as.matrix(VM))%*%as.matrix(X)))
+
+# the following equals lmm summary
+vcov(fit.lmer) 
+sqrt(vcov(fit.lmer))
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+**default is compound symmetry**
+
+#### Computer random effect coefficients
+
+<!-- generated-learning-note -->
+This subsection explains **Computer random effect coefficients** and shows how it contributes to the overall Linear mixed model covariance decomposition with random intercept- lme4 workflow.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+comput_uhat <- (as.matrix(Lambda_new))%*%t(Z)%*%inv(as.matrix(VM))%*%(y-as.matrix(X)%*%(bhat))
+cbind((comput_uhat@x),(uhat[["Subject"]]))
+
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+- covariance matrix of random effect coefficients
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+head(Lambda_new)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+ 
+
+#### Computer predicted values
+
+<!-- generated-learning-note -->
+This subsection explains **Computer predicted values** and shows how it contributes to the overall Linear mixed model covariance decomposition with random intercept- lme4 workflow.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block extracts inferential or predictive results from fitted objects. Match each estimate, interval, contrast, or diagnostic to the quantity it represents.
+
+```{r}
+yhat <- X%*%(bhat)+Z%*%(uhat[["Subject"]][["(Intercept)"]])
+head(yhat)
+head(fitted(fit.lmer))
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Interpret estimates on the scale reported by the function, and use intervals or other uncertainty measures when drawing conclusions.
+
+## Interpreting the Results
+
+Check fixed effects, random effects, covariance assumptions, and subject-specific versus population-level interpretation. Treat the output as evidence generated under the stated data, coding choices, and assumptions. Before using the workflow in practice, replace example inputs with validated data and confirm that the method targets the intended scientific question.
+
+## Key Takeaways
+
+- **Connect method to purpose.** Identify the question and target quantity before choosing code or a model.
+- **Read code and output together.** Confirm what each object, estimate, interval, table, or plot represents.
+- **Check assumptions and diagnostics.** A successful computation is not by itself evidence that the result is reliable.
+- **Adapt deliberately.** When applying the example elsewhere, document changes to data definitions, parameters, and analytical choices.

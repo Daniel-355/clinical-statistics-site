@@ -1,0 +1,77 @@
+---
+title: "The comparison of output of SAS AND R for mixed model"
+output: html_document
+date: '2023-09-19'
+author: Daniel He
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## The comparison of output of SAS AND R for mixed model
+### Data process
+```{r}
+library(nlme)
+setwd("C:\\Users\\hed2\\OneDrive - National Institutes of Health\\Mixed model by SAS and R")
+head(Orthodont)
+write.csv(Orthodont,  "Orthodont.csv" ,na="",row.names = FALSE)
+```
+
+### Fit the models with unstructured covariance structure- default
+```{r}
+# fit the models with unstructured covariance structure of random effect
+model1 <- lme(distance ~ age+Sex, data=Orthodont, random= list(Subject = pdSymm(~ 1+age+Sex ))) 
+summary(model1)
+# https://rpubs.com/samuelkn/CovarianceStructuresInR
+
+model2 <- lme(distance ~ age + Sex  , random = ~1+age+Sex  | Subject, data = Orthodont) 
+summary(model2)
+```
+
+### In SAS, the corresponding agument: type = un
+```{r}
+# PROC IMPORT DATAFILE="...\Mixed model by SAS and R\orthodont.csv" DBMS=csv
+# OUT=orthodont;
+# RUN;
+
+# PROC MIXED DATA=orthodont ;
+# CLASS sex  subject   ;
+# MODEL distance =  sex age /solution;
+# RANDOM  sex age/ subject=subject type=un ;
+# RUN; QUIT;
+```
+
+### Fit the models with compound symmetric covariance structure 
+```{r}
+model11 <- lme(distance ~ age+Sex, data=Orthodont, random= list(Subject = pdCompSymm(~ 1+age+Sex ))) 
+summary(model1)
+# https://stats.stackexchange.com/questions/26556/equivalent-mixed-models-yielding-different-results-in-sas
+```
+
+### In SAS, the corresponding type = cs
+```{r}
+# PROC MIXED DATA=orthodont ;
+# CLASS sex  subject   ;
+# MODEL distance =  sex age /solution;
+# RANDOM  sex age/ subject=subject type=CS ;
+# RUN; QUIT;
+```
+
+
+### Other covariance structures
+
+| Name|	nlme	| 
+|----|-----|
+| Compound symmetry	|corCompSymm	|
+| AR1	|corAR1	|
+| CAR1	|corCAR1	|
+| Unstructured	|CorSymm|
+
+```{r}
+# Many covariance structures are reasonable for these data, such as unstructured (TYPE=UN), autoregressive (TYPE=AR(1)), compound symmetric (TYPE=CS), Toeplitz (TYPE=TOEP), etc. 
+# http://support.sas.com/kb/37/107.html
+```
+
+**Variance Components (VC) is the default setting in proc mixed in SAS, but unstructured (UN) in R.**
+ 

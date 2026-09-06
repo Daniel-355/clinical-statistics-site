@@ -1,0 +1,122 @@
+---
+title: "BE_Comparision_Report"
+output: html_document
+date: "2025-10-27"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Introduction
+
+This document demonstrates a simulation-based approach to evaluate bioequivalence (BE) between a **Test** and **Reference** product using pharmacokinetic (PK) parameters such as Cmax and AUC.  
+
+Monte Carlo simulations are used to incorporate between-subject variability and assess the robustness of BE conclusions.
+ 
+We simulate individual PK metrics assuming log-normal distributions for both treatments, reflecting realistic between-subject variability.  
+
+The bioequivalence criterion follows the standard **90% confidence interval (CI)** of the Test/Reference ratio within **80%–125%** on the geometric scale.
+
+
+### BE_Comparision_Report
+
+```{r}
+# ============================================================
+# Example: Simulated Bioequivalence Comparison (Parallel Design)
+# ============================================================
+
+set.seed(2025)
+
+# --- Step 1. Define time points and reference mean profile ---
+time_hr <- c(0, 0.25, 0.5, 1, 2, 4, 6, 8, 12, 24)
+mean_conc_ref <- c(0, 12.5, 28.3, 42.8, 36.0, 20.1, 12.6, 7.8, 2.1, 0.2)
+
+# --- Step 2. Simulation parameters ---
+n_subj <- 24            # per group
+CV_between <- 0.25      # between-subject CV
+CV_residual <- 0.20     # within-subject (residual) CV
+true_GMR <- 0.95        # true T/R ratio for exposure, true_GMR = true geometric mean ratio (test/reference) for PK parameter (e.g., AUC or Cmax).
+
+ln_sd_between <- sqrt(log(1 + CV_between^2))     #standard deviations in the log scale are calculated
+ln_sd_resid   <- sqrt(log(1 + CV_residual^2))
+
+# --- Step 3. Helper function for AUC ---
+trap_auc <- function(t, conc){
+  sum(0.5 * (conc[-1] + conc[-length(conc)]) * diff(t))
+}
+# Computes the area under the curve (AUC) using the trapezoidal rule.
+# conc[-1] = all points except first, conc[-length(conc)] = all points except last.
+# diff(t) = difference between consecutive time points.
+
+# --- Step 4. Simulate individual concentration-time data ---
+simulate_subject <- function(mean_conc, ln_sd_between, ln_sd_resid, gmr = 1){
+  eta <- exp(rnorm(1, 0, ln_sd_between))
+  eps <- exp(rnorm(length(mean_conc), 0, ln_sd_resid))
+  mean_conc * eta * eps * gmr
+}
+
+# eta = subject-specific random effect (between-subject variability).
+# eps = residual error at each time point (within-subject variability).
+# The final simulated concentrations = mean_conc * eta * eps * gmr.
+# gmr allows simulating a test product with a true geometric mean ratio different from 1.
+
+ref_conc <- replicate(n_subj, simulate_subject(mean_conc_ref, ln_sd_between, ln_sd_resid))
+test_conc <- replicate(n_subj, simulate_subject(mean_conc_ref, ln_sd_between, ln_sd_resid, gmr = true_GMR))
+# replicate generates PK profiles for all subjects in reference and test groups.
+
+# --- Step 5. Compute AUC and Cmax for each subject ---
+ref_auc  <- apply(ref_conc, 2, function(x) trap_auc(time_hr, x))
+test_auc <- apply(test_conc, 2, function(x) trap_auc(time_hr, x))
+ref_cmax  <- apply(ref_conc, 2, max)
+test_cmax <- apply(test_conc, 2, max)
+
+# Compute AUC for each subject using trap_auc.
+# Compute Cmax (maximum concentration) for each subject using max.
+# apply(..., 2, ...) = apply function across columns (each column = one subject).
+
+# --- Step 6. BE comparison using log-transformed data ---
+be_stats <- function(yT, yR, alpha = 0.10){
+  logT <- log(yT)
+  logR <- log(yR)
+  mean_diff <- mean(logT) - mean(logR)
+  se_diff <- sqrt(var(logT)/length(yT) + var(logR)/length(yR))
+  df <- length(yT) + length(yR) - 2
+  tcrit <- qt(1 - alpha/2, df)
+  lower <- mean_diff - tcrit * se_diff
+  upper <- mean_diff + tcrit * se_diff
+  data.frame(
+    Ratio = exp(mean_diff),    #Exponentiate to return to original scale
+    Lower90 = exp(lower),
+    Upper90 = exp(upper)
+  )
+}
+
+auc_BE  <- be_stats(test_auc, ref_auc)
+cmax_BE <- be_stats(test_cmax, ref_cmax)
+
+# --- Step 7. Output summary ---
+cat("=== Bioequivalence Results ===\n")
+print(auc_BE)
+print(cmax_BE)
+
+# --- Step 8. Plot example PK profiles ---
+library(ggplot2)
+library(dplyr)
+plot_df <- data.frame(
+  Time = rep(time_hr, 2 * n_subj),
+  Conc = c(as.vector(ref_conc), as.vector(test_conc)),
+  Subject = rep(1:(2*n_subj), each = length(time_hr)),
+  Group = rep(c(rep("Reference", n_subj), rep("Test", n_subj)), each = length(time_hr))
+)
+# Includes Time, Conc, Subject, and Group columns.
+
+ggplot(plot_df, aes(x = Time, y = Conc, color = Group, group = Subject)) +
+  geom_line(alpha = 0.5) +
+  scale_y_continuous(trans = "log10") +
+  labs(title = "Simulated Concentration–Time Profiles",
+       y = "Concentration (ng/mL, log scale)", x = "Time (hr)") +
+  theme_minimal(base_size = 13)
+
+```
+

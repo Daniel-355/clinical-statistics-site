@@ -1,0 +1,122 @@
+---
+title: "Randomization of assignment"
+description: "A practical R learning guide to Randomization of assignment, with concise explanations, reproducible examples, and interpretation guidance."
+date: 2026-08-31
+section: "Clinical Trial Process & Design"
+category: "Randomization & Blinding"
+topic: "Randomization of assignment"
+type: article
+tags: ["Randomization & Blinding", "Clinical Trial Process & Design", "Randomization", "assignment"]
+status: published
+featured: true
+youtube: []
+pdf: []
+downloads: []
+validate-yaml: false
+execute:
+  echo: true
+  warning: false
+  error: true
+---
+
+## Why This Topic Matters
+
+Randomization protects treatment comparisons from systematic allocation bias, while blinding reduces differential behavior and assessment.
+
+## Learning Objectives
+
+After working through this material, you should be able to:
+
+- explain the main ideas behind **Randomization of assignment**;
+- interpret the R workflow and its output; and
+- adapt the examples to a related analysis.
+
+## Lesson Roadmap
+
+The original material is organized around the following topics:
+
+1. Equally sized groups
+2. Concealment of Assignments
+
+## How to Use This Lesson
+
+Read the explanation before each workflow, then run the R chunks in sequence. Code and output are shown together so that each numerical or graphical result can be connected to the command that produced it. Some source examples require optional packages or external data. Those setup-dependent chunks remain visible for reference but are marked `eval: false` when they cannot be reproduced safely in a clean website build.
+
+## Reproducible Learning Check
+
+This short R chunk confirms the scope of the lesson and always produces a visible output.
+
+```{r}
+#| label: learning-overview
+learning_overview <- data.frame(
+  section = "Clinical Trial Process & Design",
+  category = "Randomization & Blinding",
+  topic = "Randomization of assignment"
+)
+learning_overview
+```
+
+## Learning Material
+
+The following material develops **Randomization of assignment** from core ideas to practical implementation. Definitions and assumptions come first; worked code then shows how the ideas are represented computationally.
+
+### Conceptual Foundation
+
+The material below closely follows the original R Markdown source, with its examples retained for study and reuse.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+[Brief summary from the book](https://home.csulb.edu/~okoroste/)
+
+
+#### Equally sized groups
+
+<!-- generated-learning-note -->
+This subsection explains **Equally sized groups** and shows how it contributes to the overall Randomization of assignment workflow.
+
+
+For normal populations with equal variances, the likelihood
+ratio test is most powerful if the sizes of the compared groups are equal.
+
+$$
+0>\frac{\delta}{\sqrt{v}}-\frac{\delta}{\sqrt{v_{N / 2}}}=\Phi^{-1}\left(\beta_{N / 2}\right)-\Phi^{-1}(\beta)
+$$
+where $v_{N / 2}<v$ yields. 
+
+Hence,
+
+$$
+\Phi^{-1}(\beta)>\Phi^{-1}\left(\beta_{N / 2}\right) \quad \text { or } \quad \beta>\beta_{N / 2} \quad \text { or } \quad 1- \beta< 1- \beta_{N / 2}
+$$
+
+#### Concealment of Assignments
+
+<!-- generated-learning-note -->
+This subsection explains **Concealment of Assignments** and shows how it contributes to the overall Randomization of assignment workflow.
+
+
+The most common randomization are the simple, block, and stratified procedures.
+
+An actual group assignment should be kept secret from the subject as well as
+from the physician responsible for administering therapy, if the trial is double blinded. 
+when a new subject enters the trial, the physician
+should call the central location where the next envelope in the sequence is
+opened to reveal the group assignment for the subject.
+
+### Applying the Material
+
+This source is primarily conceptual or procedural. Use its definitions and decision points as a checklist, and document how each item is implemented in the intended study or analysis.
+
+## Interpreting the Results
+
+Check allocation balance, reproducibility, and whether the simulated or generated sequence matches the intended design. Treat the output as evidence generated under the stated data, coding choices, and assumptions. Before using the workflow in practice, replace example inputs with validated data and confirm that the method targets the intended scientific question.
+
+## Key Takeaways
+
+- **Connect method to purpose.** Identify the question and target quantity before choosing code or a model.
+- **Read code and output together.** Confirm what each object, estimate, interval, table, or plot represents.
+- **Check assumptions and diagnostics.** A successful computation is not by itself evidence that the result is reliable.
+- **Adapt deliberately.** When applying the example elsewhere, document changes to data definitions, parameters, and analytical choices.

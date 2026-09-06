@@ -1,0 +1,270 @@
+---
+title: "G-estimation"
+description: "A practical R learning guide to G-estimation, with concise explanations, reproducible examples, and interpretation guidance."
+date: 2026-08-31
+section: "Epidemiology & Real-World Evidence"
+category: "Causal Methods"
+topic: "G-estimation"
+type: article
+tags: ["Causal Methods", "Epidemiology & Real-World Evidence", "G-estimation"]
+status: published
+featured: true
+youtube: []
+pdf: []
+downloads: []
+validate-yaml: false
+execute:
+  enabled: false
+  echo: true
+  warning: false
+  error: true
+---
+
+## Why This Topic Matters
+
+Causal methods combine design assumptions and statistical adjustment to estimate well-defined treatment or exposure contrasts.
+
+## Learning Objectives
+
+After working through this material, you should be able to:
+
+- explain the main ideas behind **G-estimation**;
+- interpret the R workflow and its output; and
+- adapt the examples to a related analysis.
+
+## Lesson Roadmap
+
+The original material is organized around the following topics:
+
+1. G-estimation
+
+## How to Use This Lesson
+
+Read the explanation before each workflow, then run the R chunks in sequence. Code and output are shown together so that each numerical or graphical result can be connected to the command that produced it. Some source examples require optional packages or external data. Those setup-dependent chunks remain visible for reference but are marked `eval: false` when they cannot be reproduced safely in a clean website build.
+
+## Reproducible Learning Check
+
+This short R chunk confirms the scope of the lesson and always produces a visible output.
+
+```{r}
+#| label: learning-overview
+learning_overview <- data.frame(
+  section = "Epidemiology & Real-World Evidence",
+  category = "Causal Methods",
+  topic = "G-estimation"
+)
+learning_overview
+```
+
+## Learning Material
+
+The following material develops **G-estimation** from core ideas to practical implementation. Definitions and assumptions come first; worked code then shows how the ideas are represented computationally.
+
+### Conceptual Foundation
+
+The material below closely follows the original R Markdown source, with its examples retained for study and reuse.
+
+#### G-estimation
+
+<!-- generated-learning-note -->
+This subsection explains **G-estimation** and shows how it contributes to the overall G-estimation workflow.
+
+
+Inverse probability weighting, normalization, and G-estimation are often collectively referred to as G-formula.
+
+The counterfactual outcome Y a=0 of each individual can be expressed as a function of the observed data and the unknown parameter ψ1. 
+
+If the model is correct and we know the value of ψ 1 , then we can compute the counterfactual outcome Y a = 0 for each individual without treatment. Now we don't know the value of ψ1, our goal is to estimate ψ1.
+
+![](C:\Users\hed2\Downloads\mybook2\mybook2\g-computer.png)
+
+- Processing data
+
+### R Workflow and Examples
+
+Run the examples in order because later blocks may reuse objects created earlier. Each block includes a short purpose statement and guidance for reading its output.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This source block depends on optional software, external data, or a machine-specific path. It is retained as a reference and is not executed during the website build.
+
+```{r pressure, echo=FALSE}
+#| eval: false
+#| code-fold: true
+library("readxl")
+library(tidyverse)
+library(here)
+nhefs <- read.csv("C:\\Users\\hed2\\Downloads\\mybook2\\mybook2\\nhefs.csv")
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Because this block is not executed, it produces no website output. Enable it only after its dependencies and input paths have been validated.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This source block depends on optional software, external data, or a machine-specific path. It is retained as a reference and is not executed during the website build.
+
+```{r}
+#| eval: false
+#| code-fold: true
+# some processing of the data
+nhefs$cens <- ifelse(is.na(nhefs$wt82), 1, 0) # missing
+
+# ranking of extreme observations
+#install.packages("Hmisc")
+library(Hmisc)
+describe(nhefs$wt82_71)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Because this block is not executed, it produces no website output. Enable it only after its dependencies and input paths have been validated.
+
+
+ 
+Calculate the weight for no censor 
+
+<!-- generated-learning-note -->
+**Purpose.** This block specifies and fits the statistical model. Identify the outcome, predictors, reference levels, link or distribution, and any correlation structure before interpreting coefficients.
+
+```{r}
+# estimation of denominator of ip weights for Censor using all data
+cw.denom <- glm(cens==0 ~ qsmk + sex + race + age + I(age^2) 
+                     + as.factor(education) + smokeintensity + I(smokeintensity^2) 
+                     + smokeyrs + I(smokeyrs^2) + as.factor(exercise) 
+                     + as.factor(active) + wt71 + I(wt71^2), 
+                     data = nhefs, family = binomial("logit"))
+
+summary(cw.denom)
+
+nhefs$pd.c <- predict(cw.denom, nhefs, type="response") # predict
+
+# no censor
+nhefs$wc <- ifelse(nhefs$cens==0, 1/nhefs$pd.c, NA)  #  observations with cens=1 only contribute to censoring models
+
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Focus on coefficient direction and scale, uncertainty intervals, fit statistics, and diagnostics. Statistical significance alone does not establish practical importance or model adequacy.
+
+
+
+
+- Structural Embedding Models of Two or More Parameters
+
+In this model, we need to find possible combinations of ψ 1  and ψ 2 (interaction).
+
+Calculate probability (ps)
+
+<!-- generated-learning-note -->
+**Purpose.** This block specifies and fits the statistical model. Identify the outcome, predictors, reference levels, link or distribution, and any correlation structure before interpreting coefficients.
+
+```{r}
+# Calculate probability (ps) 
+
+logit.est <- glm(qsmk ~ sex + race + age + I(age^2) + as.factor(education) 
+                 + smokeintensity + I(smokeintensity^2) + smokeyrs 
+                 + I(smokeyrs^2) + as.factor(exercise) + as.factor(active) 
+                 + wt71 + I(wt71^2), data = nhefs, weight = wc, 
+                 family = binomial())
+
+summary(logit.est)
+
+nhefs$pqsmk <- predict(logit.est, nhefs, type = "response")
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Focus on coefficient direction and scale, uncertainty intervals, fit statistics, and diagnostics. Statistical significance alone does not establish practical importance or model adequacy.
+
+
+
+Calculate psi (ATE) after weighting outcome and exposure.
+
+- For 1-parameter model  
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+# solve sum(w_c * H(psi) * (qsmk - E[qsmk | L]))  = 0
+# for a single psi and H(psi) = wt82_71 - psi * qsmk
+# this can be solved as psi = sum( w_c * wt82_71 * (qsmk - pqsmk)) / sum(w_c * qsmk * (qsmk - pqsmk))
+
+nhefs.c <- nhefs[which(!is.na(nhefs$wt82)),]
+with(nhefs.c, sum(wc*wt82_71*(qsmk-pqsmk)) / sum(wc*qsmk*(qsmk - pqsmk))) #weighting outcome and exposure
+
+# = beta A
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+- G-estimation: estimator for 2-parameter model  
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+diff = with(nhefs.c, qsmk - pqsmk)
+diff2 = with(nhefs.c, wc * diff)   #adjust weights
+
+# interaction effect matrix
+lhs = matrix(0,2,2)
+lhs[1,1] = with(nhefs.c, sum(qsmk * diff2))
+lhs[1,2] = with(nhefs.c, sum(qsmk * smokeintensity  * diff2))
+lhs[2,1] = with(nhefs.c, sum(qsmk * smokeintensity * diff2))
+lhs[2,2] = with(nhefs.c, sum(qsmk * smokeintensity * smokeintensity * diff2))
+
+rhs = matrix(0,2,1)
+rhs[1] = with(nhefs.c, sum(wt82_71 * diff2))
+rhs[2] = with(nhefs.c, sum(wt82_71 * smokeintensity * diff2))
+
+psi = t(solve(lhs,rhs))
+psi  #A and interaction factor
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+(lhs)
+(rhs)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+- Calculate the average total effect of A when smokeintensity= mean
+
+<!-- generated-learning-note -->
+**Purpose.** This block calculates descriptive summaries. Check the denominator, grouping variables, units, and treatment of missing values.
+
+```{r}
+mean(nhefs.c$smokeintensity )
+
+2.86*1+ 0.03*mean(nhefs.c$smokeintensity )
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Use the displayed values to understand center, spread, frequency, and missingness; investigate any implausible or unexpected result.
+
+
+`weight the outcome mean`
+
+## Interpreting the Results
+
+Check nuisance models, overlap, weights, balance, diagnostics, estimand alignment, and sensitivity to modeling choices. Treat the output as evidence generated under the stated data, coding choices, and assumptions. Before using the workflow in practice, replace example inputs with validated data and confirm that the method targets the intended scientific question.
+
+## Key Takeaways
+
+- **Connect method to purpose.** Identify the question and target quantity before choosing code or a model.
+- **Read code and output together.** Confirm what each object, estimate, interval, table, or plot represents.
+- **Check assumptions and diagnostics.** A successful computation is not by itself evidence that the result is reliable.
+- **Adapt deliberately.** When applying the example elsewhere, document changes to data definitions, parameters, and analytical choices.

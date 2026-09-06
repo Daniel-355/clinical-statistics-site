@@ -1,0 +1,160 @@
+---
+title: "Competing Risk Cox Model"
+output: html_document
+date: "2025-05-23"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Competing Risk Cox Model  
+
+[Reference](https://mengte.online/archives/13486)
+ 
+Traditional survival analysis generally only cares about one endpoint event. requiring that the censoring situation and the individual endpoint event are independent of each other. In actual situations, another event may affect the probability of the endpoint event, in which case it can be considered that the former has a competing risk with the latter.  
+
+Observation time not fully observed: censoring (Assumed to be non-informative); (Observed) Event that prevents the event of interest: competing risks.  
+
+The purpose is to study the relationship between the number of lymph node examinations and the survival time of patients with non-small cell lung cancer based on a competing risk model. The event of interest is the death of patients from non-small cell lung cancer, and the competing event is death from other causes (such as other tumors, etc.). The outcome variable is a three-category variable (0, 1, 2), including survival (censored), death from non-small cell lung cancer, and death from other causes.  
+
+ 
+
+##### Read data  
+```{r}
+setwd("C:\\Users\\hed2\\Downloads\\dell\\code-storage\\code")
+mydata <- read.csv ('compt risk survival.csv') 
+str (mydata)
+```
+
+##### Data transform  
+```{r}
+mydata$Age <- factor (mydata$Age, levels = c(1, 2, 3), labels = c ("<60", "60-74", "≥75"))
+mydata$Gender <- factor (mydata$Gender, levels = c(1, 2), labels = c ("Male", "Female"))
+mydata$Ethnicity <- factor (mydata$Ethnicity, levels = c(1, 2, 3, 4), labels = c ("White", "Asian", "Black", "Others"))
+mydata$Primary_site <- factor (mydata$Primary_site, levels = c(1, 2, 3, 4, 5), labels = c ("Upper lobe", "Middle lobe", "Lower lobe", "Main bronchus", "Overlapping lesion"))
+mydata$T_stage <- factor (mydata$T_stage, levels = c(1, 2, 3, 4), labels = c ("T1", "T2", "T3", "T4"))
+mydata$Lymph_number <- factor (mydata$Lymph_number, levels = c(1, 2), labels = c ("< 16", "≥ 16"))
+mydata$Outcome <- factor (mydata$ Outcome)
+View(mydata)
+```
+
+```{r}
+summary (mydata)
+```
+
+
+##### Cumulative incidence (Fine-Gray univariate analysis)
+
+```{r}
+library (cmprsk)
+library (riskRegression)
+library(pec)
+cum_Lymph_number <- cuminc (mydata$Survival_months, mydata$Outcome, mydata$Lymph_number)  
+cum_Lymph_number 
+```
+```{r}
+cum_Lymph_number$`< 16 1`$est[length(cum_Lymph_number $`< 16 1`$est)]   
+cum_Lymph_number$`≥ 16 1`$est[length(cum_Lymph_number $`≥ 16 1`$est)]   
+```
+```{r}
+plot (cum_Lymph_number, color = c ("pink", "red", "blue", "darkcyan"), xlab = "", xlim = c (0,100), ylim = c (0,1), ylab = "CIF", main = 'Lymph')  
+```
+
+
+##### Univariate competing risk regression analysis
+
+```{r}
+fgr_Lymph_number <- FGR(Hist(Survival_months, Outcome)~ Lymph_number, data = mydata)   
+summary (fgr_Lymph_number)
+```
+After controlling for competing risk events, the risk of death from non-small cell lung cancer in the group <16 was 0.91 times higher than that in the group ≥16 (HR=1.91), and the risk of death from non-small cell lung cancer in the group ≥16 was 0.477 times lower than that in the group <16 (HR=0.523, 95%CI: 0.407-0.673). ≥16/<16=exp(coef)=0.523;  <16/≥16=exp(-coef)=1.91.  
+
+`Please be careful here` the highest level of the covariate is the reference group in SAS but the lowest level in R. 
+
+##### Multivariable competing risk regression analysis
+```{r}
+fgr_multi <- FGR (Hist(Survival_months, Outcome)~Age + Gender + Primary_site + Lymph_number, data = mydata)   
+summary (fgr_multi)   
+```
+
+##### Without consider competing risk events
+
+```{r}
+mydata$Outcome2=ifelse (mydata$Outcome==2|mydata$Outcome==0, 0, 1)  
+
+coxph <- coxph ( Surv (Survival_months, Outcome2)~Age + Gender + Primary_site + Lymph_number, data = mydata)   
+summary (coxph)   
+```
+
+The risk of death from non-small cell lung cancer in the group with ≥16 lymph node examinations was 0.483 times lower than that in the group with <16 lymph node examinations (HR=0.517, P=7.33e-07<0.001). It can be seen that when there is a competing risk, if the competing risk model is not used and the traditional proportional risk Cox regression is used, the effect of the research factor will be exaggerated.
+
+
+##### Subdistribution PH assumption  
+
+`The subdistribution satisfies the proportional hazards (PH) assumption.` 
+```{r}
+library ('survival')   
+library ('survminer')   
+data_1 <- mydata[mydata$Outcome!=2,]   
+data_2 <- mydata[mydata$Outcome!=1,]   
+data_2$Outcome <- ifelse(data_2$Outcome ==0,0,1)   
+
+cox_1 <- coxph (formula = Surv(Survival_months, Outcome) ~ Age + Gender + Primary_site + Lymph_number, data = data_1, id = ID)   
+cox_2 <- coxph (formula = Surv(Survival_months, Outcome) ~ Age + Gender + Primary_site + Lymph_number, data = data_2, id = ID)   
+ph_1 <- cox.zph(cox_1)   
+ph_2 <- cox.zph(cox_2)   
+ph_1   
+ph_2   
+```
+
+```{r}
+ggcoxzph (ph_1)
+ggcoxzph (ph_2)
+```
+
+The test P value of the covariate Age in model 1 was 0.033, indicating that the proportional hazard assumption was not met. However, given that the overall test P values of the two models were 0.120 and 0.188, both > 0.05, and the test P values of the target independent variable (number of lymph node examinations) were all > 0.05, it can be considered that the analysis model meets the PH assumption.  
+
+##### Multicollinearity diagnosis
+```{r}
+library ('car')   
+data_lm <- mydata   
+data_lm$Group <- 1:length(data_lm[,1])   
+lm_model <- lm (formula = Group ~ Age + Gender + Primary_site + Lymph_number, data = data_lm)   
+vif(lm_model)   
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

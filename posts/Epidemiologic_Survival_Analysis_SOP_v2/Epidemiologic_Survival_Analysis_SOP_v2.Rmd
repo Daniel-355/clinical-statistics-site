@@ -1,0 +1,587 @@
+---
+title: "Standard Operating Procedure for Epidemiologic Survival Analysis"
+author: "[Author / Study Team]"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    toc_depth: 2
+    number_sections: true
+  word_document:
+    toc: true
+    toc_depth: 2
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+```
+
+# 1. Purpose
+
+This SOP provides a standard and reusable framework for survival analysis in observational epidemiologic studies, including prospective and retrospective cohort studies, registry studies, EHR studies, claims-based studies, and other real-world data studies.
+
+The objective is to estimate an exposure-outcome association or effect while appropriately addressing time zero, follow-up, censoring, confounding, missing data, model assumptions, and sensitivity to alternative analytic assumptions.
+
+# 2. Research Question and Target Effect
+
+The primary research question should be stated before analysis.
+
+**General form:**
+
+> Among [target population], is [exposure] associated with or causally related to the risk of [time-to-event outcome] during [follow-up period]?
+
+Prespecify:
+
+- target population,
+- exposure and reference condition,
+- outcome,
+- time zero,
+- follow-up period,
+- censoring rules,
+- primary effect measure,
+- and covariate-adjustment strategy.
+
+The primary relative effect measure will usually be the **hazard ratio (HR)** with a **95% confidence interval (CI)**.
+
+If causal interpretation is intended, specify the target effect, such as a total effect, conditional effect, or marginal population-level effect.
+
+# 3. Study Design and Data Source
+
+Describe:
+
+- study design,
+- source population,
+- data source,
+- study period,
+- data availability,
+- and relevant linkage procedures.
+
+Common sources include population cohorts, epidemiologic surveys, EHR databases, claims databases, disease registries, and linked administrative data.
+
+# 4. Study Population and Analytic Cohort
+
+Define inclusion and exclusion criteria before outcome modeling.
+
+Typical criteria may include:
+
+- eligible age range,
+- availability of exposure information,
+- availability of baseline covariates,
+- absence of the study outcome at baseline when incident disease is studied,
+- and eligibility for follow-up.
+
+Document cohort derivation using a flow diagram when appropriate.
+
+# 5. Exposure, Outcome, Time Zero, Follow-up, and Censoring
+
+## 5.1 Exposure
+
+Specify:
+
+- exposure definition,
+- data source,
+- ascertainment window,
+- reference category,
+- coding,
+- and whether exposure is fixed or time-varying.
+
+## 5.2 Outcome
+
+Specify:
+
+- event definition,
+- event date,
+- source of outcome information,
+- validation/adjudication method if applicable,
+- and whether the analysis is time-to-first-event or recurrent-event.
+
+## 5.3 Time Zero
+
+Time zero is the date at which follow-up begins.
+
+Exposure status, eligibility criteria, and baseline confounders should be aligned relative to time zero.
+
+Incorrect alignment may introduce immortal-time bias, prevalent-user bias, reverse temporality, or other selection bias.
+
+## 5.4 Follow-up and Censoring
+
+Follow-up will end at the earliest of:
+
+1. occurrence of the outcome,
+2. death when not part of the outcome,
+3. loss to follow-up,
+4. disenrollment or loss of data availability,
+5. administrative study end,
+6. or another prespecified censoring event.
+
+Censoring rules should be defined before the primary analysis.
+
+# 6. Confounder Selection and Covariate Adjustment
+
+Potential confounders should be identified using:
+
+- subject-matter knowledge,
+- prior epidemiologic evidence,
+- temporal ordering,
+- and causal reasoning or DAGs.
+
+A variable should not be included solely because it is statistically significant, differs between exposure groups, or improves model fit.
+
+The primary covariate set should preferably be prespecified.
+
+## 6.1 Baseline Confounders
+
+Typical baseline confounders may include age, sex, smoking, BMI, blood pressure, diabetes, hypertension, cholesterol, physical activity, socioeconomic factors, healthcare utilization, and relevant comorbidities.
+
+## 6.2 Post-Exposure Variables
+
+Variables occurring after exposure should not automatically be included in the primary adjustment model.
+
+If the objective is the **total effect** of the exposure, mediators or downstream variables should generally not be adjusted for.
+
+For example:
+
+\[
+Diabetes \rightarrow Diabetes\ Treatment \rightarrow CVD
+\]
+
+If the study objective is the total effect of diabetes on CVD, post-diabetes treatment would generally not be included as a baseline confounder.
+
+If the scientific objective concerns an effect under a fixed or hypothetical treatment condition, that target effect should be defined separately and may require methods beyond ordinary regression adjustment.
+
+# 7. Data Quality Assessment
+
+Before modeling, assess:
+
+- duplicate participants,
+- missing data,
+- implausible values,
+- inconsistent dates,
+- temporal inconsistencies,
+- exposure misclassification,
+- outcome misclassification,
+- completeness of follow-up,
+- and number of observed events.
+
+```{r data-quality-example, eval=FALSE}
+sum(duplicated(analysis_data$id))
+colSums(is.na(analysis_data))
+summary(analysis_data)
+```
+
+# 8. Descriptive Analysis
+
+Baseline characteristics will be summarized by exposure group.
+
+Continuous variables:
+
+- mean and standard deviation, or
+- median and interquartile range.
+
+Categorical variables:
+
+- number and percentage.
+
+Standardized mean differences (SMDs) may be reported to describe baseline imbalance.
+
+An absolute SMD below approximately 0.10 may indicate acceptable measured balance, but SMD should not determine whether a variable is a true confounder.
+
+Also summarize:
+
+- number of participants,
+- number of events,
+- person-time,
+- median follow-up,
+- and crude incidence rate.
+
+# 9. Kaplan-Meier Analysis
+
+Kaplan-Meier curves will be used to describe event-free survival by exposure group when standard survival methods are appropriate.
+
+Report, when useful:
+
+- survival probabilities at prespecified time points,
+- median survival if estimable,
+- number at risk,
+- and 95% CIs.
+
+The log-rank test may be reported descriptively, but the adjusted survival model will generally serve as the primary inferential analysis.
+
+```{r km-example, eval=FALSE}
+library(survival)
+
+km_fit <- survfit(
+  Surv(followup_time, event) ~ exposure,
+  data = analysis_data
+)
+
+plot(km_fit)
+```
+
+# 10. Primary Cox Proportional Hazards Analysis
+
+## 10.1 Crude Model
+
+First estimate the unadjusted exposure-outcome association.
+
+```{r crude-cox, eval=FALSE}
+fit_crude <- coxph(
+  Surv(followup_time, event) ~ exposure,
+  data = analysis_data
+)
+
+summary(fit_crude)
+```
+
+## 10.2 Adjusted Model
+
+The primary model will adjust for the prespecified confounder set.
+
+```{r adjusted-cox, eval=FALSE}
+fit_primary <- coxph(
+  Surv(followup_time, event) ~
+    exposure +
+    age +
+    sex +
+    bmi +
+    smoking +
+    hypertension,
+  data = analysis_data
+)
+
+summary(fit_primary)
+```
+
+Report the exposure HR, 95% CI, and P-value when appropriate.
+
+```{r hr-ci, eval=FALSE}
+exp(
+  cbind(
+    HR = coef(fit_primary),
+    confint(fit_primary)
+  )
+)
+```
+
+## 10.3 Conditional vs Marginal Effect
+
+A Cox regression coefficient is generally a **conditional hazard ratio**, conditional on the covariates included in the model.
+
+If the scientific objective is instead a **marginal population-level effect**, methods such as standardization, g-computation, or propensity-score weighting may be more appropriate.
+
+# 11. Model Assumptions and Diagnostics
+
+## 11.1 Proportional Hazards Assumption
+
+Evaluate the proportional hazards assumption using:
+
+- Schoenfeld residuals,
+- `cox.zph()`,
+- graphical assessment,
+- and scientific judgment.
+
+```{r ph-check, eval=FALSE}
+ph_test <- cox.zph(fit_primary)
+ph_test
+plot(ph_test)
+```
+
+If substantial non-proportional hazards are present, consider:
+
+- time-varying coefficients,
+- exposure-by-time interaction,
+- stratified Cox models,
+- time-specific HRs,
+- or restricted mean survival time (RMST).
+
+## 11.2 Functional Form of Continuous Covariates
+
+Evaluate the functional form of continuous variables when appropriate.
+
+Possible approaches include restricted cubic splines, fractional polynomials, or clinically justified transformations.
+
+Arbitrary categorization of continuous variables should generally be avoided.
+
+## 11.3 Model Stability
+
+Assess when relevant:
+
+- sparse categories,
+- influential observations,
+- multicollinearity,
+- convergence,
+- and adequacy of the number of events relative to model complexity.
+
+# 12. Missing Data
+
+Summarize missingness overall, by exposure group, and for key covariates.
+
+The primary missing-data strategy should be prespecified.
+
+Common approaches include:
+
+- complete-case analysis when missingness is minimal and defensible,
+- multiple imputation,
+- or another justified method.
+
+If multiple imputation is used, the imputation model should include variables related to exposure, outcome, missingness, and relevant auxiliary predictors.
+
+Sensitivity analyses should be considered when missing-data assumptions may materially influence conclusions.
+
+# 13. Propensity-Score Analysis
+
+Propensity-score methods may be used as a secondary or sensitivity analysis.
+
+The propensity score is the probability of exposure conditional on measured baseline covariates.
+
+Possible methods include:
+
+- IPTW,
+- stabilized IPTW,
+- matching,
+- stratification,
+- and overlap weighting.
+
+Assess:
+
+- propensity-score overlap,
+- positivity,
+- extreme weights,
+- post-weighting covariate balance,
+- and effective sample size.
+
+```{r ps-example, eval=FALSE}
+ps_model <- glm(
+  exposure ~ age + sex + bmi + smoking + hypertension,
+  family = binomial(),
+  data = analysis_data
+)
+
+analysis_data$ps <- predict(ps_model, type = "response")
+```
+
+For weighted Cox models, robust variance estimation should generally be used.
+
+```{r weighted-cox-example, eval=FALSE}
+fit_iptw <- coxph(
+  Surv(followup_time, event) ~ exposure,
+  data = analysis_data,
+  weights = iptw,
+  robust = TRUE
+)
+```
+
+Good measured balance does not rule out residual or unmeasured confounding.
+
+# 14. Competing Risks
+
+If a competing event prevents occurrence of the primary outcome, competing-risk methods should be considered.
+
+Depending on the scientific question:
+
+- **cause-specific Cox regression** may be used for etiologic questions,
+- **Fine-Gray subdistribution hazards models** may be used for cumulative-incidence or prognostic questions.
+
+When competing risks are important, cumulative incidence functions should generally be reported.
+
+# 15. Effect Modification and Subgroup Analysis
+
+Potential effect modifiers should be prespecified based on scientific rationale.
+
+Examples include age, sex, disease severity, major comorbidities, or clinically important risk strata.
+
+Effect modification should preferably be evaluated using an interaction term.
+
+```{r interaction-example, eval=FALSE}
+fit_interaction <- coxph(
+  Surv(followup_time, event) ~
+    exposure * sex +
+    age +
+    bmi +
+    smoking,
+  data = analysis_data
+)
+```
+
+Report subgroup-specific HRs, 95% CIs, and interaction P-value when relevant.
+
+Exploratory subgroup findings should be interpreted cautiously.
+
+# 16. Sensitivity Analyses
+
+Sensitivity analyses should evaluate the robustness of the primary estimate to reasonable alternative assumptions.
+
+Common analyses include:
+
+1. alternative covariate adjustment sets;
+2. alternative exposure definitions;
+3. alternative outcome definitions;
+4. lagged exposure analyses;
+5. restriction of the analytic cohort;
+6. multiple imputation;
+7. propensity-score weighting or matching;
+8. weight trimming or truncation;
+9. inverse probability of censoring weighting;
+10. alternative censoring rules;
+11. competing-risk analyses;
+12. alternative handling of post-exposure variables;
+13. assessment of unmeasured confounding when appropriate.
+
+Primary and sensitivity estimates should be compared with respect to direction, magnitude, precision, and clinical interpretation.
+
+# 17. Statistical Inference
+
+Unless otherwise specified:
+
+- tests will be two-sided,
+- alpha = 0.05,
+- and 95% confidence intervals will be reported.
+
+The primary analysis should be clearly distinguished from secondary and exploratory analyses.
+
+Formal multiplicity adjustment is not always required in observational epidemiologic studies, but extensive testing across many outcomes, exposures, or subgroups should be acknowledged.
+
+# 18. Tables and Figures
+
+Recommended outputs include:
+
+## Table 1
+Baseline characteristics by exposure group.
+
+## Table 2
+Number of participants, events, person-time, follow-up, and incidence rates.
+
+## Table 3
+Crude and adjusted survival-model estimates.
+
+| Analysis | HR | 95% CI | P-value |
+|---|---:|---:|---:|
+| Crude Cox | | | |
+| Primary adjusted Cox | | | |
+| IPTW analysis | | | |
+| Sensitivity analysis | | | |
+
+## Figures
+
+Recommended figures include:
+
+1. cohort flow diagram;
+2. Kaplan-Meier or cumulative-incidence curves;
+3. forest plot of primary and sensitivity analyses;
+4. covariate-balance plot when propensity-score methods are used.
+
+# 19. Interpretation and Limitations
+
+Results should be interpreted with emphasis on:
+
+- magnitude of the estimate,
+- confidence interval,
+- epidemiologic and clinical relevance,
+- consistency across sensitivity analyses,
+- and underlying assumptions.
+
+An adjusted observational estimate should not automatically be interpreted as causal.
+
+Potential limitations include:
+
+- unmeasured confounding,
+- residual confounding,
+- exposure misclassification,
+- outcome misclassification,
+- measurement error,
+- uncertain temporal ordering,
+- reverse causation,
+- selection bias,
+- informative censoring,
+- missing data,
+- positivity or overlap problems,
+- model misspecification,
+- and limited generalizability.
+
+# 20. Quality Control and Reproducibility
+
+Analysis code should be reproducible and independently reviewed when feasible.
+
+Key variables requiring validation include:
+
+- participant ID,
+- exposure,
+- index date,
+- event indicator,
+- event date,
+- follow-up time,
+- censoring reason,
+- and major confounders.
+
+Material deviations from the prespecified analysis should be documented with the original plan, revised method, rationale, timing of the change, and potential impact on interpretation.
+
+# Appendix A. Minimal Analysis Workflow
+
+```{r workflow, eval=FALSE}
+library(dplyr)
+library(survival)
+
+# Define analytic cohort
+analysis_data <- raw_data %>%
+  filter(eligible == 1, followup_time >= 0)
+
+# Event summary
+analysis_data %>%
+  group_by(exposure) %>%
+  summarise(
+    n = n(),
+    events = sum(event == 1, na.rm = TRUE),
+    person_time = sum(followup_time, na.rm = TRUE),
+    incidence_rate = events / person_time
+  )
+
+# Kaplan-Meier
+km_fit <- survfit(
+  Surv(followup_time, event) ~ exposure,
+  data = analysis_data
+)
+
+# Crude Cox
+fit_crude <- coxph(
+  Surv(followup_time, event) ~ exposure,
+  data = analysis_data
+)
+
+# Adjusted Cox
+fit_primary <- coxph(
+  Surv(followup_time, event) ~
+    exposure + age + sex + bmi + smoking + hypertension,
+  data = analysis_data
+)
+
+# HR and 95% CI
+exp(cbind(HR = coef(fit_primary), confint(fit_primary)))
+
+# PH assumption
+ph_test <- cox.zph(fit_primary)
+print(ph_test)
+plot(ph_test)
+```
+
+# Appendix B. Pre-Analysis Checklist
+
+Before final analysis, confirm:
+
+- [ ] Research question is finalized
+- [ ] Target population is defined
+- [ ] Exposure definition is finalized
+- [ ] Reference group is defined
+- [ ] Outcome definition is finalized
+- [ ] Time zero is defined
+- [ ] Follow-up rules are defined
+- [ ] Censoring rules are defined
+- [ ] Primary effect measure is specified
+- [ ] Primary confounder set is prespecified
+- [ ] Post-exposure variables are classified
+- [ ] Missing-data strategy is specified
+- [ ] PH-assumption strategy is specified
+- [ ] Competing-risk strategy is specified if relevant
+- [ ] Sensitivity analyses are prespecified
+- [ ] Subgroup/effect-modification analyses are prespecified
+- [ ] Data cutoff date is finalized
+- [ ] Final table and figure shells are prepared

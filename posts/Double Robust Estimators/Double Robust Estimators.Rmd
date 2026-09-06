@@ -1,0 +1,226 @@
+---
+title: "Double Robust Estimators"
+output: html_document
+date: '2023-05-08'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Using sl3 with AIPW
+
+In detail please see the reference by [Ashley I Naimi](https://github.com/ainaimi/mlci_shortcourse).
+
+```{r}
+library(AIPW)
+library(tmle3)
+library(sl3)
+library(tidyverse)
+```
+
+Scale the variables 
+```{r}
+# data manipulate,  standardization or centralization
+scale_ <- function(x) {
+(x - mean(x, na.rm = TRUE))/sd(x, na.rm = TRUE)
+}
+
+nhefs <- read.csv("C:\\Users\\hed2\\Downloads\\mybook2\\mybook2\\nhefs_an.csv") %>%
+mutate(wt_delta = as.numeric(wt82_71 >
+median(wt82_71)), age = scale_(age),
+sbp = scale_(sbp), dbp = scale_(dbp),
+price71 = scale_(price71), tax71 = scale_(tax71)) %>%
+select(-wt82_71)
+
+head(nhefs)
+```
+
+Choose learners and configuration
+```{r}
+lrnr_mean <- make_learner(Lrnr_mean)
+lrnr_glm <- make_learner(Lrnr_glm)
+
+# ranger learner
+grid_params <- list(num.trees = c(250, 500,
+1000, 2000), mtry = c(2, 4, 6), min.node.size = c(50,
+100))
+grid <- expand.grid(grid_params, KEEP.OUT.ATTRS = FALSE)
+lrnr_ranger <- vector("list", length = nrow(grid))
+for (i in 1:nrow(grid)) {
+lrnr_ranger[[i]] <- make_learner(Lrnr_ranger,
+num.trees = grid[i, ]$num.trees,
+mtry = grid[i, ]$mtry, min.node.size = grid[i,
+]$min.node.size)
+}
+lrnr_ranger <- make_learner(Lrnr_ranger) ########### FLAG! ###########
+
+# glmnet learner
+grid_params <- seq(0, 1, by = 0.25)
+lrnr_glmnet <- vector("list", length = length(grid_params))
+for (i in 1:length(grid_params)) {
+lrnr_glmnet[[i]] <- make_learner(Lrnr_glmnet,
+                                 alpha = grid_params[i])
+}
+lrnr_glmnet <- make_learner(Lrnr_glmnet) ########### FLAG! ###########
+
+# xgboost learner
+grid_params <- list(max_depth = c(2, 4, 6,
+8), eta = c(0.01, 0.1, 0.2), nrounds = c(50,
+100, 500))
+grid <- expand.grid(grid_params, KEEP.OUT.ATTRS = FALSE)
+lrnr_xgboost <- vector("list", length = nrow(grid))
+for (i in 1:nrow(grid)) {
+lrnr_xgboost[[i]] <- make_learner(Lrnr_xgboost,
+max_depth = grid[i, ]$max_depth,
+eta = grid[i, ]$eta)
+}
+lrnr_xgboost <- make_learner(Lrnr_xgboost) ########## FLAG! ##########
+
+# earth learner
+grid_params <- c(2, 3, 4, 5, 6)
+lrnr_earth <- vector("list", length = length(grid_params))
+for (i in 1:length(grid_params)) {
+lrnr_earth[[i]] <- make_learner(Lrnr_earth,
+degree = grid_params[i])
+}
+lrnr_earth <- make_learner(Lrnr_earth) ############ FLAG! ############
+```
+
+Set a stack learners library
+```{r}
+stacklearner <- Stack$new(lrnr_mean, lrnr_glm,
+lrnr_ranger, lrnr_glmnet, lrnr_xgboost,
+lrnr_earth)
+
+metalearner <- Lrnr_nnls$new(convex = T)
+
+sl.lib <- Lrnr_sl$new(learners = stacklearner,
+metalearner = metalearner)
+
+```
+
+Set parameters of the model
+```{r}
+outcome <- nhefs$wt_delta
+exposure <- nhefs$qsmk
+covariates <- nhefs[, c("age", "sbp", "dbp",
+"price71", "tax71", "sex", "income",
+"race")]
+
+# set parameters
+set.seed(123)
+AIPW_SL <- AIPW$new(Y = outcome, A = exposure,
+W = covariates, Q.SL.library = sl.lib,
+g.SL.library = sl.lib, k_split = 10,
+verbose = FALSE)$fit()$summary(g.bound = 0.025)$plot.p_score()
+```
+
+```{r}
+# ouput ATE
+print(AIPW_SL$result, digits = 2)
+```
+
+
+## Using sl3 with tmle3
+
+Stack learners
+```{r}
+sl_ <- make_learner(Stack, unlist(list(lrnr_mean,
+lrnr_glm, lrnr_ranger, lrnr_glmnet, lrnr_xgboost,lrnr_earth), recursive = TRUE))
+```
+
+
+```{r}
+# DEFINE SL_Y AND SL_A We only need
+# one, because they're the same
+Q_learner <- Lrnr_sl$new(learners = sl_,  #stacking learners
+metalearner = Lrnr_nnls$new(convex = T))
+
+g_learner <- Lrnr_sl$new(learners = sl_,
+metalearner = Lrnr_nnls$new(convex = T))
+
+learner_list <- list(Y = Q_learner, A = g_learner)
+```
+
+Setup the TMLE3 model
+```{r}
+# PREPARE THE THINGS WE WANT TO FEED IN
+# TO TMLE3
+ate_spec <- tmle_ATE(treatment_level = 1,
+control_level = 0)
+
+nodes_ <- list(W = c("age", "sbp", "dbp",
+"price71", "tax71", "sex", "income",
+"race"), A = "qsmk", Y = "wt_delta")
+ 
+# RUN TMLE3
+set.seed(123)
+tmle_fit_ <- tmle3(ate_spec, nhefs, nodes_,
+learner_list)
+print(tmle_fit_)
+```
+
+Model properties to diagnose (calculate PS and stabilized weights)
+
+```{r}
+tmle_task <- ate_spec$make_tmle_task(nhefs,
+nodes_)
+
+initial_likelihood <- ate_spec$make_initial_likelihood(tmle_task,
+learner_list)
+
+## save propensity score for diagnosis
+# initial ps
+propensity_score <- initial_likelihood$get_likelihoods(tmle_task)$A
+# updated ps
+propensity_score <- propensity_score * nhefs$qsmk +
+(1 - propensity_score) * (1 - nhefs$qsmk)
+```
+
+
+```{r}
+plap_ <- tibble(exposure = nhefs$qsmk, pscore = propensity_score)
+
+# updated weight
+plap_ <- plap_ %>%
+mutate(sw = exposure * (mean(exposure)/propensity_score) +
+(1 - exposure) * ((1 - mean(exposure))/(1 -
+propensity_score)))
+
+# distribution of 
+summary(plap_$sw)
+summary(propensity_score)
+```
+
+plot the final pscore  
+```{r}
+# ps overlap plot
+ggplot(plap_) + geom_density(aes(pscore,
+color = factor(exposure))) + scale_fill_manual(values = c("blue",
+"orange")) + scale_x_continuous(expand = c(0,
+0)) + scale_y_continuous(expand = c(0,
+0))
+```
+Output p and q weights respectively by different learners
+```{r}
+# super learner coefficients for PS
+# model
+g_fit <- tmle_fit_$likelihood$factor_list[["A"]]$learner
+
+g_fit$fit_object$full_fit$learner_fits$Lrnr_nnls_TRUE
+
+# super learner coefficients for
+# outcome model
+Q_fit <- tmle_fit_$likelihood$factor_list[["Y"]]$learner
+Q_fit$fit_object$full_fit$learner_fits$Lrnr_nnls_TRUE
+```
+
+
+
+
+
+
+
+
+

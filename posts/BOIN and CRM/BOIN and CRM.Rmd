@@ -1,0 +1,306 @@
+---
+title: "BOIN, CRM and 3+3"
+output: html_document
+date: "2026-06-02"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### BOIN, CRM and 3+3  
+
+#### BOIN    
+ 
+- Define trial parameters (target DLT, cohort size, number of cohorts)
+- Generate BOIN decision boundaries
+- Extract escalation and de-escalation cutoffs
+- Input current cohort toxicity data
+- Calculate observed toxicity rate
+- Compare toxicity rate with BOIN boundaries
+- Make dose decision: escalate, stay, or de-escalate
+ 
+```{r  }
+# =========================================================
+# Simple BOIN Example in R
+# Single-Agent Phase I Dose Escalation Trial
+# =========================================================
+
+library(BOIN)
+
+# =========================================================
+# Step 1: Define Trial Design Parameters
+# =========================================================
+
+target <- 0.30
+# Target DLT (Dose Limiting Toxicity) rate = 30%
+
+ncohort <- 10
+# Maximum number of cohorts planned in the trial
+
+cohortsize <- 3
+# Number of patients enrolled per cohort
+
+# =========================================================
+# Step 2: Generate BOIN Decision Boundaries
+# =========================================================
+
+bound <- get.boundary(
+  target = target,
+  ncohort = ncohort,
+  cohortsize = cohortsize
+)
+
+# Print BOIN design summary and boundaries
+print(bound)
+
+# =========================================================
+# Step 3: Extract Escalation / De-escalation Boundaries
+# =========================================================
+
+lambda_e <- bound$lambda_e
+# Escalation boundary
+# If observed toxicity rate is BELOW this value,
+# escalate to the next higher dose
+
+lambda_d <- bound$lambda_d
+# De-escalation boundary
+# If observed toxicity rate is ABOVE this value,
+# de-escalate to the next lower dose
+
+# Print boundaries
+cat("Escalation Boundary (lambda_e):", lambda_e, "\n")
+cat("De-escalation Boundary (lambda_d):", lambda_d, "\n")
+
+# =========================================================
+# Step 4: Current Cohort Data
+# =========================================================
+
+current_n <- 3
+# Number of patients treated at current dose
+
+current_tox <- 0
+# Number of DLTs observed at current dose
+
+# Calculate observed toxicity rate
+obs_rate <- current_tox / current_n
+
+cat("Observed Toxicity Rate:", obs_rate, "\n")
+
+# =========================================================
+# Step 5: BOIN Dose Escalation Decision
+# =========================================================
+
+if (obs_rate < lambda_e) {
+  
+  decision <- "Escalate"
+  
+} else if (obs_rate > lambda_d) {
+  
+  decision <- "De-escalate"
+  
+} else {
+  
+  decision <- "Stay at Current Dose"
+  
+}
+
+# Print final decision
+cat("BOIN Decision:", decision, "\n")
+``` 
+#### CRM    
+ 
+- Define CRM design parameters. 
+Set the target DLT rate, dose levels, and prior toxicity skeleton.
+- Create observed trial data. 
+Enter patient-level dose assignment and DLT outcomes.
+- Fit the CRM model. 
+Use the observed data to update toxicity probabilities for all dose levels.
+- Summarize estimated toxicity. 
+Compare prior skeleton values with posterior estimated toxicity probabilities.
+- Select next recommended dose. 
+Choose the dose with estimated toxicity closest to the target DLT rate.
+- Output recommendation. 
+Print the recommended dose level for the next cohort.
+
+ 
+```{r  }
+# =========================================================
+# Simple CRM Example in R
+# Single-Agent Phase I Dose Escalation Trial
+# =========================================================
+
+# install.packages("dfcrm")
+library(dfcrm)
+
+# =========================================================
+# Step 1: Define CRM Design Parameters
+# =========================================================
+
+target <- 0.30
+# Target DLT rate = 30%
+
+dose_level <- 1:5
+# Five dose levels
+
+prior <- c(0.05, 0.10, 0.20, 0.35, 0.50)
+# CRM skeleton:
+# Initial guesses of DLT probability for each dose level
+# Must be increasing with dose
+
+# =========================================================
+# Step 2: Create Observed Trial Data
+# =========================================================
+# Example:
+# Cohort 1: Dose 1, 0/3 DLT
+# Cohort 2: Dose 2, 0/3 DLT
+# Cohort 3: Dose 3, 1/3 DLT
+# Cohort 4: Dose 3, 1/3 DLT
+
+level <- c(
+  rep(1, 3),
+  rep(2, 3),
+  rep(3, 3),
+  rep(3, 3)
+)
+
+tox <- c(
+  0, 0, 0,   # Dose 1: 0/3 DLT
+  0, 0, 0,   # Dose 2: 0/3 DLT
+  0, 0, 1,   # Dose 3: 1/3 DLT
+  0, 1, 0    # Dose 3: 1/3 DLT
+)
+
+trial_data <- data.frame(
+  patient_id = 1:length(tox),
+  dose_level = level,
+  dlt = tox
+)
+
+print(trial_data)
+
+# =========================================================
+# Step 3: Fit CRM Model
+# =========================================================
+
+fit <- crm(
+  prior = prior,
+  target = target,
+  tox = tox,
+  level = level,
+  model = "empiric",
+  method = "bayes"
+)
+
+print(fit)
+
+# =========================================================
+# Step 4: Extract CRM Estimated Toxicity Probabilities
+# =========================================================
+
+estimated_tox <- fit$ptox
+
+crm_summary <- data.frame(
+  dose_level = dose_level,
+  skeleton = prior,
+  estimated_toxicity = estimated_tox
+)
+
+print(crm_summary)
+
+# =========================================================
+# Step 5: Recommended Dose for Next Cohort
+# =========================================================
+
+recommended_dose <- fit$mtd
+
+cat("Recommended dose level for next cohort:", recommended_dose, "\n")
+```
+
+
+
+
+#### 3+3     
+ 
+- Define patient dose levels and DLT outcomes
+- Create trial dataset
+- Summarize number of patients and DLTs at each dose
+- Apply 3+3 rules sequentially:  
+0/3 DLT → escalate
+1/3 DLT → expand to 6 patients
+≤1/6 DLT → escalate
+≥2/3 or ≥2/6 DLT → de-escalate/stop
+-  Select the previous safe dose as the MTD 
+
+ 
+```{r  }
+# =========================================================
+# Simple 3+3 Design Example in R
+# Single-Agent Phase I Dose Escalation Trial
+# =========================================================
+
+# =========================================================
+# Step 1: Define Observed Trial Data
+# =========================================================
+
+# Example:
+# Cohort 1: Dose 1, 0/3 DLT  -> escalate
+# Cohort 2: Dose 2, 0/3 DLT  -> escalate
+# Cohort 3: Dose 3, 1/3 DLT  -> expand dose 3
+# Cohort 4: Dose 3, 0/3 DLT  -> dose 3 has 1/6 DLT, escalate
+# Cohort 5: Dose 4, 2/3 DLT  -> de-escalate, stop
+# Final MTD = Dose 3
+
+dose_level <- c(
+  rep(1, 3),
+  rep(2, 3),
+  rep(3, 3),
+  rep(3, 3),
+  rep(4, 3)
+)
+
+dlt <- c(
+  0, 0, 0,   # Dose 1: 0/3 DLT
+  0, 0, 0,   # Dose 2: 0/3 DLT
+  0, 0, 1,   # Dose 3: 1/3 DLT
+  0, 0, 0,   # Dose 3: total 1/6 DLT
+  1, 1, 0    # Dose 4: 2/3 DLT
+)
+
+trial_data <- data.frame(
+  patient_id = 1:length(dlt),
+  dose_level = dose_level,
+  dlt = dlt
+)
+
+print(trial_data)
+
+# =========================================================
+# Step 2: Summarize DLT by Dose
+# =========================================================
+
+summary_by_dose <- aggregate(
+  dlt ~ dose_level,
+  data = trial_data,
+  FUN = function(x) c(n = length(x), tox = sum(x), rate = mean(x))
+)
+
+summary_by_dose <- do.call(data.frame, summary_by_dose)
+colnames(summary_by_dose) <- c("dose_level", "n", "dlt", "dlt_rate")
+
+print(summary_by_dose)
+
+# =========================================================
+# Step 3: Apply Simple 3+3 Rule Manually
+# =========================================================
+
+cat("3+3 decision path:\n")
+cat("Dose 1: 0/3 DLT -> Escalate to Dose 2\n")
+cat("Dose 2: 0/3 DLT -> Escalate to Dose 3\n")
+cat("Dose 3: 1/3 DLT -> Expand Dose 3 to 6 patients\n")
+cat("Dose 3: 1/6 DLT -> Escalate to Dose 4\n")
+cat("Dose 4: 2/3 DLT -> Stop and de-escalate\n")
+cat("Final MTD: Dose 3\n")
+```
+
+

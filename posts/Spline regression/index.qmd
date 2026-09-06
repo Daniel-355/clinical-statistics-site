@@ -1,0 +1,231 @@
+---
+title: "Spline regression"
+description: "A practical R learning guide to Spline regression, with concise explanations, reproducible examples, and interpretation guidance."
+date: 2026-08-31
+section: "Biostatistics"
+category: "Statistical Models"
+topic: "Spline regression"
+type: article
+tags: ["Statistical Models", "Biostatistics", "Spline", "regression"]
+status: published
+featured: true
+youtube: []
+pdf: []
+downloads: []
+validate-yaml: false
+execute:
+  echo: true
+  warning: false
+  error: true
+---
+
+## Why This Topic Matters
+
+A statistical model is a structured approximation that links observed data to an estimand or prediction target.
+
+## Learning Objectives
+
+After working through this material, you should be able to:
+
+- explain the main ideas behind **Spline regression**;
+- interpret the R workflow and its output; and
+- adapt the examples to a related analysis.
+
+## Lesson Roadmap
+
+The original material is organized around the following topics:
+
+1. Spline regression
+
+## How to Use This Lesson
+
+Read the explanation before each workflow, then run the R chunks in sequence. Code and output are shown together so that each numerical or graphical result can be connected to the command that produced it. Some source examples require optional packages or external data. Those setup-dependent chunks remain visible for reference but are marked `eval: false` when they cannot be reproduced safely in a clean website build.
+
+## Reproducible Learning Check
+
+This short R chunk confirms the scope of the lesson and always produces a visible output.
+
+```{r}
+#| label: learning-overview
+learning_overview <- data.frame(
+  section = "Biostatistics",
+  category = "Statistical Models",
+  topic = "Spline regression"
+)
+learning_overview
+```
+
+## Learning Material
+
+The following material develops **Spline regression** from core ideas to practical implementation. Definitions and assumptions come first; worked code then shows how the ideas are represented computationally.
+
+### Conceptual Foundation
+
+The material below closely follows the original R Markdown source, with its examples retained for study and reuse.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+[Reference](https://medium.com/analytics-vidhya/spline-regression-in-r-960ca82aa62c)
+
+#### Spline regression
+
+<!-- generated-learning-note -->
+This section develops **Spline regression**. Read the model specification together with its assumptions and the scale of each reported effect.
+
+Dataset
+
+### R Workflow and Examples
+
+Run the examples in order because later blocks may reuse objects created earlier. Each block includes a short purpose statement and guidance for reading its output.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r}
+library(splines) 
+library(ggplot2)
+
+df <- data.frame(x=1:15,
+                 y=c(2, 10, 20, 25, 20, 10, 19, 15, 19, 10, 6, 20, 31, 31, 40))
+
+#create scatter plot with line of best fit
+ggplot(df, aes(x=x, y=y)) +
+  geom_point() +
+  geom_smooth(method=loess, se=FALSE)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+
+Fitted curve with high order terms
+
+<!-- generated-learning-note -->
+**Purpose.** This block specifies and fits the statistical model. Identify the outcome, predictors, reference levels, link or distribution, and any correlation structure before interpreting coefficients.
+
+```{r}
+# plot a line
+m1 <- lm(y~x,data=df)
+plot(y~x,df)
+lines(df$x,predict(m1),col="blue")
+
+# # square
+m2_1 <- lm(y~  I(x**2)+x,data=df)
+plot(y~x,df)
+lines(df$x,predict(m2_1),col="blue")
+
+# a cube curve 
+m2 <- lm(y~ I(x**3)+I(x**2)+x,data=df)
+plot(y~x,df)
+lines(df$x,predict(m2),col="blue")
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Focus on coefficient direction and scale, uncertainty intervals, fit statistics, and diagnostics. Statistical significance alone does not establish practical importance or model adequacy.
+
+
+Spline curve by bins/ sections (one power)
+
+<!-- generated-learning-note -->
+**Purpose.** This block specifies and fits the statistical model. Identify the outcome, predictors, reference levels, link or distribution, and any correlation structure before interpreting coefficients.
+
+```{r}
+# divide datasets into bins, cut off 4 and 11
+newdf = data.frame(x = df$x, 
+                   y = df$y, 
+                   tt1 = (df$x - 4)  * (df$x > 4),
+                   tt2 = (df$x - 11)  * (df$x > 11))
+
+# spline curve with line sharp join connection , if tt1 is one power of x. tt1 has a big influence to the original cube curve. 
+# cubic
+m3 <- lm(y~ I(x**3)+I(x**2)+x+tt1+tt2,data=newdf)
+plot(y~x,newdf)
+lines(newdf$x,predict(m3),col="blue")
+
+# square
+m3_2 <- lm(y~  I(x**2)+x+tt1+tt2,data=newdf)
+plot(y~x,newdf)
+lines(newdf$x,predict(m3_2),col="blue")
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Focus on coefficient direction and scale, uncertainty intervals, fit statistics, and diagnostics. Statistical significance alone does not establish practical importance or model adequacy.
+
+
+Spline curve by bins (high order term, more smooth in connection)
+
+independent variables and spline terms should be a third-degree polynomial. 
+
+<!-- generated-learning-note -->
+**Purpose.** This block specifies and fits the statistical model. Identify the outcome, predictors, reference levels, link or distribution, and any correlation structure before interpreting coefficients.
+
+```{r}
+# divide datasets into bins, 4, 11
+newdf = data.frame(x = df$x, 
+                   y = df$y, 
+                   tt1 = (df$x - 4)**1  * (df$x > 4),
+                   tt2 = (df$x - 11)**1  * (df$x > 11))
+
+# spline curve with smooth join connection , if tt1 is cube of x. tt1 has a little influence to the original cube curve. 
+# cubic
+m3 <- lm(y~ I(x**3)+I(x**2)+x+I(tt1**3)+I(tt2**3),data=newdf)
+summary(m3)
+plot(y~x,newdf)
+lines(newdf$x,predict(m3),col="blue")
+
+#################### square
+m3_3 <- lm(y~  I(x**2)+x+I(tt1**3)+I(tt2**3),data=newdf)
+summary(m3_3)
+plot(y~x,newdf)
+lines(newdf$x,predict(m3_3),col="blue")
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Focus on coefficient direction and scale, uncertainty intervals, fit statistics, and diagnostics. Statistical significance alone does not establish practical importance or model adequacy.
+
+
+Using a function
+
+<!-- generated-learning-note -->
+**Purpose.** This block specifies and fits the statistical model. Identify the outcome, predictors, reference levels, link or distribution, and any correlation structure before interpreting coefficients.
+
+```{r}
+# creating b-spline term in a regression model 
+# Remember that the default spline model in R is a third-degree polynomial. This is because it is hard for the eye to detect the discontinuity at the knots.
+
+model <- lm(y~ bs(x, knots=c(4,11)),data=newdf)
+summary(model)
+
+# plot x and predictions
+lims <- range(df$x)
+lims.grid <- seq(from=lims[1],to=lims[2])
+pred <- predict(model,newdata=list(x=lims.grid),se=T)
+# head(pred)
+
+# plot with std error area
+plot(y~x,newdf)
+lines(newdf$x,pred$fit,col="blue")
+lines(newdf$x,pred$fit+2*pred$se.fit,col="green")
+lines(newdf$x,pred$fit-2*pred$se.fit,col="green")
+
+# how to determine K knots
+# A somewhat more objective approach is to use cross-validation.
+# This procedure can be repeated for different numbers of knots K. Then the value of K giving the smallest RSS is chosen.
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Focus on coefficient direction and scale, uncertainty intervals, fit statistics, and diagnostics. Statistical significance alone does not establish practical importance or model adequacy.
+
+## Interpreting the Results
+
+Interpret coefficients with their coding and scale, examine uncertainty, and use diagnostics to evaluate assumptions. Treat the output as evidence generated under the stated data, coding choices, and assumptions. Before using the workflow in practice, replace example inputs with validated data and confirm that the method targets the intended scientific question.
+
+## Key Takeaways
+
+- **Connect method to purpose.** Identify the question and target quantity before choosing code or a model.
+- **Read code and output together.** Confirm what each object, estimate, interval, table, or plot represents.
+- **Check assumptions and diagnostics.** A successful computation is not by itself evidence that the result is reliable.
+- **Adapt deliberately.** When applying the example elsewhere, document changes to data definitions, parameters, and analytical choices.

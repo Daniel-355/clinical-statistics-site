@@ -1,0 +1,200 @@
+---
+title: "Least-squares means with interaction"
+description: "A practical R learning guide to Least-squares means with interaction, with concise explanations, reproducible examples, and interpretation guidance."
+date: 2026-08-31
+section: "Biostatistics"
+category: "Subgroup & Interaction Analysis"
+topic: "Least-squares means with interaction"
+type: article
+tags: ["Subgroup & Interaction Analysis", "Biostatistics", "Least-squares", "means", "interaction"]
+status: published
+featured: true
+youtube: []
+pdf: []
+downloads: []
+validate-yaml: false
+execute:
+  echo: true
+  warning: false
+  error: true
+---
+
+## Why This Topic Matters
+
+Interaction analyses assess whether an effect differs across levels of another variable; subgroup estimates alone do not establish heterogeneity.
+
+## Learning Objectives
+
+After working through this material, you should be able to:
+
+- explain the main ideas behind **Least-squares means with interaction**;
+- interpret the R workflow and its output; and
+- adapt the examples to a related analysis.
+
+## Lesson Roadmap
+
+The original material is organized around the following topics:
+
+1. Least-squares means with interaction
+
+## How to Use This Lesson
+
+Read the explanation before each workflow, then run the R chunks in sequence. Code and output are shown together so that each numerical or graphical result can be connected to the command that produced it. Some source examples require optional packages or external data. Those setup-dependent chunks remain visible for reference but are marked `eval: false` when they cannot be reproduced safely in a clean website build.
+
+## Reproducible Learning Check
+
+This short R chunk confirms the scope of the lesson and always produces a visible output.
+
+```{r}
+#| label: learning-overview
+learning_overview <- data.frame(
+  section = "Biostatistics",
+  category = "Subgroup & Interaction Analysis",
+  topic = "Least-squares means with interaction"
+)
+learning_overview
+```
+
+## Learning Material
+
+The following material develops **Least-squares means with interaction** from core ideas to practical implementation. Definitions and assumptions come first; worked code then shows how the ideas are represented computationally.
+
+### Conceptual Foundation
+
+The material below closely follows the original R Markdown source, with its examples retained for study and reuse.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+[Reference](https://www.quantargo.com/help/r/latest/packages/merTools/0.5.2/predictInterval)
+
+#### Least-squares means with interaction
+
+<!-- generated-learning-note -->
+This subsection explains **Least-squares means with interaction** and shows how it contributes to the overall Least-squares means with interaction workflow.
+
+
+Without interaction
+
+at a special value
+
+### R Workflow and Examples
+
+Run the examples in order because later blocks may reuse objects created earlier. Each block includes a short purpose statement and guidance for reading its output.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r}
+# Compute least-squares means for specified factors or factor combinations in a linear model
+
+require(lsmeans)
+
+# Use dataset 'fiber'
+
+### model 1 without interaction, Covariance example 
+fiber.lm <- lm(strength ~ diameter + machine, data = fiber)
+
+# adjusted means and comparison
+lsmeans(fiber.lm,   list (pairwise ~ machine ) ) 
+
+# adjusted means and contrast, treating machine C as control
+lsmeans (fiber.lm, "machine", contr = "trt.vs.ctrlk")
+
+# adjusted means and comparison, after setting "diameter" as a specific value
+lsmeans(fiber.lm,   list (pairwise ~ machine ), at = list(diameter =20) ) 
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+
+With interaction
+
+<!-- generated-learning-note -->
+**Purpose.** This block specifies and fits the statistical model. Identify the outcome, predictors, reference levels, link or distribution, and any correlation structure before interpreting coefficients.
+
+```{r}
+### model 2 with interaction
+fiber.lm2 <- lm(strength ~ diameter*machine, data=fiber)
+
+# means when diameter is its mean
+(lsmeans(fiber.lm2, ~ machine | diameter))
+
+# means when setting diameter as its mean
+lsmeans(fiber.lm2,   list (pairwise ~ machine ), at = list(diameter =24.1) ) 
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Focus on coefficient direction and scale, uncertainty intervals, fit statistics, and diagnostics. Statistical significance alone does not establish practical importance or model adequacy.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block specifies and fits the statistical model. Identify the outcome, predictors, reference levels, link or distribution, and any correlation structure before interpreting coefficients.
+
+```{r}
+### model 3 for category covariates
+warp.lm <- lm(breaks ~ wool * tension, data = warpbreaks)
+
+# means after adjusting the interaction effect
+(lsmeans(warp.lm, ~ wool | tension))
+
+# set tension ="M"
+lsmeans(warp.lm,   list (pairwise ~ wool ), at = list(tension ="M")) 
+lsmeans(warp.lm,   list (pairwise ~ wool ), at = list(tension ="H")) 
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Focus on coefficient direction and scale, uncertainty intervals, fit statistics, and diagnostics. Statistical significance alone does not establish practical importance or model adequacy.
+
+
+Compare slopes and test
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+### Trends, obtain slopes  
+fiber.lst=( lstrends(fiber.lm, "machine", var="diameter") )
+fiber.lst
+# pairwise comparisons thereof slopes 
+pairs(fiber.lst)
+
+fiber.lst2=( lstrends(fiber.lm2, "machine", var="diameter") )
+fiber.lst2
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+Least-squares means with interaction for LMM
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r}
+library(lme4)
+##############
+m1 <- lmer(Reaction ~ Days + (1 | Subject), sleepstudy)
+lsmeans(m1,    ~ Days  , at = list(Days =20)  ) 
+
+lsmeans(m1,    ~ Days    ) 
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+## Interpreting the Results
+
+Prioritize interaction contrasts and uncertainty over separate within-group significance tests. Treat the output as evidence generated under the stated data, coding choices, and assumptions. Before using the workflow in practice, replace example inputs with validated data and confirm that the method targets the intended scientific question.
+
+## Key Takeaways
+
+- **Connect method to purpose.** Identify the question and target quantity before choosing code or a model.
+- **Read code and output together.** Confirm what each object, estimate, interval, table, or plot represents.
+- **Check assumptions and diagnostics.** A successful computation is not by itself evidence that the result is reliable.
+- **Adapt deliberately.** When applying the example elsewhere, document changes to data definitions, parameters, and analytical choices.

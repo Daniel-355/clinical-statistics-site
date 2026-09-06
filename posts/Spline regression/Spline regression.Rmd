@@ -1,0 +1,115 @@
+---
+title: "Spline regression"
+output: html_document
+date: '2023-05-12'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+[Reference](https://medium.com/analytics-vidhya/spline-regression-in-r-960ca82aa62c)
+
+## Spline regression
+Dataset
+
+```{r}
+library(splines) 
+library(ggplot2)
+
+df <- data.frame(x=1:15,
+                 y=c(2, 10, 20, 25, 20, 10, 19, 15, 19, 10, 6, 20, 31, 31, 40))
+
+#create scatter plot with line of best fit
+ggplot(df, aes(x=x, y=y)) +
+  geom_point() +
+  geom_smooth(method=loess, se=FALSE)
+```
+
+Fitted curve with high order terms
+```{r}
+# plot a line
+m1 <- lm(y~x,data=df)
+plot(y~x,df)
+lines(df$x,predict(m1),col="blue")
+
+# # square
+m2_1 <- lm(y~  I(x**2)+x,data=df)
+plot(y~x,df)
+lines(df$x,predict(m2_1),col="blue")
+
+# a cube curve 
+m2 <- lm(y~ I(x**3)+I(x**2)+x,data=df)
+plot(y~x,df)
+lines(df$x,predict(m2),col="blue")
+```
+
+Spline curve by bins/ sections (one power)
+```{r}
+# divide datasets into bins, cut off 4 and 11
+newdf = data.frame(x = df$x, 
+                   y = df$y, 
+                   tt1 = (df$x - 4)  * (df$x > 4),
+                   tt2 = (df$x - 11)  * (df$x > 11))
+
+# spline curve with line sharp join connection , if tt1 is one power of x. tt1 has a big influence to the original cube curve. 
+# cubic
+m3 <- lm(y~ I(x**3)+I(x**2)+x+tt1+tt2,data=newdf)
+plot(y~x,newdf)
+lines(newdf$x,predict(m3),col="blue")
+
+# square
+m3_2 <- lm(y~  I(x**2)+x+tt1+tt2,data=newdf)
+plot(y~x,newdf)
+lines(newdf$x,predict(m3_2),col="blue")
+```
+
+Spline curve by bins (high order term, more smooth in connection)
+
+independent variables and spline terms should be a third-degree polynomial. 
+```{r}
+# divide datasets into bins, 4, 11
+newdf = data.frame(x = df$x, 
+                   y = df$y, 
+                   tt1 = (df$x - 4)**1  * (df$x > 4),
+                   tt2 = (df$x - 11)**1  * (df$x > 11))
+
+# spline curve with smooth join connection , if tt1 is cube of x. tt1 has a little influence to the original cube curve. 
+# cubic
+m3 <- lm(y~ I(x**3)+I(x**2)+x+I(tt1**3)+I(tt2**3),data=newdf)
+summary(m3)
+plot(y~x,newdf)
+lines(newdf$x,predict(m3),col="blue")
+
+#################### square
+m3_3 <- lm(y~  I(x**2)+x+I(tt1**3)+I(tt2**3),data=newdf)
+summary(m3_3)
+plot(y~x,newdf)
+lines(newdf$x,predict(m3_3),col="blue")
+```
+
+Using a function
+```{r}
+# creating b-spline term in a regression model 
+# Remember that the default spline model in R is a third-degree polynomial. This is because it is hard for the eye to detect the discontinuity at the knots.
+
+model <- lm(y~ bs(x, knots=c(4,11)),data=newdf)
+summary(model)
+
+# plot x and predictions
+lims <- range(df$x)
+lims.grid <- seq(from=lims[1],to=lims[2])
+pred <- predict(model,newdata=list(x=lims.grid),se=T)
+# head(pred)
+
+# plot with std error area
+plot(y~x,newdf)
+lines(newdf$x,pred$fit,col="blue")
+lines(newdf$x,pred$fit+2*pred$se.fit,col="green")
+lines(newdf$x,pred$fit-2*pred$se.fit,col="green")
+
+# how to determine K knots
+# A somewhat more objective approach is to use cross-validation.
+# This procedure can be repeated for different numbers of knots K. Then the value of K giving the smallest RSS is chosen.
+```
+

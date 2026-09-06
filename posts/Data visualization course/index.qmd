@@ -1,0 +1,583 @@
+---
+title: "Data visualization course"
+description: "A practical R learning guide to Data visualization course, with concise explanations, reproducible examples, and interpretation guidance."
+date: 2026-08-31
+section: "Data Management & Programming"
+category: "Data Cleaning & Quality Control"
+topic: "Data visualization course"
+type: article
+tags: ["Data Cleaning & Quality Control", "Data Management & Programming", "Data", "visualization", "course"]
+status: published
+featured: true
+youtube: []
+pdf: []
+downloads: []
+validate-yaml: false
+execute:
+  echo: true
+  warning: false
+  error: true
+---
+
+## Why This Topic Matters
+
+Data cleaning and quality control make analytical results traceable and reduce errors caused by inconsistent or implausible values.
+
+## Learning Objectives
+
+After working through this material, you should be able to:
+
+- explain the main ideas behind **Data visualization course**;
+- interpret the R workflow and its output; and
+- adapt the examples to a related analysis.
+
+## Lesson Roadmap
+
+The original material is organized around the following topics:
+
+1. Data visualization course
+2. Summarization
+3. Explore missing values
+4. Add statistical test
+5. Add texts to dots
+6. Set the legend
+
+## How to Use This Lesson
+
+Read the explanation before each workflow, then run the R chunks in sequence. Code and output are shown together so that each numerical or graphical result can be connected to the command that produced it. Some source examples require optional packages or external data. Those setup-dependent chunks remain visible for reference but are marked `eval: false` when they cannot be reproduced safely in a clean website build.
+
+## Reproducible Learning Check
+
+This short R chunk confirms the scope of the lesson and always produces a visible output.
+
+```{r}
+#| label: learning-overview
+learning_overview <- data.frame(
+  section = "Data Management & Programming",
+  category = "Data Cleaning & Quality Control",
+  topic = "Data visualization course"
+)
+learning_overview
+```
+
+## Learning Material
+
+The following material develops **Data visualization course** from core ideas to practical implementation. Definitions and assumptions come first; worked code then shows how the ideas are represented computationally.
+
+### Conceptual Foundation
+
+The material below closely follows the original R Markdown source, with its examples retained for study and reuse.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#### Data visualization course
+
+<!-- generated-learning-note -->
+This section prepares the information needed for **Data visualization course**. Check variable definitions, units, coding, and missing values before moving to analysis.
+
+
+#### Summarization
+
+<!-- generated-learning-note -->
+This subsection explains **Summarization** and shows how it contributes to the overall Data visualization course workflow.
+
+### R Workflow and Examples
+
+Run the examples in order because later blocks may reuse objects created earlier. Each block includes a short purpose statement and guidance for reading its output.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r}
+library(tidyverse)
+mtcars %>% 
+  mutate( kml = mpg * 0.42) %>% 
+  group_by(cyl) %>% 
+  summarize(avg_US = mean(mpg), avg_metric = mean(kml))
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+mpg %>% 
+  group_by(manufacturer, year) %>% 
+  summarize_at(vars(cty, hwy), mean)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+- change layout
+
+<!-- generated-learning-note -->
+**Purpose.** This block prepares the analysis data. Follow each transformation carefully because filtering, recoding, grouping, and reshaping determine the observations used downstream.
+
+```{r}
+mpg %>% count(class, year)%>% 
+  spread(class, n) 
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the data before and after the transformation. Confirm that row counts, group sizes, missingness, and variable values changed as intended.
+
+- change all characters into factors
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+mpg <- mpg %>% 
+  mutate_if(is.character, as.factor) #if a column is a character, change to a factor
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+- wide to long data
+
+<!-- generated-learning-note -->
+**Purpose.** This block prepares the analysis data. Follow each transformation carefully because filtering, recoding, grouping, and reshaping determine the observations used downstream.
+
+```{r}
+mpg1 <- mpg %>% 
+  gather("key", "value", cty, hwy)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the data before and after the transformation. Confirm that row counts, group sizes, missingness, and variable values changed as intended.
+
+
+- convert wide data to long data using `pivot_longer `
+
+<!-- generated-learning-note -->
+**Purpose.** This block prepares the analysis data. Follow each transformation carefully because filtering, recoding, grouping, and reshaping determine the observations used downstream.
+
+```{r}
+## Your code here. Naming choices for 1 and 2 are yours
+dta <- mpg %>% 
+  pivot_longer(cty:hwy, names_to = "var", values_to = "value") %>%  # Both of those are 
+  # value label
+   mutate(var = ifelse( var == 'cty', 'city','highway'))
+
+ggplot(dta, aes(x = displ, y = value)) + 
+  geom_point(aes(color = var))  +
+  geom_smooth(aes(color = var), se = F)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the data before and after the transformation. Confirm that row counts, group sizes, missingness, and variable values changed as intended.
+
+
+- explore distribution  
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r}
+library(DataExplorer)
+library(psych)
+library(naniar)
+plot_histogram(riskfactors)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+
+- explore relationship/correlation
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r}
+library(psych)
+pairs.panels(riskfactors[,1:10])
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+
+- create a individual theme
+
+<!-- generated-learning-note -->
+**Purpose.** This block defines a reusable function. Separate its inputs, calculations, and returned value before applying it to new data.
+
+```{r}
+my_theme <- function(){
+  theme_bw() + 
+ 
+  theme(axis.title = element_text(size=16),
+  axis.text = element_text(size=14),
+  text = element_text(size = 14))
+}
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Test the function with simple inputs whose expected answer is known before relying on it in a larger workflow.
+
+#### Explore missing values
+
+<!-- generated-learning-note -->
+This subsection explains **Explore missing values** and shows how it contributes to the overall Data visualization course workflow.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This source block depends on optional software, external data, or a machine-specific path. It is retained as a reference and is not executed during the website build.
+
+```{r}
+#| eval: false
+#| code-fold: true
+# install.packages("naniar")
+library(naniar)
+# head(riskfactors)
+riskfactors <- riskfactors
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Because this block is not executed, it produces no website output. Enable it only after its dependencies and input paths have been validated.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+gg_miss_upset(riskfactors,nsets=10)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This source block depends on optional software, external data, or a machine-specific path. It is retained as a reference and is not executed during the website build.
+
+```{r}
+#| eval: false
+#| code-fold: true
+# install.packages("DataExplorer")
+
+plot_missing(riskfactors)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Because this block is not executed, it produces no website output. Enable it only after its dependencies and input paths have been validated.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r}
+# take a quick look at the data types of each column
+visdat::vis_dat(riskfactors)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+ 
+
+
+
+#### Add statistical test
+
+<!-- generated-learning-note -->
+This subsection explains **Add statistical test** and shows how it contributes to the overall Data visualization course workflow.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r ,warning=F}
+library(ggpubr)
+plt <- ggplot(  data=mpg,
+  mapping= aes(x =  as.factor(year),
+               y = cty,
+               color = as.factor(year) ) )+
+  geom_boxplot() +
+  geom_jitter(width=0.1)+
+  labs(x = 'Year',
+       y = "City mpg") +
+  my_theme()+ facet_wrap( ~ manufacturer,nrow = 2)  
+  
+# add statistical test
+  my_comparisons <- list(c('1999','2008'))
+plt + stat_compare_means() +
+stat_compare_means(comparisons = my_comparisons)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+
+
+#### Add texts to dots
+
+<!-- generated-learning-note -->
+This subsection explains **Add texts to dots** and shows how it contributes to the overall Data visualization course workflow.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+USArrests <- USArrests %>% rownames_to_column('State')
+
+ggplot(USArrests, aes(
+x=UrbanPop,y=Murder))+
+geom_point() +
+  labs(x = "Percent of population that is urban", 
+       y = "Murder arrests (per 100,000)",
+       caption =  "McNeil (1997). Interactive Data Analysis")+
+  geom_text(aes(label=State),size=3)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+#### Set the legend
+
+<!-- generated-learning-note -->
+This subsection explains **Set the legend** and shows how it contributes to the overall Data visualization course workflow.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+ggplot(iris, aes(x=  Sepal.Length , fill= as.factor( Species)) ) +  #whole plot's option
+  
+  geom_histogram(aes(y=..density..),alpha=0.5, position="identity" , bins = 50)+
+  geom_density(aes(linetype=as.factor(Species)),alpha=.1 )+    #aesthetic's option
+  
+  scale_fill_manual( name = "Groups",values = c("grey", "black", "skyblue"),labels = c("setosa", "versicolor" , "virginica" ))+  
+  scale_linetype_manual( name = "Groups" ,values = c(1,3,5),labels = c("setosa", "versicolor" , "virginica") )+       # common legend 
+  
+  labs(x = "Sepal.Length", 
+       y = "Density", 
+       title = "") 
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+
+#### Create a panel of plots
+
+<!-- generated-learning-note -->
+This section uses **Create a panel of plots** to make patterns visible. Confirm what each axis, group, scale, and annotation represents.
+
+
+- combine multiple plots into one
+
+<!-- generated-learning-note -->
+**Purpose.** This source block depends on optional software, external data, or a machine-specific path. It is retained as a reference and is not executed during the website build.
+
+```{r}
+#| eval: false
+#| code-fold: true
+p1=ggplot(data=riskfactors,aes(x=age))+
+  geom_histogram(bins = 30 )
+
+p2=ggplot(data=riskfactors,aes(x=sex))+
+  geom_bar (aes(x=sex) )
+
+p3=ggplot(riskfactors,aes(x = education, y = bmi))+
+  geom_boxplot (  )
+
+p4=ggplot(riskfactors, aes(x = marital )) + 
+  geom_bar(aes(group = education, y = (..count..)/sum(..count..),fill = education)) + 
+          scale_y_continuous(labels=scales::percent) 
+
+# install.packages("ggpubr")
+library(ggpubr)
+ggarrange(p1, p2, p3, p4, ncol = 2, nrow=2)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Because this block is not executed, it produces no website output. Enable it only after its dependencies and input paths have been validated.
+
+
+
+
+#### Plots in regression
+
+<!-- generated-learning-note -->
+This section develops **Plots in regression**. Read the model specification together with its assumptions and the scale of each reported effect.
+
+- create linear regression model
+
+<!-- generated-learning-note -->
+**Purpose.** This block imports or selects the data used in the example. Verify the file location, column types, coding, and missing values when substituting your own data.
+
+```{r}
+data("Boston", package = "MASS")
+linear_reg <- glm(medv ~ ., data=Boston , family = gaussian())
+summary(linear_reg)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Inspect dimensions, names, types, and several rows of the imported data. Unexpected structure at this stage will propagate into every later result.
+
+- summary
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r}
+knitr::kable(broom::tidy(linear_reg))
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+
+- create logistical regression 
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r}
+# load the Pima Indians dataset from the mlbench dataset
+library(mlbench)
+data(PimaIndiansDiabetes) 
+# rename dataset to have shorter name because lazy
+diabetes <- PimaIndiansDiabetes
+
+logistic_reg <- glm(diabetes ~ ., data=diabetes, family = binomial)
+
+summary(logistic_reg)
+
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+- summary
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r}
+knitr::kable(broom::tidy(logistic_reg))
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+
+
+#### Create forest plots for coefficients or OR
+
+<!-- generated-learning-note -->
+This section uses **Create forest plots for coefficients or OR** to make patterns visible. Confirm what each axis, group, scale, and annotation represents.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r}
+library(sjPlot)
+plot_model(linear_reg, show.values = TRUE, value.offset = 0.5)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+plot_model(logistic_reg, show.values = TRUE, value.offset = .5, vline.color = "black")
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+**another way**
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r}
+library(finalfit) 
+
+explanatory = c(  "crim"  ,  "zn"   ,   "indus"  ,   "nox"   ,  "rm"   ,   "age" ,    "dis"  ,   "rad"   ,  "tax"   ,"ptratio" ,"black"  , "lstat" )
+
+dependent = "medv"
+
+
+Boston %>%
+ coefficient_plot(dependent, explanatory, table_text_size=3, 
+                  title_text_size=12,
+                   plot_opts=list(xlab("Beta, 95% CI"), 
+                                  theme(axis.title = element_text(size=12))))
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r}
+ 
+library(finalfit) 
+
+explanatory = c(  "pregnant", "glucose" , "pressure", "triceps"  ,"insulin" , "mass"   ,  "pedigree", "age"  )
+
+dependent = "diabetes"
+
+diabetes %>%
+ or_plot(dependent, explanatory, table_text_size=3, 
+                  title_text_size=12,
+                   plot_opts=list(xlab("OR, 95% CI"), 
+                                  theme(axis.title = element_text(size=12))))
+ 
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+
+- qq plot
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+ggqqplot( (Boston$medv))
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+## Interpreting the Results
+
+Use summaries and visual checks to confirm ranges, distributions, duplicates, and missing-data patterns. Treat the output as evidence generated under the stated data, coding choices, and assumptions. Before using the workflow in practice, replace example inputs with validated data and confirm that the method targets the intended scientific question.
+
+## Key Takeaways
+
+- **Connect method to purpose.** Identify the question and target quantity before choosing code or a model.
+- **Read code and output together.** Confirm what each object, estimate, interval, table, or plot represents.
+- **Check assumptions and diagnostics.** A successful computation is not by itself evidence that the result is reliable.
+- **Adapt deliberately.** When applying the example elsewhere, document changes to data definitions, parameters, and analytical choices.

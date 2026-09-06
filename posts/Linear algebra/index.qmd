@@ -1,0 +1,643 @@
+---
+title: "Probability basics"
+description: "A practical R learning guide to Probability basics, with concise explanations, reproducible examples, and interpretation guidance."
+date: 2026-08-31
+section: "Resources"
+category: "Reference Resources"
+topic: "Probability basics"
+type: article
+tags: ["Reference Resources", "Resources", "Probability", "basics"]
+status: published
+featured: true
+youtube: []
+pdf: []
+downloads: []
+validate-yaml: false
+execute:
+  echo: true
+  warning: false
+  error: true
+---
+
+## Why This Topic Matters
+
+Mathematical and statistical foundations make model behavior and computational results easier to understand.
+
+## Learning Objectives
+
+After working through this material, you should be able to:
+
+- explain the main ideas behind **Probability basics**;
+- interpret the R workflow and its output; and
+- adapt the examples to a related analysis.
+
+## Lesson Roadmap
+
+The original material is organized around the following topics:
+
+1. Linear algebra
+2. Matrix basics
+3. Operations
+4. Advanced operations
+5. Solve linear equations
+6. Summary
+
+## How to Use This Lesson
+
+Read the explanation before each workflow, then run the R chunks in sequence. Code and output are shown together so that each numerical or graphical result can be connected to the command that produced it. Some source examples require optional packages or external data. Those setup-dependent chunks remain visible for reference but are marked `eval: false` when they cannot be reproduced safely in a clean website build.
+
+## Reproducible Learning Check
+
+This short R chunk confirms the scope of the lesson and always produces a visible output.
+
+```{r}
+#| label: learning-overview
+learning_overview <- data.frame(
+  section = "Resources",
+  category = "Reference Resources",
+  topic = "Probability basics"
+)
+learning_overview
+```
+
+## Learning Material
+
+The following material develops **Probability basics** from core ideas to practical implementation. Definitions and assumptions come first; worked code then shows how the ideas are represented computationally.
+
+### Conceptual Foundation
+
+The material below closely follows the original R Markdown source, with its examples retained for study and reuse.
+
+#### Linear algebra
+
+<!-- generated-learning-note -->
+This subsection explains **Linear algebra** and shows how it contributes to the overall Probability basics workflow.
+
+
+#### Matrix basics
+
+<!-- generated-learning-note -->
+This subsection explains **Matrix basics** and shows how it contributes to the overall Probability basics workflow.
+
+- dimensions of matrix
+
+### R Workflow and Examples
+
+Run the examples in order because later blocks may reuse objects created earlier. Each block includes a short purpose statement and guidance for reading its output.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+   seed=123
+   X=matrix(1:12,ncol=3,nrow=4)
+   X
+   
+   dim(X)
+   dim(X)[1]
+
+   ncol(X)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+- change dimensions of matrix 
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+dim(X)=c(2,6)
+   X
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+- change names of matrix 
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+  a <- matrix(1:6,nrow=2,ncol=3,byrow=FALSE)
+  b <- matrix(1:6,nrow=3,ncol=2,byrow=T)
+  c <- matrix(1:6,nrow=3,ncol=2,byrow=T,dimnames=list(c("A","B","C"),c("boy","girl")))
+  c
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+   rownames(c)
+   colnames(c)
+
+   rownames(c)=c("E","F","G")
+   c
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+- replace elements of matrix
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+   X=matrix(1:12,nrow=4,ncol=3)
+   
+   X[2,3]
+   X[2,3]=1000
+      
+   X
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+- extract diagonal elements and replace them 
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+   diag(X)
+   diag(X)=c(0,0,1)
+
+   X
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+- create diagonal identity matrix 
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+  diag(c(1,2,3))
+   
+  diag(3)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+- extract lower/upper triangle elements 
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+  X
+  X[lower.tri(X)]
+   
+  X[upper.tri(X)]
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+- create lower/upper triangle matrix 
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+X[lower.tri(X)]=0
+X
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+#### Operations
+
+<!-- generated-learning-note -->
+This subsection explains **Operations** and shows how it contributes to the overall Probability basics workflow.
+
+- transform 
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+ t(X)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+- summary by row or column 
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+  A=matrix(1:12,3,4)
+  A 
+  rowSums(A)
+   
+  rowMeans(A)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+- determinant of matrix 
+
+<!-- generated-learning-note -->
+**Purpose.** This block generates controlled example data. Simulation makes the data-generating assumptions explicit and provides a known setting in which to study the method.
+
+```{r}
+  X=matrix(rnorm(9),nrow=3,ncol=3)
+  det(X)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the generated sample with the parameters used to create it. Differences reflect random variation unless the code intentionally introduces bias or structure.
+
+- Addition
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+  A=matrix(1:12,nrow=3,ncol=4)
+  B=matrix(1:12,nrow=3,ncol=4)
+  A+B #same dimensions (non-conformable arrays)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+- addition by scale
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+A=matrix(1:12,nrow=3,ncol=4)
+2+A
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+
+- multiple by scale
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+A=matrix(1:12,nrow=3,ncol=4)
+2*A
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+- dot multiple  
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+   A=matrix(1:12,nrow=2,ncol=4)
+   
+   B=matrix(1:12,nrow=4,ncol=3)
+   
+   A%*%B
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+- kronecker multiple 
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+   A=matrix(1:4,2,2)
+   B=matrix(rep(1,4),2,2)
+   
+   kronecker(A,B)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+- inverse matrix 
+
+`must be square`
+
+<!-- generated-learning-note -->
+**Purpose.** This block generates controlled example data. Simulation makes the data-generating assumptions explicit and provides a known setting in which to study the method.
+
+```{r}
+   A=matrix(rnorm(9),nrow=3,ncol=3) 
+   A
+   AI=solve(A)
+   AI
+   # identity matrix    
+   (A%*%AI)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the generated sample with the parameters used to create it. Differences reflect random variation unless the code intentionally introduces bias or structure.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r}
+library(matlib)
+inv(A)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+- generalized inverse
+`when it is not square`
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r}
+   library(MASS)
+   A2=matrix(1:12,nrow=3,ncol=4)
+   
+   A%*%ginv(A)
+   A%*%ginv(A)%*%A
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+- crossprod
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+B=matrix(1:12,nrow=4,ncol=3)
+B
+crossprod(B)
+t(B)%*%B
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+   B=matrix(1:12,nrow=4,ncol=3)
+   ginv(B)
+   ginv(crossprod(B))
+   # solve(crossprod(B)) #is singular
+   # solve((B)) #is not square
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+- eigen values (decomposition) 
+`mxn matrix`
+`A=UΛU` 
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+   A=matrix(1:9,nrow=3,ncol=3)
+   
+   Aeigen=eigen(A)
+   
+   Aeigen$values
+   
+   val <- diag(Aeigen$values)
+   val
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+- eigen vectors
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+Aeigen$vectors
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+ round(Aeigen$vectors%*%val%*%t(Aeigen$vectors))
+ A
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+#### Advanced operations
+
+<!-- generated-learning-note -->
+This subsection explains **Advanced operations** and shows how it contributes to the overall Probability basics workflow.
+
+- Choleskey factor
+
+`positive definite matrix (symmetric square), A=P’P`
+
+`covariance matrix is semi positive definite matrix`
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+   A=diag(3)+1
+   A  
+   chol(A)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+   t(chol(A))%*%chol(A)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+`inverse using Choleshey`
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+chol2inv(chol(A))
+inv(A)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+ 
+- singular value (svd) decomposition 
+
+`m×n matrix`
+
+`A=UDV`
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+   A=matrix(1:18,3,6)
+   
+   svd(A)   $d
+   t(svd(A)   $u)%*%svd(A)   $u
+   t(svd(A)   $v)%*%svd(A)   $v
+   
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+   svd(A)   $u %*%diag(svd(A)   $d)%*% t(svd(A)   $v)
+   A
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+- QR decomposition
+
+`m×n matrix`
+
+`A=QR，where Q’Q=I, Q is orthogonal matrix` 
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+   A=matrix(1:12,4,3)
+   qr(A)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+qr.Q(qr(A))
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+qr.R(qr(A))
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+
+
+#### Solve linear equations
+
+<!-- generated-learning-note -->
+This subsection explains **Solve linear equations** and shows how it contributes to the overall Probability basics workflow.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+   X=matrix(c(2, 2, 2, 0, 1, 1  ,2, 2, 0),ncol=3,nrow=3)
+   X
+   b=1:3
+   b
+   solve(X,b) # whether it is singular
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+#### Summary
+
+<!-- generated-learning-note -->
+This section focuses on **Summary**. Emphasize effect size, uncertainty, diagnostics, and scientific relevance rather than a single threshold.
+
+- Eigen values (values and vectors, UΛU), singular values (s v "\" d), and QR (orthogonal and upper triangle, QR) for any matrix.
+
+- Choleskey (P’ P, lower and upper triangle) factor for positive definite matrix (cov matrix is semi).
+
+## Interpreting the Results
+
+Work through the notation first, then use the R examples to connect definitions with numerical behavior. Treat the output as evidence generated under the stated data, coding choices, and assumptions. Before using the workflow in practice, replace example inputs with validated data and confirm that the method targets the intended scientific question.
+
+## Key Takeaways
+
+- **Connect method to purpose.** Identify the question and target quantity before choosing code or a model.
+- **Read code and output together.** Confirm what each object, estimate, interval, table, or plot represents.
+- **Check assumptions and diagnostics.** A successful computation is not by itself evidence that the result is reliable.
+- **Adapt deliberately.** When applying the example elsewhere, document changes to data definitions, parameters, and analytical choices.

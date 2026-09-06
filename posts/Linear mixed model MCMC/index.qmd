@@ -1,0 +1,396 @@
+---
+title: "Linear mixed model MCMC"
+description: "A practical R learning guide to Linear mixed model MCMC, with concise explanations, reproducible examples, and interpretation guidance."
+date: 2026-08-31
+section: "Biostatistics"
+category: "Adaptive & Bayesian Methods"
+topic: "Linear mixed model MCMC"
+type: article
+tags: ["Adaptive & Bayesian Methods", "Biostatistics", "Linear", "mixed", "MCMC"]
+status: published
+featured: true
+youtube: []
+pdf: []
+downloads: []
+validate-yaml: false
+execute:
+  enabled: false
+  echo: true
+  warning: false
+  error: true
+---
+
+## Why This Topic Matters
+
+Adaptive and Bayesian methods update evidence as data accumulate and express uncertainty through probability distributions or decision rules.
+
+## Learning Objectives
+
+After working through this material, you should be able to:
+
+- explain the main ideas behind **Linear mixed model MCMC**;
+- interpret the R workflow and its output; and
+- adapt the examples to a related analysis.
+
+## Lesson Roadmap
+
+The original material is organized around the following topics:
+
+1. Linear mixed model in JAGS for random intercept
+2. Linear mixed model in JAGS for random slope
+3. Join model for missing data
+
+## How to Use This Lesson
+
+Read the explanation before each workflow, then run the R chunks in sequence. Code and output are shown together so that each numerical or graphical result can be connected to the command that produced it. Some source examples require optional packages or external data. Those setup-dependent chunks remain visible for reference but are marked `eval: false` when they cannot be reproduced safely in a clean website build.
+
+## Reproducible Learning Check
+
+This short R chunk confirms the scope of the lesson and always produces a visible output.
+
+```{r}
+#| label: learning-overview
+learning_overview <- data.frame(
+  section = "Biostatistics",
+  category = "Adaptive & Bayesian Methods",
+  topic = "Linear mixed model MCMC"
+)
+learning_overview
+```
+
+## Learning Material
+
+The following material develops **Linear mixed model MCMC** from core ideas to practical implementation. Definitions and assumptions come first; worked code then shows how the ideas are represented computationally.
+
+### Conceptual Foundation
+
+The material below closely follows the original R Markdown source, with its examples retained for study and reuse.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#### Linear mixed model in JAGS for random intercept
+
+<!-- generated-learning-note -->
+This section develops **Linear mixed model in JAGS for random intercept**. Read the model specification together with its assumptions and the scale of each reported effect.
+
+### R Workflow and Examples
+
+Run the examples in order because later blocks may reuse objects created earlier. Each block includes a short purpose statement and guidance for reading its output.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r}
+library(R2jags)
+# create dataset
+library(nlme)
+  snakes3=Orthodont
+  snakes3$bw = rep(c(1:27),each=4) 
+  names(snakes3)=c( "b_mass" ,"b_length","site"  ,"sex","bw" )
+
+  snakes3=snakes3[sample(nrow(snakes3)*0.8  ), ]
+  head(snakes3)
+  table(snakes3$site)
+  nrow(snakes3)
+  
+  plot(b_mass ~ b_length, col = site, data = snakes3)
+  # snakes3 <- within(snakes3, sex <- relevel(sex, ref = "Female"))
+  
+  summary(lme(b_mass ~ b_length +  (sex), data = snakes3, random = ~ 1|site))
+  # summary(lme(b_mass ~ b_length  , data = snakes3, random = ~ 1|site))
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block generates controlled example data. Simulation makes the data-generating assumptions explicit and provides a known setting in which to study the method.
+
+```{r}
+  Nsites <- length(levels(as.factor(snakes3$site)))
+  jagsdata_s3 <- with(snakes3, list(b_mass = b_mass, b_length = b_length, site = site, sex=sex,
+                                    N = length(b_mass), Nsites = Nsites))
+  
+  # The JAGS model
+    lm3_jags <- function(){
+      # Likelihood:
+      for (i in 1:N){
+        b_mass[i] ~ dnorm(mu[i], tau) # tau is precision (1 / variance)
+        mu[i] <- alpha + a[site[i]] + beta * b_length[i]+ gama*sex[i] # Random intercept for site
+      }
+      # Priors:
+      alpha ~ dnorm(0, 0.01) # intercept
+      
+      sigma_a ~ dunif(0, 100) # standard deviation of random effect (variance between sites)
+      tau_a <- 1 / (sigma_a * sigma_a) # convert to precision
+      for (j in 1:Nsites){
+        a[j] ~ dnorm(0, tau_a) # random intercept for each site
+      }
+      
+      beta ~ dnorm(0, 0.01) # slope
+      gama ~ dnorm(0, 0.01) # slope
+      
+      sigma ~ dunif(0, 100) # standard deviation of fixed effect (variance within sites)
+      tau <- 1 / (sigma * sigma) # convert to precision
+    }
+  
+    init_values <- function(){
+      list(alpha = rnorm(1), sigma_a = runif(1), beta = rnorm(1), sigma = runif(1),gama=   rnorm(1) )
+    }
+    
+    params <- c("alpha", "beta", "sigma", "sigma_a", "gama")
+    
+    fit_lm3 <- jags(data = jagsdata_s3, inits = init_values, parameters.to.save = params, model.file = lm3_jags,
+                    n.chains = 3, n.iter = 20000, n.burnin = 5000, n.thin = 10, DIC = F)
+  
+    fit_lm3
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the generated sample with the parameters used to create it. Differences reflect random variation unless the code intentionally introduces bias or structure.
+
+#### Linear mixed model in JAGS for random slope
+
+<!-- generated-learning-note -->
+This section develops **Linear mixed model in JAGS for random slope**. Read the model specification together with its assumptions and the scale of each reported effect.
+
+
+`we suppose they are independent of random intercept and slope`
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block generates controlled example data. Simulation makes the data-generating assumptions explicit and provides a known setting in which to study the method.
+
+```{r}
+   (lme(b_mass ~ b_length +  (sex), data = snakes3, random = ~ 1+sex|site))
+    # summary(lme(b_mass ~ b_length  , data = snakes3, random = ~ 1|site))
+    
+    Nsites <- length(levels(as.factor(snakes3$site)))
+    jagsdata_s3 <- with(snakes3, list(b_mass = b_mass, b_length = b_length, site = site, sex=sex,
+                                      N = length(b_mass), Nsites = Nsites))
+    
+    # The JAGS model  
+    
+    lm3_jags <- function(){
+      # Likelihood:
+      for (i in 1:N){
+        b_mass[i] ~ dnorm(mu[i], tau) # tau is precision (1 / variance)
+        mu[i] <- (alpha + a[site[i]] )+ beta * b_length[i]+ (gama+g[site[i]]) *sex[i] # Random intercept for site
+      }
+      # Priors:
+      alpha ~ dnorm(0, 0.01) # intercept
+      
+      
+      sigma_a ~ dunif(0, 100) # standard deviation of random effect (variance between sites)
+      tau_a <- 1 / (sigma_a * sigma_a) # convert to precision
+      for (j in 1:Nsites){
+        a[j] ~ dnorm(0, tau_a) # random intercept for each site
+      }
+      sigma_g ~ dunif(0, 100) # standard deviation of random effect (variance between sites)
+      tau_g <- 1 / (sigma_g * sigma_g) # convert to precision
+      for (j in 1:Nsites){
+        g[j] ~ dnorm(0, tau_g) # random intercept for each site
+      }
+      
+      beta ~ dnorm(0, 0.01) # slope
+      gama ~ dnorm(0, 0.01) # slope
+      
+      sigma ~ dunif(0, 100) # standard deviation of fixed effect (variance within sites)
+      tau <- 1 / (sigma * sigma) # convert to precision
+    }
+    
+    init_values <- function(){
+      list(alpha = rnorm(1), sigma_a = runif(1), sigma_g = runif(1),beta = rnorm(1), sigma = runif(1),gama=   rnorm(1) )
+    }
+    
+    params <- c("alpha", "beta", "sigma", "sigma_a","sigma_g", "gama")
+    
+    fit_lm34 <- jags(data = jagsdata_s3, inits = init_values, parameters.to.save = params, model.file = lm3_jags,
+                    n.chains = 3, n.iter = 20000, n.burnin = 5000, n.thin = 10, DIC = F)
+    
+    fit_lm34
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the generated sample with the parameters used to create it. Differences reflect random variation unless the code intentionally introduces bias or structure.
+
+
+**The results are a little different**
+
+
+`we suppose they are not independent of random intercept and slope`
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block generates controlled example data. Simulation makes the data-generating assumptions explicit and provides a known setting in which to study the method.
+
+```{r}
+    Nsites <- length(levels(as.factor(snakes3$site)))
+    jagsdata_s3 <- with(snakes3, list(b_mass = b_mass, b_length = b_length, site = site, sex=sex,
+                                      N = length(b_mass), Nsites = Nsites))
+    
+    # The JAGS model  
+    
+    lm3_jags <- function(){
+      # Likelihood:
+      for (i in 1:N){
+        
+        b_mass[i] ~ dnorm(mu[i], tau) # tau is precision (1 / variance)
+        
+        mu[i] <- (alpha + a[site[i]] )+ beta * b_length[i]+ (gama+g[site[i]]) *sex[i] # Random intercept for site
+      }
+      # Priors:
+      alpha ~ dnorm(0, 0.01) # intercept
+      
+      
+ for (j in 1:Nsites){
+       ## random effects 
+## mean is 0
+b0[j,1] = 0   
+b0[j,2] = 0
+b[j,1:2] ~ dmnorm(b0[j,1:2],ISigma[,]) ## MV normal
+
+ a[j] =b[j,1] 
+ g[j]=b[j,2] 
+ }
+
+      #(3) Variance-covariance matrix
+ISigma[1:2,1:2] ~dwish(R[,],3)
+Sigma[1:2,1:2] = inverse(ISigma[,])
+R[1,1] =1
+R[1,2] =0
+R[2,2] =1
+R[2,1] =0
+
+
+      beta ~ dnorm(0, 0.01) # slope
+      gama ~ dnorm(0, 0.01) # slope
+      
+      sigma ~ dunif(0, 100) # standard deviation of fixed effect (variance within sites)
+      tau <- 1 / (sigma * sigma) # convert to precision
+    }
+    
+    init_values <- function(){
+      list(alpha = rnorm(1), sigma_a = runif(1), sigma_g = runif(1),beta = rnorm(1), sigma = runif(1),gama=   rnorm(1) )
+    }
+    
+    params <- c("alpha", "beta", "sigma", "Sigma", "gama")
+    
+    fit_lm35 <- jags(data = jagsdata_s3, inits = init_values, parameters.to.save = params, model.file = lm3_jags,
+                    n.chains = 3, n.iter = 20000, n.burnin = 5000, n.thin = 10, DIC = F)
+    
+    fit_lm35
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the generated sample with the parameters used to create it. Differences reflect random variation unless the code intentionally introduces bias or structure.
+
+
+`similar results for the above scenarios`
+
+#### Join model for missing data
+
+<!-- generated-learning-note -->
+This section prepares the information needed for **Join model for missing data**. Check variable definitions, units, coding, and missing values before moving to analysis.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block generates controlled example data. Simulation makes the data-generating assumptions explicit and provides a known setting in which to study the method.
+
+```{r}
+
+    Nsites <- length(levels(as.factor(snakes3$site)))
+    jagsdata_s3 <- with(snakes3, list(b_mass = b_mass, b_length = b_length, site = site, sex=sex,
+                                      N = length(b_mass), Nsites = Nsites,bw=bw))
+    
+    # The JAGS model  
+    
+    lm3_jags <- function(){
+      # Likelihood:
+      for (i in 1:N){
+        
+        b_mass[i] ~ dnorm(mu[i], tau) # tau is precision (1 / variance)
+        
+        mu[i] <- (alpha + a[site[i]] )+ beta * b_length[i]+ (gama+g[site[i]]) *sex[i] # Random intercept for site
+        
+        ## linear regression model 
+bw[i] ~ dnorm(m[i],1)
+m[i] = bb[1] + bb[2]*a[site[i]] + bb[3]*g[site[i]]
+      }
+      
+      # Priors:
+      alpha ~ dnorm(0, 0.01) # intercept
+        
+      #(1) Coefficients
+for (ll in 1:3) { bb[ll] ~ dnorm(0, .01) }
+      
+ for (j in 1:Nsites){
+       ## random effects 
+## mean is 0
+b0[j,1] = 0   
+b0[j,2] = 0
+b[j,1:2] ~ dmnorm(b0[j,1:2],ISigma[,]) ## MV normal
+
+ a[j] =b[j,1] 
+ g[j]=b[j,2] 
+ }
+
+      #(3) Variance-covariance matrix
+ISigma[1:2,1:2] ~dwish(R[,],3)
+Sigma[1:2,1:2] = inverse(ISigma[,])
+R[1,1] =1
+R[1,2] =0
+R[2,2] =1
+R[2,1] =0
+
+
+      beta ~ dnorm(0, 0.01) # slope
+      gama ~ dnorm(0, 0.01) # slope
+      
+      sigma ~ dunif(0, 100) # standard deviation of fixed effect (variance within sites)
+      tau <- 1 / (sigma * sigma) # convert to precision
+    }
+    
+    init_values <- function(){
+      list(alpha = rnorm(1), sigma_a = runif(1), sigma_g = runif(1),beta = rnorm(1), sigma = runif(1),gama=   rnorm(1) ,bb= rnorm(3))
+    }
+    
+    params <- c("alpha", "beta", "sigma", "Sigma", "gama","bb","a","g")
+    
+    fit_lm35 <- jags(data = jagsdata_s3, inits = init_values, parameters.to.save = params, model.file = lm3_jags,
+                    n.chains = 3, n.iter = 20000, n.burnin = 5000, n.thin = 10, DIC = F)
+    
+    fit_lm35
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the generated sample with the parameters used to create it. Differences reflect random variation unless the code intentionally introduces bias or structure.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block calculates descriptive summaries. Check the denominator, grouping variables, units, and treatment of missing values.
+
+```{r}
+table(snakes3$site)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Use the displayed values to understand center, spread, frequency, and missingness; investigate any implausible or unexpected result.
+
+## Interpreting the Results
+
+Inspect priors, likelihoods, posterior summaries, convergence, simulations, and operating characteristics. Treat the output as evidence generated under the stated data, coding choices, and assumptions. Before using the workflow in practice, replace example inputs with validated data and confirm that the method targets the intended scientific question.
+
+## Key Takeaways
+
+- **Connect method to purpose.** Identify the question and target quantity before choosing code or a model.
+- **Read code and output together.** Confirm what each object, estimate, interval, table, or plot represents.
+- **Check assumptions and diagnostics.** A successful computation is not by itself evidence that the result is reliable.
+- **Adapt deliberately.** When applying the example elsewhere, document changes to data definitions, parameters, and analytical choices.

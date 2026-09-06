@@ -34,25 +34,43 @@ toc: false
 <div class="topic-group">
 <h3>Data summarization</h3>
 <ul>
-<li><a href="../../posts/data-summarization/index.qmd">Data summarization</a></li>
+<li><a href="../../posts/Data summarization/index.qmd">Data summarization</a></li>
 </ul>
 </div>
 <div class="topic-group">
 <h3>Data visualization course</h3>
 <ul>
-<li><a href="../../posts/data-visualization-course/index.qmd">Data visualization course</a></li>
+<li><a href="../../posts/Data visualization course/index.qmd">Data visualization course</a></li>
 </ul>
 </div>
 <div class="topic-group">
 <h3>Data visualization</h3>
 <ul>
-<li><a href="../../posts/data-visualization/index.qmd">Data visualization</a></li>
+<li><a href="../../posts/Data visualization/index.qmd">Data visualization</a></li>
 </ul>
 </div>
 <div class="topic-group">
 <h3>Data wrangling</h3>
 <ul>
-<li><a href="../../posts/data-wrangling/index.qmd">Data wrangling</a></li>
+<li><a href="../../posts/Data wrangling/index.qmd">Data wrangling</a></li>
+</ul>
+</div>
+<div class="topic-group">
+<h3>How to create advanced plots</h3>
+<ul>
+<li><a href="../../posts/How to create advanced plots/index.qmd">How to create advanced plots</a></li>
+</ul>
+</div>
+<div class="topic-group">
+<h3>How to use subscripts/superscripts for a figure</h3>
+<ul>
+<li><a href="../../posts/How to use subscripts for a figure/index.qmd">How to use subscripts/superscripts for a figure</a></li>
+</ul>
+</div>
+<div class="topic-group">
+<h3>ggplot2 parameters</h3>
+<ul>
+<li><a href="../../posts/ggplot2 implementation/index.qmd">ggplot2 parameters</a></li>
 </ul>
 </div>
 </section>
@@ -94,7 +112,12 @@ toc: false
 </section>
 <section class="category-block" id="sas-r-programming">
 <h2>SAS & R Programming</h2>
-<p class="text-muted">No published notes yet.</p>
+<div class="topic-group">
+<h3>R shiny practice</h3>
+<ul>
+<li><a href="../../posts/R shiny practice/index.qmd">R shiny practice</a></li>
+</ul>
+</div>
 </section>
 <section class="category-block" id="tables-listings-figures">
 <h2>Tables, Listings & Figures</h2>

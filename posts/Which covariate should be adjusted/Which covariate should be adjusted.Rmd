@@ -1,0 +1,38 @@
+---
+title: "Which covariate should be adjusted"
+output: html_document
+date: '2023-05-16'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Which covariate should be adjusted
+
+In this example, we assume to investigate the causality between smoking and mortality:  whether smoking will more likely cause mortality. We collect the following variables. 
+
+![](C:\Users\hed2\Downloads\mybook2\mybook2\dagitty-smoke dots.jpg) 
+
+Smoking is the exposure, Mortality is the outcome, and others are patient confounders.
+
+
+Then, we connect these knots by directed arrow according to our domain knowledge. It is called as directed acyclic graph (DAG).
+
+![](C:\Users\hed2\Downloads\mybook2\mybook2\dagitty-smoke.jpg) 
+
+We also can add unobserved variables into this graph, like Sport. The blue knots indicate the mediators, and the red ones are confounders which we need to adjust. If the purpose is to investigate the overall effect of smoking and mortality, we should not adjust the blue knots.
+
+After adjusted these confounders, we can get the average total effect between 
+them.
+
+![](C:\Users\hed2\Downloads\mybook2\mybook2\dagitty-smoke after adjusting.jpg)
+
+**`Minimal sufficient adjustment sets for estimating the total effect of Smoking on Mortality:
+Age, Alcohol, Psychosocial, Sex`**
+
+Using the [DAGitty tool](http://www.dagitty.net) ([Tutor](https://www.youtube.com/watch?v=3euqrnD9w7c&list=PLS6tnpTr39sFEzQGpWVT-K775iKbj5Bbp&index=2)), we can see that "There are no instruments or conditional instruments in this DAG" and "The direct effect cannot be estimated by covariate adjustment".
+
+Please notice we still can not adjust those unobserved variables and unconsidered factors by using this tool. 
+
+

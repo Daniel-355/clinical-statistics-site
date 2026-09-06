@@ -1,0 +1,194 @@
+---
+title: "How to use subscripts/superscripts for a figure"
+description: "A practical R learning guide to How to use subscripts/superscripts for a figure, with concise explanations, reproducible examples, and interpretation guidance."
+date: 2026-08-31
+section: "Data Management & Programming"
+category: "Data Cleaning & Quality Control"
+topic: "How to use subscripts/superscripts for a figure"
+type: article
+tags: ["Data Cleaning & Quality Control", "Data Management & Programming", "use", "subscripts", "superscripts"]
+status: published
+featured: true
+youtube: []
+pdf: []
+downloads: []
+validate-yaml: false
+execute:
+  echo: true
+  warning: false
+  error: true
+---
+
+## Why This Topic Matters
+
+Data cleaning and quality control make analytical results traceable and reduce errors caused by inconsistent or implausible values.
+
+## Learning Objectives
+
+After working through this material, you should be able to:
+
+- explain the main ideas behind **How to use subscripts/superscripts for a figure**;
+- interpret the R workflow and its output; and
+- adapt the examples to a related analysis.
+
+## Lesson Roadmap
+
+The original material is organized around the following topics:
+
+1. How to use subscripts/superscripts
+
+## How to Use This Lesson
+
+Read the explanation before each workflow, then run the R chunks in sequence. Code and output are shown together so that each numerical or graphical result can be connected to the command that produced it. Some source examples require optional packages or external data. Those setup-dependent chunks remain visible for reference but are marked `eval: false` when they cannot be reproduced safely in a clean website build.
+
+## Reproducible Learning Check
+
+This short R chunk confirms the scope of the lesson and always produces a visible output.
+
+```{r}
+#| label: learning-overview
+learning_overview <- data.frame(
+  section = "Data Management & Programming",
+  category = "Data Cleaning & Quality Control",
+  topic = "How to use subscripts/superscripts for a figure"
+)
+learning_overview
+```
+
+## Learning Material
+
+The following material develops **How to use subscripts/superscripts for a figure** from core ideas to practical implementation. Definitions and assumptions come first; worked code then shows how the ideas are represented computationally.
+
+### Conceptual Foundation
+
+The material below closely follows the original R Markdown source, with its examples retained for study and reuse.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#### How to use subscripts/superscripts
+
+<!-- generated-learning-note -->
+This subsection explains **How to use subscripts/superscripts** and shows how it contributes to the overall How to use subscripts/superscripts for a figure workflow.
+
+### R Workflow and Examples
+
+Run the examples in order because later blocks may reuse objects created earlier. Each block includes a short purpose statement and guidance for reading its output.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+# first plot I would like to have a subscript 1 and for the scond one a subscript 2
+
+# One solution is to use bquote(). Use .() within bquote to get the value of objects or expressions.
+
+plotf = function(title=expression("Test"~a )){
+  plot(cars)
+  title(title)
+}
+
+foo = expression(a[1], a^-2)
+layout(matrix(1:2, nrow=1))
+
+for(i in 1:2){
+  plotf(title=bquote("Test"~.(foo[[i]]) ))  #bquote() to utilize the iteration
+}
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+# using astrisk instead of tilde
+for(i in 1:2){
+  plotf(title=bquote("Test"*a[.(i)]) )
+}
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+Using two datasets
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r}
+# graph using two datasets
+library(tidyverse)
+data1=mtcars %>% filter(cyl>7)
+data2=mtcars %>% filter(cyl<7)
+
+ggplot() +
+  geom_point(data = data1, aes(x=hp, y=disp),color="gray",size=1)+
+  geom_line(data = data2, aes(x=hp, y=disp ) )   # must include argument label "data"
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+
+Convert a Vector to String and back
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+#create vector
+x <- c("Andy", "Bernard", "Caleb", "Dan", "Eric", "Frank", "Greg")
+
+#convert vector to string
+new_string <- toString(x)
+
+#view string
+new_string
+
+#create vector
+x <- c("Andy", "Bernard", "Caleb", "Dan", "Eric", "Frank", "Greg")
+
+#convert vector to string
+new_string <- paste(x, collapse = " ")
+
+#view string
+new_string
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+Convert string to vector
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+# R convert string to vector
+string1 <- "This   is my string"
+strsplit(string1, "\\s+")[[1]]
+
+string1 <- "This is my string"
+scan(text = string1, what = "")
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+## Interpreting the Results
+
+Use summaries and visual checks to confirm ranges, distributions, duplicates, and missing-data patterns. Treat the output as evidence generated under the stated data, coding choices, and assumptions. Before using the workflow in practice, replace example inputs with validated data and confirm that the method targets the intended scientific question.
+
+## Key Takeaways
+
+- **Connect method to purpose.** Identify the question and target quantity before choosing code or a model.
+- **Read code and output together.** Confirm what each object, estimate, interval, table, or plot represents.
+- **Check assumptions and diagnostics.** A successful computation is not by itself evidence that the result is reliable.
+- **Adapt deliberately.** When applying the example elsewhere, document changes to data definitions, parameters, and analytical choices.

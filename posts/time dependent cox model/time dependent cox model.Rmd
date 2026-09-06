@@ -1,0 +1,97 @@
+---
+title: "Time-Dependent Cox Regression Model"
+output: html_document
+date: "2025-05-23"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Time-Dependent Cox Regression Model
+
+[reference](https://mengte.online/archives/3900)
+
+When the proportional hazard (PH) assumption for age is not met in a Cox regression model, it means that the effect of age on the hazard rate is not constant over time. For example, the hazard rate might increase at a slower rate at younger ages and then accelerate at older ages. The PH assumption test can be judged by the following four methods:
+
+- There is no intersection between the Kaplan-Meier survival curves of categorical covariates.
+- Draw the log cumulative hazard curve. The parallelism of the curve is a sufficient and necessary condition to meet the PH assumption.
+- Use the Schoenfeld residual method to view the P value and residual graph corresponding to the continuous variable.
+- The interaction term between each covariate and the logarithmic survival time can be put into the model. If the interaction term is not statistically significant, the proportional hazard condition is met.
+
+The purpose of this case study is to explore the relationship between gender, age, and Karnofsky score and survival outcomes in patients with lung cancer.
+
+##### Read data
+
+```{r  }
+setwd("C:\\Users\\hed2\\Downloads\\dell\\code-storage\\code")
+mydata <- read.csv("Coxprop.csv")   
+View(mydata)   
+table(mydata$status)  
+prop.table(table(mydata$status))  
+```
+
+##### Collinearity diagnosis
+
+```{r  }
+library(car)
+lm.reg<-lm(status~age+sex+ph.karno,data=mydata)  
+vif(lm.reg)  
+```
+
+##### Cox regression 
+
+```{r}
+library(survival) 
+fit<-coxph(Surv(time,status)~factor(sex)+age+ph.karno,data=mydata) 
+summary (fit)
+```
+
+##### Proportional Risk test
+
+```{r}
+ph.test<-cox.zph(fit)
+ph.test
+```
+
+```{r, fig.height=15}
+# schoenfeld test
+library(survminer )
+ggcoxzph(ph.test)
+```
+
+##### Survival function curves
+```{r}
+# Plot the baseline survival function
+ggsurvplot(survfit(fit,data=mydata), color = "#2E9FDF",
+           ggtheme = theme_minimal())
+```
+
+```{r}
+# Create the new data when age and  are are average
+sex_df <- with(mydata,
+               data.frame(sex = c(1, 2), 
+                          age = rep(mean(age, na.rm = TRUE), 2),
+                          ph.karno = rep(mean(ph.karno, na.rm = TRUE), 2)
+                          )
+               )
+sex_df
+
+# Survival curves by sex group
+fit2 <- survfit(fit, newdata = sex_df)
+ggsurvplot(fit2, data=mydata, conf.int = TRUE, legend.labs=c("Sex=1", "Sex=2"),
+           ggtheme = theme_minimal() )
+```
+
+##### Time-Dependent Cox Regression  
+
+Add a interaction term `x*log(t+20)`
+
+```{r}
+fit.ph<-coxph(Surv(time,status)~sex+age+ph.karno+tt(ph.karno),
+              tt=function(x,t,...) x*log(t+20 ),data=mydata)
+summary(fit.ph)
+```
+The time-dependent coefficient of Karnofsky score β(t)= -0.094+0.015×ln(t+20), and the effect value HR=exp(-0.094+0.015×ln(t+20)). For example, when the time is 200 days, the HR corresponding to the Karnofsky score is exp(-0.094+0.015×ln(200+20))= 0.987. `The "+20" is added to prevent the natural logarithm from becoming undefined when t = 0.` 
+
+ 

@@ -1,0 +1,373 @@
+---
+title: "Implementation of Estimand Strategies"
+description: "A practical R learning guide to Implementation of Estimand Strategies, with concise explanations, reproducible examples, and interpretation guidance."
+date: 2026-08-31
+section: "Biostatistics"
+category: "Statistical Principles & Estimands"
+topic: "Implementation of Estimand Strategies"
+type: article
+tags: ["Statistical Principles & Estimands", "Biostatistics", "Implementation", "Estimand", "Strategies"]
+status: published
+featured: true
+youtube: []
+pdf: []
+downloads: []
+validate-yaml: false
+execute:
+  echo: true
+  warning: false
+  error: true
+---
+
+## Why This Topic Matters
+
+Statistical principles define what is being estimated, under which assumptions, and how uncertainty should be represented.
+
+## Learning Objectives
+
+After working through this material, you should be able to:
+
+- explain the main ideas behind **Implementation of Estimand Strategies**;
+- interpret the R workflow and its output; and
+- adapt the examples to a related analysis.
+
+## Lesson Roadmap
+
+The original material is organized around the following topics:
+
+1. Implementation of Estimand Strategies
+
+## How to Use This Lesson
+
+Read the explanation before each workflow, then run the R chunks in sequence. Code and output are shown together so that each numerical or graphical result can be connected to the command that produced it. Some source examples require optional packages or external data. Those setup-dependent chunks remain visible for reference but are marked `eval: false` when they cannot be reproduced safely in a clean website build.
+
+## Reproducible Learning Check
+
+This short R chunk confirms the scope of the lesson and always produces a visible output.
+
+```{r}
+#| label: learning-overview
+learning_overview <- data.frame(
+  section = "Biostatistics",
+  category = "Statistical Principles & Estimands",
+  topic = "Implementation of Estimand Strategies"
+)
+learning_overview
+```
+
+## Learning Material
+
+The following material develops **Implementation of Estimand Strategies** from core ideas to practical implementation. Definitions and assumptions come first; worked code then shows how the ideas are represented computationally.
+
+### Conceptual Foundation
+
+The material below closely follows the original R Markdown source, with its examples retained for study and reuse.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#### Implementation of Estimand Strategies
+
+<!-- generated-learning-note -->
+This subsection explains **Implementation of Estimand Strategies** and shows how it contributes to the overall Implementation of Estimand Strategies workflow.
+
+
+This document illustrates five estimand strategies aligned with the ICH E9(R1) framework using simulated data in R. Each strategy addresses a distinct clinical question by handling intercurrent events—such as rescue medication use or treatment discontinuation—in different ways. Specifically, we demonstrate the treatment policy strategy, which reflects real-world outcomes regardless of post-randomization events; the hypothetical strategy, which estimates outcomes under a counterfactual scenario (e.g., no rescue therapy) using weighting methods; the composite strategy, which integrates intercurrent events into the endpoint definition; the while-on-treatment strategy, which focuses on outcomes observed prior to treatment discontinuation; and the principal stratum strategy, which targets a latent subgroup defined by post-treatment behavior.
+
+Through a unified simulation framework, this document highlights how different estimand choices lead to different interpretations of treatment effect, even when applied to the same underlying data-generating process. The accompanying analyses provide practical R implementations for each strategy, offering a conceptual and computational reference for applying estimand thinking in real-world evidence and clinical research settings.
+
+### R Workflow and Examples
+
+Run the examples in order because later blocks may reuse objects created earlier. Each block includes a short purpose statement and guidance for reading its output.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block generates controlled example data. Simulation makes the data-generating assumptions explicit and provides a known setting in which to study the method.
+
+```{r}
+# ============================================================
+# Estimand 5 strategies in R
+# ------------------------------------------------------------
+# 1) Treatment policy
+# 2) Hypothetical
+# 3) Composite
+# 4) While-on-treatment
+# 5) Principal stratum
+#
+# ============================================================
+
+set.seed(20260407)
+
+# ---------- functions ----------
+get_lm_est <- function(fit, term = "trt") {
+  s <- summary(fit)
+  if (!term %in% rownames(s$coefficients)) stop("term not found in model")
+  est <- s$coefficients[term, "Estimate"]
+  se  <- s$coefficients[term, "Std. Error"]
+  p   <- s$coefficients[term, "Pr(>|t|)"]
+  ci  <- est + c(-1, 1) * 1.96 * se
+  data.frame(
+    estimate = est,
+    lower = ci[1],
+    upper = ci[2],
+    p_value = p,
+    stringsAsFactors = FALSE
+  )
+}
+
+get_glm_or <- function(fit, term = "trt") {
+  s <- summary(fit)
+  if (!term %in% rownames(s$coefficients)) stop("term not found in model")
+  est <- s$coefficients[term, "Estimate"]
+  se  <- s$coefficients[term, "Std. Error"]
+  p   <- s$coefficients[term, "Pr(>|z|)"]
+  ci  <- est + c(-1, 1) * 1.96 * se
+  data.frame(
+    estimate_log_odds = est,
+    or = exp(est),
+    lower_or = exp(ci[1]),
+    upper_or = exp(ci[2]),
+    p_value = p,
+    stringsAsFactors = FALSE
+  )
+}
+
+make_row_lm <- function(strategy, fit) {
+  x <- get_lm_est(fit)
+  data.frame(
+    strategy = strategy,
+    model = "LM",
+    estimate = x$estimate,
+    effect_scale = "difference",
+    lower = x$lower,
+    upper = x$upper,
+    p_value = x$p_value,
+    stringsAsFactors = FALSE
+  )
+}
+
+make_row_glm <- function(strategy, fit) {
+  x <- get_glm_or(fit)
+  data.frame(
+    strategy = strategy,
+    model = "GLM",
+    estimate = x$estimate_log_odds,
+    effect_scale = "log_odds",
+    lower = x$lower_or,
+    upper = x$upper_or,
+    p_value = x$p_value,
+    stringsAsFactors = FALSE
+  )
+}
+
+# ============================================================
+# 1) Treatment policy strategy
+# Question: 
+### regardless of rescue/stop/add-on therapy,
+# what is the overall 24-week HbA1c change?
+# ============================================================
+
+n <- 300
+base_hba1c <- rnorm(n, mean = 8.5, sd = 1.0)
+trt <- rbinom(n, 1, 0.5)
+
+# Intercurrent event: rescue therapy / add-on medication
+pr_rescue <- plogis(0.8 - 0.9 * trt + 0.2 * (base_hba1c - 8.5))
+rescue <- rbinom(n, 1, pr_rescue)
+
+# Observed endpoint keeps the real-world effect of rescue
+hba1c_24w <- base_hba1c - 0.7 * trt + 0.15 * (base_hba1c - 8.5) + 0.25 * rescue + rnorm(n, 0, 0.8)
+
+dat_tp <- data.frame(
+  id = 1:n,
+  trt = trt,
+  base_hba1c = base_hba1c,
+  rescue = rescue,
+  hba1c_24w = hba1c_24w
+)
+
+fit_tp <- lm(hba1c_24w ~ trt + base_hba1c, data = dat_tp)
+
+cat("\n=== 1) Treatment policy ===\n")
+print(head(dat_tp, 6))
+print(get_lm_est(fit_tp))
+
+# ============================================================
+# 2) Hypothetical strategy
+# Question: what if no one had rescue therapy?
+# Simple IPCW-style illustration:
+# model probability of remaining uncensored (no rescue),
+# then weight observed subjects.
+### counterfactual effect 
+# ============================================================
+
+set.seed(20260407 + 1)
+base_hba1c2 <- rnorm(n, mean = 8.5, sd = 1.0)
+trt2 <- rbinom(n, 1, 0.5)
+pr_rescue2 <- plogis(0.8 - 0.9 * trt2 + 0.2 * (base_hba1c2 - 8.5))
+rescue2 <- rbinom(n, 1, pr_rescue2)
+
+# Latent outcome under no rescue
+hba1c_24w_norescue <- base_hba1c2 - 0.9 * trt2 + 0.15 * (base_hba1c2 - 8.5) + rnorm(n, 0, 0.8)
+
+# Observed only if no rescue; otherwise missing
+hba1c_obs <- ifelse(rescue2 == 0, hba1c_24w_norescue, NA)
+
+dat_hyp <- data.frame(
+  id = 1:n,
+  trt = trt2,
+  base_hba1c = base_hba1c2,
+  rescue = rescue2,
+  hba1c_obs = hba1c_obs
+)
+
+# IPCW using logistic regression
+# Model probability of no rescue
+fit_cens <- glm(I(rescue == 0) ~ trt + base_hba1c, data = dat_hyp, family = binomial())
+p_no_rescue <- predict(fit_cens, type = "response")
+
+# Keep only observed rows and align weights with those rows
+dat_hyp_obs <- dat_hyp[dat_hyp$rescue == 0, ]
+dat_hyp_obs$ipcw <- 1 / p_no_rescue[dat_hyp$rescue == 0]
+
+fit_hyp <- lm(hba1c_obs ~ trt + base_hba1c, data = dat_hyp_obs, weights = ipcw)
+
+cat("\n=== 2) Hypothetical (IPCW example) ===\n")
+print(head(dat_hyp, 6))
+print(get_lm_est(fit_hyp))
+
+# ============================================================
+# 3) Composite strategy
+# Question: how many patients achieve response WITHOUT rescue?
+# Define response as 
+### composite outcome= HbA1c drop >= 0.5 AND no rescue.
+# ============================================================
+
+set.seed(20260407 + 2)
+base_hba1c3 <- rnorm(n, mean = 8.5, sd = 1.0)
+trt3 <- rbinom(n, 1, 0.5)
+pr_rescue3 <- plogis(0.9 - 0.9 * trt3 + 0.15 * (base_hba1c3 - 8.5))
+rescue3 <- rbinom(n, 1, pr_rescue3)
+
+hba1c_24w3 <- base_hba1c3 - 0.8 * trt3 + 0.1 * (base_hba1c3 - 8.5) + 0.2 * rescue3 + rnorm(n, 0, 0.8)
+delta3 <- base_hba1c3 - hba1c_24w3
+response_composite <- as.integer(delta3 >= 0.5 & rescue3 == 0)
+
+dat_comp <- data.frame(
+  id = 1:n,
+  trt = trt3,
+  base_hba1c = base_hba1c3,
+  rescue = rescue3,
+  delta = delta3,
+  response = response_composite
+)
+
+fit_comp <- glm(response ~ trt + base_hba1c, data = dat_comp, family = binomial())
+
+cat("\n=== 3) Composite ===\n")
+print(head(dat_comp, 6))
+print(get_glm_or(fit_comp))
+
+# ============================================================
+# 4) While-on-treatment strategy
+# Question: 
+### among patients still on treatment at week 12,
+# what is the pain score while they are still exposed?
+# ============================================================
+
+set.seed(20260407 + 3)
+base_pain <- rnorm(n, mean = 6, sd = 1.5)
+trt4 <- rbinom(n, 1, 0.5)
+pr_stop <- plogis(0.6 - 0.8 * trt4 + 0.15 * (base_pain - 6))
+stop12 <- rbinom(n, 1, pr_stop)
+
+# Pain at week 12 while still on treatment
+pain12_full <- base_pain - 1.2 * trt4 + 0.25 * (base_pain - 6) + rnorm(n, 0, 1.0)
+pain12_obs <- ifelse(stop12 == 0, pain12_full, NA)
+
+dat_wot <- data.frame(
+  id = 1:n,
+  trt = trt4,
+  base_pain = base_pain,
+  stop12 = stop12,
+  pain12 = pain12_obs
+)
+
+fit_wot <- lm(pain12 ~ trt + base_pain, data = dat_wot, subset = stop12 == 0)
+
+cat("\n=== 4) While-on-treatment ===\n")
+print(head(dat_wot, 6))
+print(get_lm_est(fit_wot))
+
+# ============================================================
+# 5) Principal stratum strategy
+# Question: what is the effect among the latent subgroup who
+# would stay adherent regardless of treatment assignment?
+# This is generally not identifiable in practice.
+# ============================================================
+
+set.seed(20260407 + 4)
+base_ps <- rnorm(n, mean = 8.5, sd = 1.0)
+trt5 <- rbinom(n, 1, 0.5)
+
+# Latent principal stratum:
+# 1 = would stay adherent under either arm
+# 0 = would tend to switch / use rescue under either arm
+ps <- rbinom(n, 1, plogis(0.2 - 0.2 * (base_ps - 8.5)))
+
+# Outcome
+hba1c_ps <- base_ps - 1.0 * trt5 + 0.1 * (base_ps - 8.5) + rnorm(n, 0, 0.8)
+hba1c_ps[ps == 0] <- base_ps[ps == 0] - 0.4 * trt5[ps == 0] +
+  0.15 * (base_ps[ps == 0] - 8.5) + rnorm(sum(ps == 0), 0, 1.1)
+
+dat_ps <- data.frame(
+  id = 1:n,
+  trt = trt5,
+  base_hba1c = base_ps,
+  principal_stratum = ps,
+  hba1c = hba1c_ps
+)
+
+fit_ps <- lm(hba1c ~ trt + base_hba1c, data = dat_ps, subset = principal_stratum == 1)
+
+cat("\n=== 5) Principal stratum (latent, simulation-only) ===\n")
+print(head(dat_ps, 6))
+print(get_lm_est(fit_ps))
+
+# ============================================================
+# Unified summary table
+# ============================================================
+
+summary_table <- rbind(
+  make_row_lm("Treatment policy", fit_tp),
+  make_row_lm("Hypothetical (IPCW)", fit_hyp),
+  make_row_glm("Composite", fit_comp),
+  make_row_lm("While-on-treatment", fit_wot),
+  make_row_lm("Principal stratum", fit_ps)
+)
+
+cat("\n=== Summary table ===\n")
+print(summary_table)
+
+# Optional: save datasets
+# write.csv(dat_tp, "dat_treatment_policy.csv", row.names = FALSE)
+# write.csv(dat_hyp, "dat_hypothetical.csv", row.names = FALSE)
+# write.csv(dat_comp, "dat_composite.csv", row.names = FALSE)
+# write.csv(dat_wot, "dat_while_on_treatment.csv", row.names = FALSE)
+# write.csv(dat_ps, "dat_principal_stratum.csv", row.names = FALSE)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the generated sample with the parameters used to create it. Differences reflect random variation unless the code intentionally introduces bias or structure.
+
+## Interpreting the Results
+
+Link every numerical result to its target quantity, assumptions, and sampling interpretation. Treat the output as evidence generated under the stated data, coding choices, and assumptions. Before using the workflow in practice, replace example inputs with validated data and confirm that the method targets the intended scientific question.
+
+## Key Takeaways
+
+- **Connect method to purpose.** Identify the question and target quantity before choosing code or a model.
+- **Read code and output together.** Confirm what each object, estimate, interval, table, or plot represents.
+- **Check assumptions and diagnostics.** A successful computation is not by itself evidence that the result is reliable.
+- **Adapt deliberately.** When applying the example elsewhere, document changes to data definitions, parameters, and analytical choices.

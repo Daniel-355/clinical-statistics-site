@@ -1,0 +1,733 @@
+---
+title: "Survival Analysis"
+output: html_document
+date: '2024-01-04'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+[Brief summary from the book](https://home.csulb.edu/~okoroste/)
+
+### Basic Definitions
+
+Denote by T the random variable representing the `survival time` of a subject. Let f (t),
+t>=0, denote the probability density function (pdf) of T , and let F(t) , be the cumulative distribution function (cdf) of T. (The time until an event of interest occurs sometimes follow a specifical distribtuion, like exponential function.)
+
+- The probability density function (pdf)  and CDF of survival time T:
+
+$$
+f(x) 
+$$
+
+$$
+F(t)=\int_0^{t} f(x) d x, , \quad t \geq 0
+$$
+
+The objective of survival analysis is to estimate and model the following functions:
+
+- The survival function, S(t), defined as the probability that a subject survives up to time t:
+$$
+S(t)=\mathbb{P}(T>t)=\int_t^{\infty} f(x) d x=1-F(t), \quad t \geq 0
+$$
+ 
+
+
+
+- The hazard function, h(t), defined as the following ratio (see the following second equation. it can be bigger than one because it is not a probability.): 
+$$
+h(t)=\frac{f(t)}{S(t)}, \quad t \geq 0
+$$
+
+
+`It is interpreted as an instantaneous death rate after surviving time t:`
+
+$$
+\mathbb{P}(T<t+d t \mid T>t)=\frac{\mathbb{P}(t<T<t+d t)}{\mathbb{P}(T>t)}=\frac{f(t) d t}{S(t)}=h(t) d t
+$$
+
+
+![](https://slideplayer.com/slide/13444088/80/images/33/A+possible+set+of+probability+density%2C+failure%2C+survival%2C+and+hazard+functions..jpg)
+
+- The cumulative hazard function, H(t), defined by
+
+$$
+H(t)=\int_0^t h(x) d x, \quad t \geq 0
+$$
+![Cumulative hazard function](https://www.itl.nist.gov/div898/handbook/apr/section2/apr222_r01.gif)
+
+
+
+### Kaplan-Meier Method (non parameteric method)
+
+At time ti, there are ni subjects who are said to be at risk-that is, and di die at time ti. Then the Kaplan-Meier estimator of the survival function S ( t) is below. (KM does not assume any known algebraic form of the estimated survival function.)
+
+
+Denote by $\pi$ the conditional probability that a subject survives time ti, given that the subject survived time ti-1:
+
+$$
+\pi_i=\mathbb{P}\left(T>t_i \mid T>t_{i-1}\right), \quad i=1, \ldots, k
+$$
+
+Then,
+$$
+S\left(t_i\right)=\prod_{j=1}^i \pi_j
+$$
+
+Therefore, the likelihood function is
+
+$$
+L\left(\pi_1, \ldots, \pi_k\right)=\prod_{i=1}^k\left(1-\pi_i\right)^{d_i} \pi_i^{n_i-d_4}
+$$
+
+The log-likelihood function equals
+
+$$
+\ln L\left(\pi_1, \ldots, \pi_k\right)=\sum_{i=1}^k\left[d_i \ln \left(1-\pi_i\right)+\left(n_i-d_i\right) \ln \pi_i\right]
+$$
+
+Zero the derivatives of the $\log$-likelihood function with respect to $\pi_i$ 
+
+$$
+\frac{d_i}{1-\pi_i}=\frac{n_i-d_i}{\pi_i}, \quad i=1, \ldots, k
+$$
+Equations are solved
+
+$$
+\hat{\pi}_i=1-\frac{d_i}{n_i}, \quad i=1, \ldots, k
+$$
+
+Yields
+
+$$
+\hat{S}\left(t_i\right)=\prod_{j=1}^i\left(1-\frac{d_j}{n_j}\right)
+$$
+
+### The Kaplan-Meier Survival Curve
+
+The Kaplan-Meier survival curve is the plot of the Kaplan-Meier estimator of the survival function S(t) against time t.
+
+```{r, message=FALSE}
+# install.packages("survminer")
+library(survminer)
+library(survival)
+
+data_time = c(0.19,0.75,0.27,0.26,0.22,0.91,0.21,0.091,0.19,0.37,0.093,0.92,0.046,0.93,0.42)
+data_event = c(1,1,1,1,0,0,1,1,0,0,0,1,1,1,0)
+
+# Regress on a constant
+fit <- survfit(Surv(time = data_time, event = data_event) ~ 1)
+
+# Plot the fit
+ggsurvplot(fit, data.frame(time=data_time, event=data_event), conf.int=FALSE)
+```
+
+
+
+
+### Comparison of Two Survival Functions: Log-Rank Test
+
+At each time ti, the data can be summarized by a 2 x 2 table:
+
+| Group | Died| Survived | Total |  
+| :---: | :---: | :---: | :---: |  
+| 1 |  $d_{1 i}$ | $n_{1 i}-d_{1 i}$ |$n_{1 i}$ |
+| 2 |  $d_{2 i}$ | $n_{2 i}-d_{2 i}$ | $n_{2 i}$ |
+| Total |  $d_i$ | $n_i-d_i$ | $n_i$ |
+
+The expected value of $d_{1 i}$ is
+
+$$
+\mathbb{E}\left(d_{1 i}\right)=\frac{n_{1 i} d_i}{n_i}
+$$
+
+The variance is
+
+$$
+\operatorname{Var}\left(d_{1 i}\right)=\frac{n_{1 i} n_{2 i}\left(n_i-d_i\right) d_i}{n_i^2\left(n_i-1\right)}
+$$
+
+
+yields a statistic 
+
+$$
+U=\sum_{i=1}^k\left(d_{1 i}-\mathbb{E}\left(d_{1 i}\right)\right)
+$$
+
+where
+
+$$
+\mathbb{E}(U)=0 \text { and } \operatorname{Var}(U)=\sum_{i=1}^k \frac{n_{1 i} n_{2 i}\left(n_i-d_i\right) d_i}{n_i^2\left(n_i-1\right)}
+$$
+
+Standardizing leads to the log-rank test statistic
+$$
+z=\frac{U}{\sqrt{\operatorname{Var}(U)}}
+$$
+
+which has an approximately $\mathcal{N}(0,1)$ distribution. $z^2$ has an approximately chi-squared distribution with one degree of freedom.
+
+```{r}
+library(survival)
+survdiff(Surv(futime, fustat) ~ rx, data=ovarian)
+plot(survfit(Surv(futime, fustat) ~ rx, data = ovarian),
+     xlab = "Time",
+     ylab = "Survival probability")
+```
+
+`If without censoring`
+
+```{r}
+ovarian2=ovarian
+ovarian2$fustat=1
+
+survdiff(Surv(futime, fustat) ~ rx, data=ovarian2)
+plot(survfit(Surv(futime, fustat) ~ rx, data = ovarian2),
+     xlab = "Time",
+     ylab = "Survival probability")
+```
+
+
+### The Actuarial Method
+
+When the number of observations in a clinical trial is large, the actuarial method is recommended. 
+
+| interval | died | censored | at risk | interval survival rate | survival function |
+| :---: | :---: | :---: | :---: | :---: |:---: |
+| [0,4] | 6 | 0 | 33.0| 1-6/33.0=0.82 |1.0|
+| [5,9] | 4 | 1 | 26.5| 1-4/26.5=0.85 |1.0*0.82=0.82|
+| [10,14] | 6 | 3| 20.5 | 1-6/20.5=0.71 |0.82*0.85=0.7|
+...
+
+```{r, warning=FALSE}
+fit=survfit(Surv(futime, fustat)~rx, data=ovarian) 
+
+res.sum <- surv_summary(fit)
+head(res.sum)
+```
+
+
+```{r}
+plot(survfit(Surv(ceiling(futime/180), fustat)~rx, data=ovarian),col=c('blue','red'),main='Month',mark.time=F)
+
+```
+
+
+### Parametric Estimation (known distribution)  
+
+The exponential and Weibull distributions are commonly used to model the distribution of the survival time.
+
+Exponential
+$$
+f(x) = 1 \lambda x^{(1 - 1)}\exp(-(\lambda x^{1})) \hspace{.3in} 
+x \ge 0; 1 > 0
+$$
+
+$$
+F(x) = 1 - e^{-( \lambda x^{1})} \hspace{.3in}  x \ge 0; 1 > 0
+$$
+
+Weibull
+
+$$
+f(x) = \gamma \lambda x^{(\gamma - 1)}\exp(-(\lambda x^{\gamma})) \hspace{.3in} 
+x \ge 0; \gamma > 0
+$$
+
+$$
+F(x) = 1 - e^{-( \lambda x^{\gamma})} \hspace{.3in}  x \ge 0; \gamma > 0
+$$
+
+
+
+
+
+
+
+#### Random Censoring Model
+
+Suppose $t_i$ is the survival time, and $\delta_i$ is an indicator of a death occurring - that is, $\delta_i=1$ if the observation is uncensored and $\delta_i=0$ otherwise.
+
+Consider two random variables $T_i$, the survival time of the $i$ th subject, and $C_i$, the censoring time of the $i$ th subject. Assume that $T_i$ has the pdf $f_i(t)$ and cdf $F_i(t), t \geq 0$, and that $C_i$ has the pdf $g_i(t)$ and cdf $G_i(t), t \geq 0$.  The observed survival time is $\min \left(T_i, C_i\right)$.
+
+
+Example: survival time and censoring time distribution
+```{r}
+# survival time distribution
+hist(ovarian[ovarian$fustat==1,]$futime, prob = TRUE)
+lines(density(ovarian[ovarian$fustat==1,]$futime), col = 4, lwd = 2)
+# censoring time
+# hist(ovarian[ovarian$fustat==0,]$futime, prob = TRUE)
+lines(density(ovarian[ovarian$fustat==0,]$futime), col = 4, lwd = 2)
+```
+
+
+
+s1 Thus the likelihood function for the survival time distribution with random censoring is
+
+$$
+\begin{aligned}
+L & =\prod_{i=1}^n\left[f_i\left(t_i\right)\left(1-G_i\left(t_i\right)\right)\right]^{\delta_i}\left[\left(1-F_i\left(t_i\right)\right) g_i\left(t_i\right)\right]^{1-\delta_i} \\
+& =\prod_{i=1}^n\left(1-G_i\left(t_i\right)\right)^{\delta_i}\left(g_i\left(t_i\right)\right)^{1-\delta_i} \prod_{i=1}^n\left(f_i\left(t_i\right)\right)^{\delta_i}\left(1-F_i\left(t_i\right)\right)^{1-\delta_i}
+\end{aligned}
+$$
+
+where each observation is $\delta_i=1$ or $\delta_i=0$ . 
+
+s2 The likelihood function is proportional to
+
+$$
+L \propto \prod_{i=1}^n\left(f_i\left(t_i\right)\right)^{\delta_i}\left(1-F_i\left(t_i\right)\right)^{1-\delta_i}
+$$
+
+s3 Equivalently, the log-likelihood function is proportional to
+
+$$
+\ln L \propto \sum_{i=1}^n \delta_i \ln f_i\left(t_i\right)+\sum_{i=1}^n\left(1-\delta_i\right) \ln \left(1-F_i\left(t_i\right)\right)
+$$
+
+If 
+
+$$
+f(t) = \gamma \lambda t^{(\gamma - 1)}\exp(-(\lambda t^{\gamma})) \hspace{.3in} 
+t \ge 0; \gamma > 0
+$$
+
+$$
+F(t) = 1 - e^{-( \lambda t^{\gamma})} \hspace{.3in}  t \ge 0; \gamma > 0
+$$
+
+s4 We can solve $\lambda$ and $\gamma$, the derivative equating to zero with respect to $\lambda$ and $\gamma$.   
+
+s5 then get the survival function. 
+
+$$
+S(t)=1-F(t), \quad t \geq 0
+$$
+
+
+
+#### Exponential Distribution Model
+
+Suppose that the survival time distribution is modeled by the exponential distribution with pdf $f(t)=\lambda \exp \{-\lambda t\}$ and $\operatorname{cdf} F(t)=1-\exp \{-\lambda t\}$.  the $\log$-likelihood function is proportional to
+
+$$
+\ln L(\lambda) \propto \ln \lambda \sum_{i=1}^n \delta_i-\lambda \sum_{i=1}^n \delta_i t_i-\lambda \sum_{i=1}^n\left(1-\delta_i\right) t_i=\ln \lambda \sum_{i=1}^n \delta_i-\lambda \sum_{i=1}^n t_i
+$$
+
+Equating to zero the derivative with respect to $\lambda$ produces :
+
+$$
+\frac{d \ln L(\hat{\lambda})}{d \lambda}=\frac{\sum_{i=1}^n \delta_i}{\hat{\lambda}}-\sum_{i=1}^n t_i=0
+$$
+
+The solution is
+
+$$
+\hat{\lambda}=\frac{\sum_{i=1}^n \delta_i}{\sum_{i=1}^n t_i}=\frac{\text { number of deaths }}{\text { number of patient-years }}
+$$
+
+$\lambda$ can be interpreted as the number of deaths per patient-year. The estimator of the survival function is
+
+$$
+\hat{S}(t)=\exp \{-\hat{\lambda} t\}, t \geq 0
+$$
+
+
+#### Weibull Distribution Model
+
+Suppose the survival time has the Weibull distribution with the density $f(t)=\alpha \lambda t^{\alpha-1} \exp \left\{-\lambda t^\alpha\right\}$, and cdf $F(t)=\exp \left\{-\lambda t^\alpha\right\}$, the log-likelihood function is proportional to
+
+$$
+\begin{aligned}
+\ln L(\alpha, \lambda) & \propto \ln (\alpha \lambda) \sum_{i=1}^n \delta_i+(\alpha-1) \sum_{i=1}^n \delta_i \ln t_i-\lambda \sum_{i=1}^n \delta_i t_i^\alpha-\lambda \sum_{i=1}^n\left(1-\delta_i\right) t_i^\alpha \\
+& \propto(\ln \alpha+\ln \lambda) \sum_{i=1}^n \delta_i+\alpha \sum_{i=1}^n \delta_i \ln t_i-\lambda \sum_{i=1}^n t_i^\alpha
+\end{aligned}
+$$
+
+Taking the derivatives with respect to $\alpha$ and $\lambda$ and setting them equal to zero yields :
+
+$$
+\left\{\begin{array}{l}
+\frac{\partial \ln L(\hat{\alpha}, \hat{\lambda})}{\partial \alpha}=\frac{\sum_{i=1}^n \delta_i}{\hat{\alpha}}+\sum_{i=1}^n \delta_i \ln t_i-\hat{\lambda} \sum_{i=1}^n t_i^{\hat{\alpha}} \ln t_i=0 \\
+\frac{\partial \ln L(\hat{\alpha}, \hat{\lambda})}{\partial \lambda}=\frac{\sum_{i=1}^n \delta_i}{\hat{\lambda}}-\sum_{i=1}^n t_i^{\hat{\alpha}}=0
+\end{array}\right.
+$$
+
+This system has to be solved numerically
+$$
+\hat{S}(t)=\exp \left\{-\hat{\lambda} t^{\hat{\alpha}}\right\}, \quad t \geq 0
+$$
+
+
+### Regression Model for Survival Time Distribution
+
+A parametric regression model for survival time distribution `establishes the relationship` between the response variable $T$ and the predictor variables $x_1, \ldots, x_m$
+$$
+\ln T=\beta_0+\beta_1 x_1+\cdots+\beta_m x_m+\sigma \varepsilon
+$$
+
+where $\sigma$ is a real constant, and $\varepsilon$ is the random error.
+
+#### Exponential Regression Model
+
+
+A parametric regression model for the survival time distribution is called the exponential model, if $\sigma=1$ and $\varepsilon$ has the extreme-value distribution with the following density:
+
+$$
+f_{\varepsilon}(x)=e^{x-e^{x}}, \quad-\infty<x<\infty
+$$
+
+Equivalently, $T$ has the exponential distribution with the following density :
+
+$$
+f(t)=\lambda \exp \{-\lambda t\}, \quad t \geq 0
+$$
+
+where $\lambda=\exp \left\{-\left(\beta_{0}+\beta_{1} x_{1}+\cdots+\beta_{m} x_{m}\right)\right\}$. The survival function for this distribution is $S(t)=\exp \{-\lambda t\}, t \geq 0$. If the covariates are absent in this model, it reduces to the exponential distribution model.
+
+
+
+- Estimation of Regression Coefficients
+
+Since
+$$
+\ln L(\lambda) \propto \ln \lambda \sum_{i=1}^n \delta_i-\lambda
+\sum_{i=1}^n \delta_i t_i-\lambda \sum_{i=1}^n\left(1-\delta_i\right)
+t_i=\ln \lambda \sum_{i=1}^n \delta_i-\lambda \sum_{i=1}^n t_i
+$$
+
+and
+$$
+\lambda=\exp
+\left\{-\left(\beta_{0}+\beta_{1} x_{1}+\cdots+\beta_{m}
+x_{m}\right)\right\}
+$$
+
+
+Suppose that the observations are $\left(t_{i}, \delta_{i}, x_{i 1}, \ldots, x_{i m}\right)$, $i=1, \ldots, n$, where $t_{i}$ has the exponential distribution with the density. Then, the log-likelihood function is proportional to
+
+$$
+\begin{aligned}
+\ln L\left(\beta_{0}, \ldots, \beta_{m}\right) \propto & -\sum_{i=1}^{n} \delta_{i}\left(\beta_{0}+\beta_{1} x_{i 1}+\cdots+\beta_{m} x_{i m}\right) \\
+& -\sum_{i=1}^{n} t_{i} \exp \left\{-\left(\beta_{0}+\beta_{1} x_{i 1}+\cdots+\beta_{m} x_{i m}\right)\right\}
+\end{aligned}
+$$
+
+To simplify the notation, let $x_{i 0}=1$. The solution of this system can be found numerically.
+$$
+\sum_{i=1}^{n} \delta_{i} x_{i j}-\sum_{i=1}^{n} x_{i j} t_{i} \exp \left\{-\left(\hat{\beta}_{0} x_{i 0}+\cdots+\hat{\beta}_{m} x_{i m}\right)\right\}=0, j=0, \ldots, m
+$$
+
+
+
+
+- Interpretation of Regression Coefficients
+
+According to Equation $f(t)=\lambda \exp \{-\lambda t\}, \quad t \geq 0$, the mean survival time is equal to $\mathbb{E}(T)=1 / \lambda=\exp \left\{\beta_{0}+\beta_{1} x_{1}+\cdots+\beta_{m} x_{m}\right\}$. Hence, 
+
+* For a numerical covariate $x_{i}$, the quantity $\exp \left\{\beta_{i}\right\}$ is the relative change [or $100\left(\exp \left\{\beta_{i}\right\}-1\right) \%$ is the percentage change] in the mean survival time for each unit increase in the covariate, provided the other covariates are fixed. 
+
+$$
+\frac{\mathbb{E}\left(T_{x_{i}+1}\right)}{\mathbb{E}\left(T_{x_{i}}\right)}=\frac{\exp \left\{\beta_{0}+\cdots+\beta_{i}\left(x_{i}+1\right)+\cdots\right\}}{\exp \left\{\beta_{0}+\cdots+\beta_{i} x_{i}+\cdots\right\}}=\exp \left\{\beta_{i}\right\}
+$$
+
+* For a categorical covariate $x$ with $l$ levels (dummy variables), $100 \exp \left\{-\beta_{i}\right\} \%$ is the ratio (expressed as a percentage) of the mean survival times for subjects with the covariate $x$ at level $i$ and at level $j$, controlling for the other covariates.  
+
+
+$$
+\frac{\mathbb{E}\left(T_{0}\right)}{\mathbb{E}\left(T_{y_{i}}\right)}=\frac{\exp \left\{\beta_{0}+\text { constant }\right\}}{\exp \left\{\beta_{0}+\beta_{i}+\text { constant }\right\}}=\exp \left\{-\beta_{i}\right\}
+$$
+
+#### Weibull Regression Model
+
+If $\sigma$ is a constant that has to be estimated from the data, and $\varepsilon$ has the
+extreme-value distribution. 
+
+Equivalently, $T$ has the Weibull distribution with the following density
+
+$$
+f(t)=\alpha \lambda t^{\alpha-1} \exp \left\{-\lambda t^{\alpha}\right\}, t \geq 0
+$$
+
+where $\alpha=1 / \sigma$ and $\lambda=\exp \left\{-\left(\beta_{0}+\beta_{1} x_{1}+\cdots+\beta_{m} x_{m}\right) / \sigma\right\}$. The survival function for this distribution is $S(t)=\exp \left\{-\lambda t^{\alpha}\right\}, t \geq 0$ .
+
+ 
+
+- Estimation of Regression Coefficients
+
+The log-likelihood function is proportional to
+
+$$
+\begin{aligned}
+\ln L\left(\beta_{0}, \ldots, \beta_{m}, \sigma\right) \propto & -\ln \sigma \sum_{i=1}^{n} \delta_{i}-\frac{1}{\sigma} \sum_{i=1}^{n} \delta_{i}\left(\beta_{0}+\beta_{1} x_{i 1}+\cdots+\beta_{m} x_{i m}\right) \\
+& +\left(\frac{1}{\sigma}-1\right) \sum_{i=1}^{n} \delta_{i} \ln t_{i} \\
+& -\sum_{i=1}^{n} \exp \left\{\frac{1}{\sigma}\left(\ln t_{i}-\left(\beta_{0}+\beta_{1} x_{i 1}+\cdots+\beta_{m} x_{i m}\right)\right)\right\}
+\end{aligned}
+$$
+
+ 
+
+Setting to zero the partial derivatives of the log-likelihood function with respect to the parameters produces a set of normal equations, which should be solved numerically. 
+
+
+
+#### Model Fit Evaluation
+
+A formal likelihood ratio goodness-of-fit test may be conducted. Denote by $\ln L\left(\beta_{0}, \ldots, \beta_{m}\right)$ and $\ln L\left(\beta_{0}, \ldots, \beta_{m}, \sigma\right)$ the respective
+log-likelihood functions for the exponential (null hypothesis) and Weibull models (alternative). Then the test statistic equals
+
+$$
+-2\left(\ln L\left(\beta_{0}, \ldots, \beta_{m}\right)-\ln L\left(\beta_{0}, \ldots, \beta_{m}, \sigma\right)\right)
+$$
+
+Under the null hypothesis, this expression has approximately the chi-squared distribution with one degree of freedom.
+
+ 
+
+  
+### Cox Proportional Hazards Model
+
+#### Standard Definition
+
+
+
+In Cox proportional hazards model, where the covariates $x_{1}, \ldots, x_{m}$ do not depend on time, the hazard function has the following form:
+
+$$
+h\left(t, x_{1}, \ldots, x_{m}, \beta_{1}, \ldots, \beta_{m}\right)=h_{0}(t) \exp \left\{\beta_{1} x_{1}+\cdots+\beta_{m} x_{m}\right\}
+$$
+
+The function $h_{0}(t)$ is called the baseline hazard function. It is the hazard function of a (usually hypothetical) subject whose covariate values are all zeros (called a baseline subject).  
+
+
+The name of this model - the proportional hazards model - arises from the fact that for any two subjects, the ratio of their hazard functions is a constant not depending on time. Indeed, consider two subjects for which the values of the covariates are $x_{i 1}, \ldots, x_{i m}$ and $x_{j 1}, \ldots, x_{j m}$, respectively. The ratio of the hazard functions is
+
+$$
+\frac{h\left(t, x_{i 1}, \ldots, x_{i m}, \beta_{1}, \ldots, \beta_{m}\right)}{h\left(t, x_{j 1}, \ldots, x_{j m}, \beta_{1}, \ldots, \beta_{m}\right)}=\exp \left\{\beta_{1}\left(x_{i 1}-x_{j 1}\right)+\cdots+\beta_{m}\left(x_{i m}-x_{j m}\right)\right\}
+$$
+
+
+`A KM graphical diagnostic tool is not appropriate for the parametric regression model, because the Kaplan Meier estimator of the survival function ignores the presence of covariates. Cox model also need to check the Proportional Hazards assumptions.` 
+
+* To test for the proportional-hazards (PH) assumption:
+
+From the graphical inspection, there is no pattern with time. The assumption of proportional hazards appears to be supported.
+
+```{r}
+library("survival")
+res.cox <- coxph(Surv(time, status) ~ age + sex + wt.loss, data =  lung)
+res.cox
+
+test.ph <- cox.zph(res.cox)
+test.ph
+
+ggcoxzph(test.ph)
+
+# A violations of proportional hazards assumption can be resolved by:
+# 
+# Adding covariate*time interaction
+# Stratification
+```
+
+* Testing influential observations
+
+Specifying the argument type = “dfbeta”, plots the estimated changes in the regression coefficients upon deleting each observation in turn; These residuals should be roughtly symmetrically distributed about zero with a standard deviation of 1.
+
+```{r}
+# the deviance residuals or the dfbeta values
+ggcoxdiagnostics(res.cox, type = "dfbeta",
+                 linear.predictions = FALSE, ggtheme = theme_bw())
+
+ggcoxdiagnostics(res.cox, type = "deviance",
+                 linear.predictions = FALSE, ggtheme = theme_bw())
+```
+
+* Visualize survival curves by groups
+
+The function survfit() estimates the survival proportion, by default at the mean values of covariates.
+
+```{r}
+# Plot the baseline survival function
+ggsurvplot(survfit(res.cox,data=lung), color = "#2E9FDF",
+           ggtheme = theme_minimal())
+```
+
+We construct a new data frame with two rows, one for each value of sex; the other covariates are fixed to their average values or to their lowest level.
+
+```{r}
+# Create the new data  
+sex_df <- with(lung,
+               data.frame(sex = c(1, 2), 
+                          age = rep(mean(age, na.rm = TRUE), 2),
+                          wt.loss = rep(mean(wt.loss, na.rm = TRUE), 2)
+                          )
+               )
+sex_df
+
+# Survival curves by group
+fit2 <- survfit(res.cox, newdata = sex_df)
+ggsurvplot(fit2, data=lung, conf.int = TRUE, legend.labs=c("Sex=1", "Sex=2"),
+           ggtheme = theme_minimal() )
+```
+
+
+#### Estimation of Regression Coefficients
+
+The baseline hazard function $h_{0}(t)$ and the regression coefficients $\beta_{1}, \ldots, \beta_{m}$ are the unknowns of the Cox model.  
+
+In this method, the time dependent factor of the likelihood function is discarded, and the maximization is carried out on the remaining factor, producing the maximum partial-likelihood estimators of the regression coefficients $\beta_{1}, \ldots, \beta_{m}$.
+
+
+
+
+- Derivation of Partial-Likelihood Function
+
+let the lifetime distribution for the $i$ th subject have pdf $f_{i}\left(t_{i}\right)$, survival function $S_{i}\left(t_{i}\right)$, and hazard function $h_{i}\left(t_{i}\right)=h_{0}(t) \exp \left\{\beta_{1} x_{i 1}+\beta_{m} x_{i m}\right\}, i=1, \ldots, n$. the likelihood function in this model is proportional to
+
+$$
+\begin{aligned}
+& \prod_{i=1}^{n}\left(f_{i}\left(t_{i}\right)\right)^{\delta_{i}}\left(1-F_{i}\left(t_{i}\right)\right)^{1-\delta_{i}}=\prod_{i=1}^{n}\left(f_{i}\left(t_{i}\right)\right)^{\delta_{i}}\left(S_{i}\left(t_{i}\right)\right)^{1-\delta_{i}} \\
+& =\prod_{i=1}^{n}\left(h_{i}\left(t_{i}\right) S_{i}\left(t_{i}\right)\right)^{\delta_{i}}\left(S_{i}\left(t_{i}\right)\right)^{1-\delta_{i}} \quad \\
+& =\prod_{i=1}^{n}\left(h_{i}\left(t_{i}\right)\right)^{\delta_{i}} S_{i}\left(t_{i}\right)=\prod_{i=1}^{n}\left[\frac{h_{i}\left(t_{i}\right)}{\sum_{j \in R\left(t_{i}\right)} h_{j}\left(t_{i}\right)}\right]^{\delta_{i}} \times\left[\sum_{j \in R\left(t_{i}\right)} h_{j}\left(t_{i}\right)\right]^{\delta_{i}} S_{i}\left(t_{i}\right) \\
+& =\prod_{i=1}^{n}\left[\frac{\exp \left\{\beta_{1} x_{i 1}+\cdots+\beta_{m} x_{i m}\right\}}{\sum_{j \in R\left(t_{i}\right)} \exp \left\{\beta_{1} x_{j 1}+\cdots+\beta_{m} x_{j m}\right\}}\right]^{\delta_{i}} \times \prod_{i=1}^{n}\left[\sum_{j \in R\left(t_{i}\right)} h_{j}\left(t_{i}\right)\right]^{\delta_{i}} S_{i}\left(t_{i}\right)
+\end{aligned}
+$$
+where 
+$$
+h(t)=\frac{f(t)}{S(t)}, \quad t \geq 0
+$$
+
+
+Discarding the second product, which depends on time and making -log likelihood function maximization. 
+
+
+
+- Partial-Likelihood Score Equations
+
+To find the maximum partial-likelihood estimators of $\beta$ 's, it is convenient to maximize the log-partial-likelihood function 
+
+$$
+\begin{aligned}
+\ln L_{p}\left(\beta_{1}, \ldots, \beta_{m}\right) & =\sum_{i=1}^{n} \delta_{i}\left(\beta_{1} x_{i 1}+\cdots+\beta_{m} x_{i m}\right) \\
+& -\sum_{i=1}^{n} \delta_{i} \ln \left(\sum_{j \in R\left(t_{i}\right)} \exp \left\{\beta_{1} x_{j 1}+\cdots+\beta_{m} x_{j m}\right\}\right)
+\end{aligned}
+$$
+
+The estimators $\hat{\beta}_1, \ldots, \dot{\beta}_{\mathrm{m}}$ are found as the numerical solution:
+$$
+\begin{aligned}
+& \frac{\partial \ln L_p\left(\hat{\beta}_1, \ldots, \hat{\beta}_m\right)}{\partial \beta_k}=\sum_{i=1}^n \delta_{i x_{i k}} \\
+& -\sum_{i=1}^n \delta_i \frac{\sum_{\left.j \in A_{\left(t_i\right.}\right)} x_{j k} \exp \left\{\dot{\beta}_1 x_{j 1}+\cdots+\dot{\beta}_m x_{j m}\right\}}{\sum_{j \in R\left(t_j\right)} \exp \left\{\dot{\beta}_1 x_{j 1}+\cdots+\dot{\beta}_m x_{j m}\right\}} \\
+& =0, k=1, \ldots, m \text {. } \\
+&
+\end{aligned}
+$$
+
+- Breslow Approximation (as tied event times)
+
+Due to the inability to monitor continuously the survival times of subjects, tied event times are observed quite often. The Breslow approximation, which is used as the default method in SAS.
+
+Suppose there are $k$ distinct death times $t_1<t_2<\cdots<t_k$. Let $D\left(t_i\right)$ be the set of subjects whose death times are $t_i$. Suppose there are $d_i$ subjects in the set $D\left(t_i\right)$. The partial-likelihood function for the Breslow approximation is then
+$$
+L_{\mathrm{p}}\left(\beta_1, \ldots, \beta_{\mathrm{m}}\right)=\prod_{i=1}^k\left[\frac{\prod_{l \in D\left(\omega_1\right)} \exp \left\{\beta_1 x_{i 1}+\cdots+\beta_m x_{i m}\right\}}{\left(\sum_{j \in D\left(\omega_i\right)} \exp \left\{\beta_1 x_{j 1}+\cdots+\beta_{\mathrm{m}} x_{j \mathrm{~m}}\right\}\right)^{\alpha_i}}\right]
+$$
+ 
+
+The estimates of the regression coefficients $\hat{\beta}_1, \ldots, \hat{\beta}_{\mathrm{m}}$ solve the system of partial-likelibood score equations
+
+$$
+\begin{aligned}
+\frac{\partial \ln L_p\left(\hat{\beta}_1, \ldots, \hat{\beta}_m\right)}{\partial \beta_q} & =\sum_{i=1}^k \sum_{l \in D\left(t_i\right)} x_{l q} \\
+& -\sum_{i=1}^k d_i \frac{\sum_{j \in R\left(t_i\right)} x_{j q} \exp \left\{\hat{\beta}_1 x_{j 1}+\cdots+\hat{\beta}_m x_{j m}\right\}}{\sum_{j \in R\left(t_i\right)} \exp \left\{\hat{\beta}_1 x_{j 1}+\cdots+\hat{\beta}_m x_{j m}\right\}} \\
+& =0, \quad q=1, \ldots, m
+\end{aligned}
+$$
+
+
+#### Interpretation of Regression Coefficients
+
+The quantity $\exp (\beta\}$ is the change [equivalently, $100(\exp \{\beta\}-1) \%$ is the percentage change] in the hazard function for each unit increase in the covariate, provided the other covariates stay fixed. 
+$$
+\begin{aligned}
+& \frac{h\left(t, x_1, \ldots, x_i+1, \ldots, x_{m 1} \beta_1, \ldots, \beta_m\right)}{h\left(t, x_1, \ldots, x_i, \ldots, x_m, \beta_1, \ldots, \beta_m\right)} \\
+& \quad=\frac{h_0(t) \exp \left\{\beta_1 x_1+\cdots+\beta_i\left(x_i+1\right)+\cdots+\beta_m x_m\right\}}{h_0(t) \exp \left\{\beta_1 x_1+\cdots+\beta_i x_i+\cdots+\beta_m x_m\right\}} \\
+& \quad=\exp \left\{\beta_i\right\}
+\end{aligned}
+$$
+
+Suppose the variable has $l$ levels, and let $\beta_1, \ldots, \beta_{1-1}$ denote the regression coefficients in front of the appropriate dummy variables. If no other covariates are present in the model, a subject at the $l$ th level of the covariate is the baseline subject. The quantity $100 \exp \left\{\beta_i-\beta_j\right\} \%$ significs the ratio (expresed as a percentage) of hazard functions for subjects at level $i$ and at level $j$ of the covariate $(i, j=1, \ldots, l-1)$, provided the other covariates have equal vales.  
+
+
+#### Alternative Form of the Cox Model- survial fucntion
+
+since
+$$
+S(t)=\mathbb{P}(T>t)=\int_t^{\infty} f(x) d x
+$$
+
+By the standard definition of the proportional hazards model (Equations 3.25), the survival function can be written as
+$$
+\begin{aligned}
+S(t) & =\exp \left\{-\int_0^t h\left(u, x_1, \ldots, x_m, \beta_1, \ldots, \beta_m\right) d u\right\} \\
+& =\exp \left\{-\int_0^t h_0(u) \exp \left\{\beta_1 x_1+\cdots+\beta_m x_m\right\} d u\right\} \\
+& =\left[S_0(t)\right]^r
+\end{aligned}
+$$
+where $r=\exp \left\{\beta_1 x_1+\cdots+\beta_m x_m\right\}$ is the relative risk, and $S_0(t)=$ $\exp \left\{-\int_0^t h_0(u) d u\right\}$ is the baseline survival function.
+
+
+
+
+- Estimation of Baseline Survival Function
+
+Denote by $\pi_i=\mathbb{P}\left(T>t_i \mid T>t_{i-1}\right)$, the conditional survival probability at time $t_i$ for a basaline subject. The conditional survival probability of a subject with covariates $x_{j 1}, \ldots, x_{j m}$ can be obtained by raising $\pi_i$ to the power $r_j=\exp \left\{\beta_1 x_{j 1}+\cdots+\beta_m x_{j m}\right\}$. Then the contribution to the likelihood function from the subjects who died at time $t_i$ is $1-\pi_i^{r_j}, j \in D\left(t_i\right)$; from those who were at risk but did not die, it is $\pi_i{ }^{r_j}, j \in R\left(t_i\right) \backslash D\left(t_i\right)$. Thus the likelihood function is
+
+$$
+L\left(\pi_1, \ldots, \pi_n, \beta_2, \ldots, \beta_m\right)=\prod_{i=1}^n \prod_{j \in D\left(t_i\right)}\left(1-\pi_i^{{ }^{ri}}\right) \prod_{j \in R\left(t_j\right) \backslash D\left(t_i\right)} \pi_i^{{ }^ri}
+$$
+
+Equivalently, the log-likelihood function is equal to
+$$
+\ln L\left(\pi_1, \ldots, \pi_n, \beta_1, \ldots, \beta_m\right)=\sum_{i=1}^n\left[\sum_{j \in D\left(t_i\right)} \ln \left(1-\pi_i^{r_j}\right)+\sum_{j \in R\left(t_i  \backslash D\left(t_i\right)\right.} r_j \ln \pi_i\right]
+$$
+
+This function is maximized with respect to $\pi_i$ after the partial-likelihood estimators of $\beta{\prime}^s$
+
+$$
+\sum_{j \in D\left(t_i\right)} \frac{\hat{r}_j}{1-\hat{\pi}_i^{\hat{r}_j}}=\sum_{j \in R\left(t_i\right)} \hat{r}_j, \quad i=1, \ldots, n
+$$
+where $\hat{r}_j=\exp \left\{\hat{\beta}_1 x_{j 1}+\cdots+\hat{\beta}_m x_{j m}\right\}$.
+
+
+In the case of no tied values among the observed death times, the size of $D\left(t_i\right)$ is 1, and there exists an explicit solution:
+
+$$
+\hat{\pi}_i=\left(1-\frac{\hat{r}_{j^{\prime}(i)}}{\sum_{j \in R\left(t_i\right)} \hat{r}_j}\right)^{1 / \hat{r}_{j^{\prime}(i)}}, \quad i=1, \ldots, n
+$$
+
+where $\hat{r}_j{\prime}_(i)$ denotes the estimated relative risk for the $j^{\prime}$ th subject whose time of death is $t_i$ - that is, $j^{\prime} \in D\left(t_i\right)$.
+
+ 
+
+The baseline survival function is estimated by 
+$$
+\hat{S}_0(t)=\prod_{i=t_i \leq t} \hat{\pi}_i, \quad t \geq 0
+$$
+
+
+Therefore, the estimate of the survival function $S(t)$ for a subject with the values of covariates $x_1, \ldots, x_{\mathrm{m}}$ is
+$$
+S(t)=\left[\prod_{i=t_i \leq t} \hat{\pi}_i\right]^{\exp \left\{\hat{b}_1 x_1+\cdots+\hat{b}_m x_m\right\}}, t \geq 0
+$$
+
+If there are no covariates, the likelihood function simplifies to the form given in KM Equation. That is
+
+$$
+S\left(t_i\right)=\prod_{j=1}^i \pi_j
+$$
+
+
+
+

@@ -1,0 +1,411 @@
+---
+title: "Confounding and effect measure modification"
+description: "A practical R learning guide to Confounding and effect measure modification, with concise explanations, reproducible examples, and interpretation guidance."
+date: 2026-08-31
+section: "Epidemiology & Real-World Evidence"
+category: "Effect Measures & Effect Modification"
+topic: "Confounding and effect measure modification"
+type: article
+tags: ["Effect Measures & Effect Modification", "Epidemiology & Real-World Evidence", "Confounding", "effect", "measure"]
+status: published
+featured: true
+youtube: []
+pdf: []
+downloads: []
+validate-yaml: false
+execute:
+  enabled: false
+  echo: true
+  warning: false
+  error: true
+---
+
+## Why This Topic Matters
+
+Effect measures summarize contrasts on a chosen scale, while effect modification describes genuine variation across covariate levels.
+
+## Learning Objectives
+
+After working through this material, you should be able to:
+
+- explain the main ideas behind **Confounding and effect measure modification**;
+- interpret the R workflow and its output; and
+- adapt the examples to a related analysis.
+
+## Lesson Roadmap
+
+The original material is organized around the following topics:
+
+1. How to analyze confounding and effect measure modification
+2. Practice in assessing confounding and modification
+3. Explore whether it is a confounder
+4. Before and after adjusting
+5. Explore whether it is a effect measure modification
+
+## How to Use This Lesson
+
+Read the explanation before each workflow, then run the R chunks in sequence. Code and output are shown together so that each numerical or graphical result can be connected to the command that produced it. Some source examples require optional packages or external data. Those setup-dependent chunks remain visible for reference but are marked `eval: false` when they cannot be reproduced safely in a clean website build.
+
+## Reproducible Learning Check
+
+This short R chunk confirms the scope of the lesson and always produces a visible output.
+
+```{r}
+#| label: learning-overview
+learning_overview <- data.frame(
+  section = "Epidemiology & Real-World Evidence",
+  category = "Effect Measures & Effect Modification",
+  topic = "Confounding and effect measure modification"
+)
+learning_overview
+```
+
+## Learning Material
+
+The following material develops **Confounding and effect measure modification** from core ideas to practical implementation. Definitions and assumptions come first; worked code then shows how the ideas are represented computationally.
+
+### Conceptual Foundation
+
+The material below closely follows the original R Markdown source, with its examples retained for study and reuse.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#### How to analyze confounding and effect measure modification
+
+<!-- generated-learning-note -->
+This subsection explains **How to analyze confounding and effect measure modification** and shows how it contributes to the overall Confounding and effect measure modification workflow.
+
+- If there is only confounding: The stratum-specific measures of association will be similar to one another, but they will be different from the overall crude estimate by 10% or more. In this situation, one can use Mantel-Haenszel methods to calculate a pooled estimate (RR or OR) and p-value.
+
+- If there is neither confounding nor effect modification: The crude estimate of association and the stratum-specific estimates will be similar. They don't have to be identical, just similar.
+
+- If there is only effect modification: The stratum-specific estimates will differ from one another significantly. Whether they are "significantly different" can be tested by using a chi-square test of homogeneity, as described in the Aschengrau & Seage textbook.
+
+- If there is both effect modification and confounding: Here, you need to consider two possibilities:
+
+  - 1) If the stratum-specific estimates differ from one another, and they are both less than the crude estimate or if they are both greater than the crude estimate, then there is both confounding and effect modification.
+
+  - 2) If the stratum-specific estimates differ from one another, and the crude estimate is between the two stratum-specific estimates, then you need to pool the stratum-specific estimates (with a Mantel-Haenszel equation) to determine whether the pooled estimate is more than 10% different from the crude estimate.
+
+  - Note that in this situation you are only pooling the stratum-specific estimates in order to make a decision about whether confounding is present; you should not report the pooled estimate as an "adjusted" measure of association if there is effect modification
+  
+  - confouding factor is not related to emm directly. confounding is adjusted covariate; effect modification is interaction effect in the regression model. One should adjust for confounders, but report the different effects seen for effect modifers.
+
+please see the detail [here](https://sphweb.bumc.bu.edu/otlt/mph-modules/bs/bs704-ep713_confounding-em/bs704-ep713_confounding-em_print.html). 
+
+#### Practice in assessing confounding and modification
+
+<!-- generated-learning-note -->
+This subsection explains **Practice in assessing confounding and modification** and shows how it contributes to the overall Confounding and effect measure modification workflow.
+
+
+- Load package and data set
+
+### R Workflow and Examples
+
+Run the examples in order because later blocks may reuse objects created earlier. Each block includes a short purpose statement and guidance for reading its output.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This source block depends on optional software, external data, or a machine-specific path. It is retained as a reference and is not executed during the website build.
+
+```{r, message=FALSE}
+#| eval: false
+#| code-fold: true
+## Importing required packages
+library(tidyverse)   
+library(skimr)      
+## Read in clean data set
+df_dia <- read_csv("C:\\Users\\hed2\\Downloads\\code-storage\\code\\diabetes-data.csv")
+
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Because this block is not executed, it produces no website output. Enable it only after its dependencies and input paths have been validated.
+
+- Skim the dataset
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+## Skim the dataset
+skim(df_dia)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+- Check the structure of the data
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+## Explore data set
+glimpse(df_dia)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+- Create (three-way) interaction terms
+
+<!-- generated-learning-note -->
+**Purpose.** This block prepares the analysis data. Follow each transformation carefully because filtering, recoding, grouping, and reshaping determine the observations used downstream.
+
+```{r }
+## Create interaction terms
+df_dia <- df_dia %>% 
+  mutate(
+    padmit = patient_visits*admit_source,
+    hadmit = HbA1c*admit_source,
+    hpatient = HbA1c*patient_visits,
+    hpadmit = HbA1c*patient_visits*admit_source)%>% 
+  mutate_at(vars(diabetesMed, HbA1c, admit_source, hadmit), as.factor)
+## Check the structure of the data
+glimpse(df_dia)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the data before and after the transformation. Confirm that row counts, group sizes, missingness, and variable values changed as intended.
+
+
+#### Explore whether it is a confounder
+
+<!-- generated-learning-note -->
+This subsection explains **Explore whether it is a confounder** and shows how it contributes to the overall Confounding and effect measure modification workflow.
+
+
+if the covariate is not sig, it must be not confounder. in other words, the regresion model can adjust confoudners. 
+
+<!-- generated-learning-note -->
+**Purpose.** This block specifies and fits the statistical model. Identify the outcome, predictors, reference levels, link or distribution, and any correlation structure before interpreting coefficients.
+
+```{r}
+## patient_visits is   confounder  
+model7 <- glm(diabetesMed ~ HbA1c + admit_source + patient_visits ,
+              df_dia, family = "binomial")
+
+## Print the coefficients of the model
+coef(summary(model7))
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Focus on coefficient direction and scale, uncertainty intervals, fit statistics, and diagnostics. Statistical significance alone does not establish practical importance or model adequacy.
+
+patient_visits is not  confounder but independent predictor, because it is sig but there is no change in the coefficient of hba1c.  
+
+#### Before and after adjusting
+
+<!-- generated-learning-note -->
+This subsection explains **Before and after adjusting** and shows how it contributes to the overall Confounding and effect measure modification workflow.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block specifies and fits the statistical model. Identify the outcome, predictors, reference levels, link or distribution, and any correlation structure before interpreting coefficients.
+
+```{r}
+##  
+model8 <- glm(diabetesMed ~ HbA1c + admit_source   ,
+              df_dia, family = "binomial")
+
+## Print the coefficients of the model
+coef(summary(model8))
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Focus on coefficient direction and scale, uncertainty intervals, fit statistics, and diagnostics. Statistical significance alone does not establish practical importance or model adequacy.
+
+
+- Plot confounding in log odds
+
+examine the primary association of interest at different levels of a potential confounding factor.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+curve((1.03209664  +0.81957667*0      +0.10412221       +0.03830031 *x)   , from=1, to=80, n=300, xlab="patient_visits", ylab="log odds", 
+             col="red", lwd=2, main="confounding of exposure and patient_visits"  )
+
+curve((1.03209664  +0.81957667*1      +0.10412221       +0.03830031 *x )  , from=1, to=80, n=300, add=T, xlab="patient_visits", ylab="log odds", 
+             col="blue", lwd=2, main="confounding of exposure and patient_visits"  )
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+- Plot confounding in odds
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+curve( exp(1.03209664  +0.81957667*0      +0.10412221       +0.03830031 *x)   , from=1, to=80, n=300, xlab="patient_visits", ylab="odds", 
+             col="red", lwd=2, main="confounding of exposure and patient_visits"  )
+
+curve( exp(1.03209664  +0.81957667*1      +0.10412221       +0.03830031 *x )  , from=1, to=80, n=300, add=T, xlab="patient_visits", ylab="odds", 
+             col="blue", lwd=2, main="confounding of exposure and patient_visits"  )
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+- Plot confounding in odds ratio
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+curve( exp(1.03209664  +0.81957667*0      +0.10412221       +0.03830031 *x) / exp(1.03209664  +0.81957667*1      +0.10412221       +0.03830031 *x )  , from=1, to=80, n=300,   xlab="patient_visits", ylab="OR", 
+             col="blue", lwd=2, main="confounding of exposure and patient_visits"  )
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+#### Explore whether it is a effect measure modification
+
+<!-- generated-learning-note -->
+This subsection explains **Explore whether it is a effect measure modification** and shows how it contributes to the overall Confounding and effect measure modification workflow.
+
+
+although the covariate is not sig, it may be emm as long as the interaction is sig. This occurs when an association between an exposure X and an outcome Y can depend on another variable Z, and Z does not have to be directly related to X and/or Y.
+
+- Step 1: Full model
+
+<!-- generated-learning-note -->
+**Purpose.** This block specifies and fits the statistical model. Identify the outcome, predictors, reference levels, link or distribution, and any correlation structure before interpreting coefficients.
+
+```{r}
+## Step 1: Full model
+full_model <- glm(as.factor(diabetesMed) ~ HbA1c + admit_source + patient_visits 
+                  + padmit + hadmit + hpatient + hpadmit, 
+                  df_dia , family = "binomial")
+## Print the summary of the model
+coef(summary(full_model)) 
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Focus on coefficient direction and scale, uncertainty intervals, fit statistics, and diagnostics. Statistical significance alone does not establish practical importance or model adequacy.
+
+
+- Step 2: Remove no sig variables
+
+<!-- generated-learning-note -->
+**Purpose.** This block specifies and fits the statistical model. Identify the outcome, predictors, reference levels, link or distribution, and any correlation structure before interpreting coefficients.
+
+```{r}
+## Step 3:  
+model5 <- glm(diabetesMed ~ HbA1c + patient_visits + hpatient,
+              df_dia, family = "binomial")
+
+## Print the coefficients of the model
+coef(summary(model5))
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Focus on coefficient direction and scale, uncertainty intervals, fit statistics, and diagnostics. Statistical significance alone does not establish practical importance or model adequacy.
+
+`equation with exposure, outcome and interaction`
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+# 
+# y=0.9940305 +0.9267593*HbA1c1           +0.1340291*patient_visits  - 0.1322058* HbA1c1*patient_visits
+# y0=0.9940305 +0.9267593*0           +0.1340291*patient_visits  - 0.1322058* 0*patient_visits
+# y1=0.9940305 +0.9267593*1           +0.1340291*patient_visits  - 0.1322058* 1*patient_visits
+
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+- Plot interaction of exposure and patient_visits in log odds
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+curve( (0.9940305 +0.9267593*0           +0.1340291*x  - 0.1322058* 0*x), from=1, to=20, n=300, xlab="patient_visits", ylab="log odds", 
+             col="red", lwd=2, main="interaction of exposure and patient_visits"  )
+
+curve( (0.9940305 +0.9267593*1           +0.1340291*x  - 0.1322058* 1*x), from=1, to=20, n=300, add=TRUE, xlab="patient_visits", ylab="log odds", 
+             col="blue", lwd=2, main="interaction of exposure and patient_visits"  )
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+- Plot interaction of exposure and patient_visits in odds
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+curve( exp(0.9940305 +0.9267593*0           +0.1340291*x  - 0.1322058* 0*x), from=1, to=20, n=300, xlab="patient_visits", ylab="odds", 
+             col="red", lwd=2, main="interaction of exposure and patient_visits"  )
+
+curve( exp(0.9940305 +0.9267593*1           +0.1340291*x  - 0.1322058* 1*x), from=1, to=20, n=300, add=TRUE, xlab="patient_visits", ylab="odds", 
+             col="blue", lwd=2, main="interaction of exposure and patient_visits"  )
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+- Plot interaction of exposure and patient_visits in odds ratio
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+curve(  exp(0.9940305 +0.9267593*0           +0.1340291*x  - 0.1322058* 0*x)/ exp(0.9940305 +0.9267593*1           +0.1340291*x  - 0.1322058* 1*x), from=1, to=20, n=300,  xlab="patient_visits", ylab="OR", 
+             col="blue", lwd=2, main="interaction of exposure and patient_visits"  )
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+This suggests that patient visits modify the outcome-exposure relationship, while others do not modify the relationship between HbA1c levels (exposure) and diabetic medication change (outcome). a covariate cannot confound and modify the exposure-outcome relationship simultaneously. 
+
+- Get the confidence interval and OR
+
+<!-- generated-learning-note -->
+**Purpose.** This block extracts inferential or predictive results from fitted objects. Match each estimate, interval, contrast, or diagnostic to the quantity it represents.
+
+```{r}
+## Get the confidence interval
+CI <- confint(model5)
+CI
+
+## Find the odds ratio
+Odds_ratios <- exp(model5$coefficients)
+Odds_ratios
+
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Interpret estimates on the scale reported by the function, and use intervals or other uncertainty measures when drawing conclusions.
+
+## Interpreting the Results
+
+Name the effect scale explicitly and interpret interaction estimates rather than comparing separate p-values. Treat the output as evidence generated under the stated data, coding choices, and assumptions. Before using the workflow in practice, replace example inputs with validated data and confirm that the method targets the intended scientific question.
+
+## Key Takeaways
+
+- **Connect method to purpose.** Identify the question and target quantity before choosing code or a model.
+- **Read code and output together.** Confirm what each object, estimate, interval, table, or plot represents.
+- **Check assumptions and diagnostics.** A successful computation is not by itself evidence that the result is reliable.
+- **Adapt deliberately.** When applying the example elsewhere, document changes to data definitions, parameters, and analytical choices.

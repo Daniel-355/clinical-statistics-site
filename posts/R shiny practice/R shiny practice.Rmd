@@ -1,0 +1,33 @@
+---
+title: "R shiny practice"
+output: html_document
+date: "2025-10-27"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### R shiny practice
+
+- [Interactive Correlation Explorer + Heatmap](https://pl8ev5-dian-he.shinyapps.io/shiny/)
+
+- [Cumulative Incidence by uploading your data](https://pl8ev5-dian-he.shinyapps.io/surv_curv/)
+
+E.g.
+
+```{r}
+# Create the dataset
+data <- data.frame(
+  time = c(5, 8, 12, 3, 7, 2, 10, 6, 4, 9,
+           6, 11, 7, 13, 2, 5, 9, 3, 8, 12),
+  status = c(1, 0, 1, 1, 0, 1, 0, 1, 0, 1,
+             0, 1, 0, 1, 1, 0, 1, 0, 1, 0),
+  group = c(rep("A", 10), rep("B", 10))
+)
+
+# View the dataset
+print(data)
+
+```
+

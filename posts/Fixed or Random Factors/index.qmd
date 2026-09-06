@@ -1,0 +1,113 @@
+---
+title: "Fixed or Random Factors"
+description: "A practical R learning guide to Fixed or Random Factors, with concise explanations, reproducible examples, and interpretation guidance."
+date: 2026-08-31
+section: "Biostatistics"
+category: "Longitudinal & Repeated Measures"
+topic: "Fixed or Random Factors"
+type: article
+tags: ["Longitudinal & Repeated Measures", "Biostatistics", "Fixed", "Random", "Factors"]
+status: published
+featured: true
+youtube: []
+pdf: []
+downloads: []
+validate-yaml: false
+execute:
+  echo: true
+  warning: false
+  error: true
+---
+
+## Why This Topic Matters
+
+Repeated observations from the same unit are correlated, so longitudinal models must represent both mean change and within-unit dependence.
+
+## Learning Objectives
+
+After working through this material, you should be able to:
+
+- explain the main ideas behind **Fixed or Random Factors**;
+- interpret the R workflow and its output; and
+- adapt the examples to a related analysis.
+
+## Lesson Roadmap
+
+The original material is organized around the following topics:
+
+1. Fixed or Random Factors
+2. Fixed effect factor: Data has been gathered from all the levels of the factor that are of interest.
+3. Random effect factor: The factor has many possible levels, interest is in all possible levels, but only a random sample of levels is included in the data.
+
+## How to Use This Lesson
+
+Read the explanation before each workflow, then run the R chunks in sequence. Code and output are shown together so that each numerical or graphical result can be connected to the command that produced it. Some source examples require optional packages or external data. Those setup-dependent chunks remain visible for reference but are marked `eval: false` when they cannot be reproduced safely in a clean website build.
+
+## Reproducible Learning Check
+
+This short R chunk confirms the scope of the lesson and always produces a visible output.
+
+```{r}
+#| label: learning-overview
+learning_overview <- data.frame(
+  section = "Biostatistics",
+  category = "Longitudinal & Repeated Measures",
+  topic = "Fixed or Random Factors"
+)
+learning_overview
+```
+
+## Learning Material
+
+The following material develops **Fixed or Random Factors** from core ideas to practical implementation. Definitions and assumptions come first; worked code then shows how the ideas are represented computationally.
+
+### Conceptual Foundation
+
+The material below closely follows the original R Markdown source, with its examples retained for study and reuse.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#### Fixed or Random Factors
+
+<!-- generated-learning-note -->
+This subsection explains **Fixed or Random Factors** and shows how it contributes to the overall Fixed or Random Factors workflow.
+
+
+E.g. Two way ANOVA
+
+#### Fixed effect factor: Data has been gathered from all the levels of the factor that are of interest.
+
+<!-- generated-learning-note -->
+This section prepares the information needed for **Fixed effect factor: Data has been gathered from all the levels of the factor that are of interest.**. Check variable definitions, units, coding, and missing values before moving to analysis.
+
+
+
+
+#### Random effect factor: The factor has many possible levels, interest is in all possible levels, but only a random sample of levels is included in the data.
+
+<!-- generated-learning-note -->
+This section prepares the information needed for **Random effect factor: The factor has many possible levels, interest is in all possible levels, but only a random sample of levels is included in the data.**. Check variable definitions, units, coding, and missing values before moving to analysis.
+
+
+- The standard methods for analyzing random effects models assume that the random factor has infinitely many levels, but usually still work well if the total number of levels of the random factor is at least 100 times the number of levels observed in the data. 
+
+- An interaction term involving both a fixed and a random factor should be considered a random factor.
+
+- A factor that is nested in a random factor should be considered random.
+
+### Applying the Material
+
+This source is primarily conceptual or procedural. Use its definitions and decision points as a checklist, and document how each item is implemented in the intended study or analysis.
+
+## Interpreting the Results
+
+Check fixed effects, random effects, covariance assumptions, and subject-specific versus population-level interpretation. Treat the output as evidence generated under the stated data, coding choices, and assumptions. Before using the workflow in practice, replace example inputs with validated data and confirm that the method targets the intended scientific question.
+
+## Key Takeaways
+
+- **Connect method to purpose.** Identify the question and target quantity before choosing code or a model.
+- **Read code and output together.** Confirm what each object, estimate, interval, table, or plot represents.
+- **Check assumptions and diagnostics.** A successful computation is not by itself evidence that the result is reliable.
+- **Adapt deliberately.** When applying the example elsewhere, document changes to data definitions, parameters, and analytical choices.

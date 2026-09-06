@@ -1,0 +1,134 @@
+---
+title: "Central Limit Theorem"
+description: "A practical R learning guide to Central Limit Theorem, with concise explanations, reproducible examples, and interpretation guidance."
+date: 2026-08-31
+section: "Biostatistics"
+category: "Statistical Principles & Estimands"
+topic: "Central Limit Theorem"
+type: article
+tags: ["Statistical Principles & Estimands", "Biostatistics", "Central", "Limit", "Theorem"]
+status: published
+featured: true
+youtube: []
+pdf: []
+downloads: []
+validate-yaml: false
+execute:
+  echo: true
+  warning: false
+  error: true
+---
+
+## Why This Topic Matters
+
+Statistical principles define what is being estimated, under which assumptions, and how uncertainty should be represented.
+
+## Learning Objectives
+
+After working through this material, you should be able to:
+
+- explain the main ideas behind **Central Limit Theorem**;
+- interpret the R workflow and its output; and
+- adapt the examples to a related analysis.
+
+## Lesson Roadmap
+
+The original material is organized around the following topics:
+
+1. Central Limit Theorem
+
+## How to Use This Lesson
+
+Read the explanation before each workflow, then run the R chunks in sequence. Code and output are shown together so that each numerical or graphical result can be connected to the command that produced it. Some source examples require optional packages or external data. Those setup-dependent chunks remain visible for reference but are marked `eval: false` when they cannot be reproduced safely in a clean website build.
+
+## Reproducible Learning Check
+
+This short R chunk confirms the scope of the lesson and always produces a visible output.
+
+```{r}
+#| label: learning-overview
+learning_overview <- data.frame(
+  section = "Biostatistics",
+  category = "Statistical Principles & Estimands",
+  topic = "Central Limit Theorem"
+)
+learning_overview
+```
+
+## Learning Material
+
+The following material develops **Central Limit Theorem** from core ideas to practical implementation. Definitions and assumptions come first; worked code then shows how the ideas are represented computationally.
+
+### Conceptual Foundation
+
+The material below closely follows the original R Markdown source, with its examples retained for study and reuse.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#### Central Limit Theorem
+
+<!-- generated-learning-note -->
+This subsection explains **Central Limit Theorem** and shows how it contributes to the overall Central Limit Theorem workflow.
+
+
+The Central Limit Theorem1 says that for most distributions, linear combinations (e.g., the  sum or the mean) of a large enough number of independent random variables is approximately normal. 
+
+For example, adult human heights (at least if we restrict to one sex3) are the sum of many heights: the heights of the ankles, lower legs, upper legs, pelvis, many vertebrae, and head. Empirical evidence suggests that these heights vary roughly independently (e.g., the ratio of height of lower leg to that of upper leg varies considerably). Thus it is plausible by the Central Limit Theorem that human heights are approximately normal. This in fact is supported by empirical evidence.
+
+
+linear combinations of a number of independent random variables
+
+### R Workflow and Examples
+
+Run the examples in order because later blocks may reuse objects created earlier. Each block includes a short purpose statement and guidance for reading its output.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block generates controlled example data. Simulation makes the data-generating assumptions explicit and provides a known setting in which to study the method.
+
+```{r}
+# numbers from  
+x=1000
+
+# calculate the distribution function
+# based on the parameters
+
+pdf1<- rnorm(1000,(2),(1))
+pdf2<- rchisq(x,1)
+pdf3<- rf(x,3,10)
+pdf4<- rexp(x,1)
+
+pdf=2*pdf1+3*pdf2+4*pdf3+2*pdf4
+ 
+# Plotting the PDF 
+hist(pdf1,probability = T,20)
+lines(density(pdf1),col=2)
+
+hist(pdf2,probability = T,20)
+lines(density(pdf2),col=2)
+
+hist(pdf3,probability = T,20)
+lines(density(pdf4),col=2)
+
+hist(pdf4,probability = T,20)
+lines(density(pdf4),col=2)
+
+hist(pdf,probability = T,20)
+lines(density(pdf),col=2)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the generated sample with the parameters used to create it. Differences reflect random variation unless the code intentionally introduces bias or structure.
+
+## Interpreting the Results
+
+Link every numerical result to its target quantity, assumptions, and sampling interpretation. Treat the output as evidence generated under the stated data, coding choices, and assumptions. Before using the workflow in practice, replace example inputs with validated data and confirm that the method targets the intended scientific question.
+
+## Key Takeaways
+
+- **Connect method to purpose.** Identify the question and target quantity before choosing code or a model.
+- **Read code and output together.** Confirm what each object, estimate, interval, table, or plot represents.
+- **Check assumptions and diagnostics.** A successful computation is not by itself evidence that the result is reliable.
+- **Adapt deliberately.** When applying the example elsewhere, document changes to data definitions, parameters, and analytical choices.

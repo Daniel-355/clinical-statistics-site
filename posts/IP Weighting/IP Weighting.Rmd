@@ -1,0 +1,384 @@
+---
+title: "IP Weighting and marginal structural models"
+output: html_document
+date: '2023-05-03'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+[Reference book: Hernán, Miguel A, and James M Robins. 2020. Causal Inference: What If. Boca Raton: Chapman & Hall/CRC.](https://www.hsph.harvard.edu/miguel-hernan/causal-inference-book/)
+
+### Inverse probability of treatment weight
+
+#### Data preparation
+
+- Load data
+
+```{r pressure, echo=FALSE}
+library("readxl")
+library(tidyverse)
+library(here)
+nhefs <- read.csv("C:\\Users\\hed2\\Downloads\\mybook2\\mybook2\\nhefs.csv")
+```
+
+
+
+- Data transform
+
+```{r cars}
+nhefs$cens <- ifelse(is.na(nhefs$wt82), 1, 0)   
+
+nhefs.nmv <- nhefs[which(!is.na(nhefs$wt82)),] #   pro visional ignore subjects with missing values for weight in 1982 
+
+```
+
+- Data exploration
+```{r}
+
+lm(wt82_71 ~ qsmk, data=nhefs.nmv) # qsmk  
+```
+
+- Averages in different groups
+```{r}
+predict(lm(wt82_71 ~ qsmk, data=nhefs.nmv), data.frame(qsmk=1)) # Smoking cessation
+```
+
+```{r}
+predict(lm(wt82_71 ~ qsmk, data=nhefs.nmv), data.frame(qsmk=0)) # No smoking cessation
+```
+- Problem: age is different (unbalance between two groups)
+```{r}
+# Table
+summary(nhefs.nmv[which(nhefs.nmv$qsmk==0),]$age)
+summary(nhefs.nmv[which(nhefs.nmv$qsmk==1),]$age)
+```
+
+
+### Inverse probability of treatment weight 
+
+(Weighting the exposure) 
+
+- Using logistic regression to calculate the probability 
+
+```{r}
+# Estimation of ip weights via a logistic model
+fit <- glm(qsmk ~ sex + race + age + I(age^2) + 
+  as.factor(education) + smokeintensity + 
+  I(smokeintensity^2) + smokeyrs + I(smokeyrs^2) + 
+  as.factor(exercise) + as.factor(active) + wt71 + I(wt71^2), 
+           family = binomial(), data = nhefs.nmv)
+summary(fit)
+```
+
+- Calculate the weight (1/probability)
+```{r}
+p.qsmk.obs <- ifelse(nhefs.nmv$qsmk == 0, 1 - predict(fit, type = "response"),
+                     predict(fit, type = "response"))
+
+nhefs.nmv$w <- 1/p.qsmk.obs
+
+summary(nhefs.nmv$w)
+```
+
+- Modeling the weighted linear regression
+```{r}
+library("geepack")
+```
+
+```{r}
+# what is id
+msm.w <- geeglm(wt82_71 ~ qsmk, data=nhefs.nmv, weights=w,id = seqn,corstr="independence")
+summary(msm.w)
+```
+
+
+- Balance check in this pseudo-population
+
+```{r}
+# no association between sex and qsmk in pseudo-population after weighting
+xtabs(nhefs.nmv$w ~ nhefs.nmv$sex + nhefs.nmv$qsmk)
+```
+
+```{r}
+# "check" for positivity (White women)
+table(nhefs.nmv$age[nhefs.nmv$race == 0 & nhefs.nmv$sex == 1], 
+      nhefs.nmv$qsmk[nhefs.nmv$race == 0 & nhefs.nmv$sex == 1])
+```
+
+`The inverse probability weight at this time can be: the treatment group is Pr[A=1]/f(A|L) (Or 1/f (A|L), Or 0.5/f (A|L)), and the non-treatment group is Pr[A=0]/f(A|L). WA =1/ f (A| L) is called non-stable weights, while SWA = f (A)/ f (A| L) is called stable weights.`
+
+#### Stochastic Weight Averaging
+
+- Estimation of denominator
+```{r}
+# estimation of denominator of ip weights (same as above, conditional probability)
+denom.fit <- glm(qsmk ~ as.factor(sex) + as.factor(race) + age + I(age^2) + 
+  as.factor(education) + smokeintensity + 
+  I(smokeintensity^2) + smokeyrs + I(smokeyrs^2) + 
+  as.factor(exercise) + as.factor(active) + wt71 + I(wt71^2), 
+                 family = binomial(), data = nhefs.nmv)
+summary(denom.fit)
+
+pd.qsmk <- predict(denom.fit, type = "response")
+```
+
+- Estimation of numerator
+```{r}
+# Estimation of numerator of ip weights (probability (or mean) of treatment, marginal probability)
+numer.fit <- glm(qsmk~1, family = binomial(), data = nhefs.nmv)
+summary(numer.fit)
+
+pn.qsmk <- predict(numer.fit, type = "response")
+```
+
+- Calculate the IPW
+```{r}
+nhefs.nmv$sw <- ifelse(nhefs.nmv$qsmk == 0, ((1-pn.qsmk)/(1-pd.qsmk)),
+                    (pn.qsmk/pd.qsmk))
+
+# 0.257 is the probability of a treatment
+summary(nhefs.nmv$sw)
+
+summary(nhefs.nmv$w)
+```
+
+- Calculate ATE
+```{r}
+msm.sw <- geeglm(wt82_71 ~ qsmk, data=nhefs.nmv, weights=sw, id=seqn,
+                corstr="independence")
+summary(msm.sw)
+```
+
+- Balance assessing
+```{r}
+# no association between sex and qsmk in pseudo-population
+xtabs(nhefs.nmv$sw ~ nhefs.nmv$sex + nhefs.nmv$qsmk)
+```
+
+
+#### Treatment is a continuous variable
+  
+We assume that the probability density f (A|L) is a normal distribution, u=E(A|L), and the density f(A) in the molecule is also normally distributed. Because effect estimates are very sensitive to model choice for the conditional density f(A|L), we need to be very careful when using inverse probability weighting for continuous variables.
+
+```{r}
+# Analysis restricted to subjects reporting <=25 cig/day at baseline
+nhefs.nmv.s <- subset(nhefs.nmv, smokeintensity <=25)
+
+# estimation of denominator of ip weights
+den.fit.obj <- lm(smkintensity82_71 ~ as.factor(sex) + 
+  as.factor(race) + age + I(age^2) + 
+  as.factor(education) + smokeintensity + I(smokeintensity^2) +
+  smokeyrs + I(smokeyrs^2) + as.factor(exercise) + as.factor(active) + wt71  + 
+  I(wt71^2), data = nhefs.nmv.s)
+
+p.den <- predict(den.fit.obj, type = "response")
+
+dens.den <- dnorm(nhefs.nmv.s$smkintensity82_71, p.den, summary(den.fit.obj)$sigma) # ipw denominator
+# dnorm(x, mean, sd)
+
+# estimation of numerator of ip weights
+num.fit.obj <- lm(smkintensity82_71 ~ 1, data = nhefs.nmv.s) # ipw numerator
+p.num <- predict(num.fit.obj, type = "response")
+dens.num <- dnorm(nhefs.nmv.s$smkintensity82_71, p.num, summary(num.fit.obj)$sigma)
+
+nhefs.nmv.s$sw.a = dens.num/dens.den
+summary(nhefs.nmv.s$sw.a)
+```
+
+```{r}
+msm.sw.cont <- geeglm(wt82_71 ~ smkintensity82_71 + I(smkintensity82_71*smkintensity82_71), 
+                 data=nhefs.nmv.s, weights=sw.a, id=seqn, corstr="independence")
+summary(msm.sw.cont)
+```
+
+
+#### The outcome is a dichotomous variable
+
+```{r}
+table(nhefs.nmv$qsmk, nhefs.nmv$death) # qsmk is treatment # death is outcome
+```
+
+```{r}
+# First, estimation of stabilized weights sw.a  
+
+# Second, fit logistic model below # nhefs.nmv.s/nhefs.nmv
+msm.logistic <- geeglm(death ~ qsmk, data=nhefs.nmv.s, weights=sw.a, # sw /sw.a
+                      id=seqn, family=binomial(), corstr="independence")
+summary(msm.logistic)
+```
+
+
+
+
+#### Effect Modification variable
+
+However, when effect modification is present (exposure and a modifier, qsmk and sex), we can put other covariates in the marginal structure model, even if these covariates are not confounding variables. So our `numerator` of stable weights can be f(A) or f(A|V). 
+
+```{r}
+table(nhefs.nmv$sex)
+```
+
+```{r}
+# estimation of denominator of ip weights
+denom.fit <- glm(qsmk ~ as.factor(sex) + as.factor(race) + age + I(age^2) + 
+  as.factor(education) + smokeintensity + 
+  I(smokeintensity^2) + smokeyrs + I(smokeyrs^2) + 
+  as.factor(exercise) + as.factor(active) + wt71 + I(wt71^2), 
+                 family = binomial(), data = nhefs.nmv) # denominator
+summary(denom.fit)
+
+pd.qsmk <- predict(denom.fit, type = "response")
+
+```
+
+```{r}
+# estimation of numerator of ip weights, sex is potient effect modification
+numer.fit <- glm(qsmk~as.factor(sex), family = binomial(), data = nhefs.nmv) # numerator
+summary(numer.fit)
+
+pn.qsmk <- predict(numer.fit, type = "response")
+```
+
+```{r}
+nhefs.nmv$sw.a <- ifelse(nhefs.nmv$qsmk == 0, ((1-pn.qsmk)/(1-pd.qsmk)),
+                     (pn.qsmk/pd.qsmk))
+
+summary(nhefs.nmv$sw.a)
+```
+
+```{r}
+# Estimating parameters of a marginal structural mean model
+msm.emm <- geeglm(wt82_71~as.factor(qsmk) + as.factor(sex) 
+                  + as.factor(qsmk):as.factor(sex), data=nhefs.nmv, 
+                  weights=sw.a, id=seqn, corstr="independence")
+summary(msm.emm)
+```
+
+If we want to explore the interaction between two treatment variables A and B, we need to put both A and B into the marginal structure model. When calculating the inverse probability weight, the denominator will include these two joint distribution of variables.
+
+
+#### Handling censoring and Missing Values
+
+A quick view for censoring data
+
+```{r}
+table(nhefs$qsmk, nhefs$cens)
+```
+
+```{r}
+summary(nhefs[which(nhefs$cens==0),]$wt71)
+summary(nhefs[which(nhefs$cens==1),]$wt71)
+```
+
+Calculate the weights for treatment and censor
+
+- For completed data
+
+```{r}
+# for completed data
+
+# estimation of denominator of ip weights for A
+denom.fit <- glm(qsmk ~ as.factor(sex) + as.factor(race) + age + I(age^2) + 
+  as.factor(education) + smokeintensity + 
+  I(smokeintensity^2) + smokeyrs + I(smokeyrs^2) + 
+  as.factor(exercise) + as.factor(active) + wt71 + I(wt71^2), 
+                 family = binomial(), data = nhefs)
+summary(denom.fit)
+
+pd.qsmk <- predict(denom.fit, type = "response")
+
+```
+
+
+```{r}
+# estimation of numerator of ip weights for A
+numer.fit <- glm(qsmk~1, family = binomial(), data = nhefs)
+summary(numer.fit)
+
+pn.qsmk <- predict(numer.fit, type = "response")
+
+```
+
+- For censoring data 
+
+```{r}
+# for censoring data 
+# as.factor(qsmk) likes a effect modification
+
+# estimation of denominator of ip weights for C
+denom.cens <- glm(cens ~ as.factor(qsmk) + as.factor(sex) + 
+  as.factor(race) + age + I(age^2) + 
+  as.factor(education) + smokeintensity + 
+  I(smokeintensity^2) + smokeyrs + I(smokeyrs^2) + 
+  as.factor(exercise) + as.factor(active) + wt71 + I(wt71^2), 
+                  family = binomial(), data = nhefs)
+summary(denom.cens)
+
+pd.cens <- 1-predict(denom.cens, type = "response")
+
+```
+
+```{r}
+# estimation of numerator of ip weights for Censor data
+numer.cens <- glm(cens~ as.factor(qsmk), family = binomial(), data = nhefs)
+summary(numer.cens)
+
+pn.cens <- 1-predict(numer.cens, type = "response")
+
+```
+
+- Time treatment_w and censor_w 
+
+P(A|L)~P(A|L,C)*P(C|A,L) 
+```{r}
+# times a_w and censor_w
+
+nhefs$sw.a <- ifelse(nhefs$qsmk == 0, ((1-pn.qsmk)/(1-pd.qsmk)),
+                     (pn.qsmk/pd.qsmk))
+
+nhefs$sw.c <- pn.cens/pd.cens   
+
+nhefs$sw <- nhefs$sw.c* nhefs$sw.a  #times
+
+summary(nhefs$sw.a)
+
+summary(nhefs$sw)
+```
+
+```{r}
+msm.sw <- geeglm(wt82_71~qsmk, data=nhefs, 
+                  weights=sw, id=seqn, corstr="independence")
+summary(msm.sw)
+```
+
+- CI
+```{r}
+beta <- coef(msm.sw)
+SE <- coef(summary(msm.sw))[,2]
+lcl <- beta-qnorm(0.975)*SE 
+ucl <- beta+qnorm(0.975)*SE
+cbind(beta, lcl, ucl)
+```
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

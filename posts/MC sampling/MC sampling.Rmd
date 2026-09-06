@@ -1,0 +1,225 @@
+---
+title: "MCMC sampling"
+output: html_document
+date: '2023-05-08'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+
+If the new solution costs less than the old solution then it is guaranteed to be accepted and a poorer solution is unlikely to be accepted. it is to calculate the integral, proportion, and sampling.
+ 
+Data simulation
+```{r}
+# Plot the exponential distribution:
+x <- seq(from = 0, to = 10, length=20)
+y <- exp(-x)  #y is only density function
+plot(x,y)
+lines(x,y)
+
+mean(x )
+```
+
+Set up a target function
+```{r}
+# set up a target function, we want to sample from in this case, is exponent function 
+target <- function(x){
+  if (x < 0) {
+    return(0)
+  } else {
+    return(exp(-x))   #target function
+  }
+}
+
+target(3)
+target(-1)
+```
+Sampling from a proposal distribution proportional =normal to the target =exponent
+```{r}
+# program a Metropolis–Hastings scheme to sample 
+x <- rep(0, 1000)
+x[1] <- 30     # this is just a starting value, which I’ve set arbitrarily to 3
+
+for (i in 2:1000) {
+  # i=2
+  currentx <- x[i - 1]
+  proposedx <-   rnorm(1, mean = currentx, sd = 1)
+  A <- target(proposedx) / target(currentx)
+  if (runif(1) < A) {
+    x[i] <- proposedx
+  } else {
+    x[i] <- currentx
+  }
+}
+```
+
+```{r}
+hist(x )
+plot(x)
+```
+
+Wrap this up in a function
+```{r}
+easyMCMC <- function(niter, startval, proposalsd) {
+  x <- rep(0, niter)
+  x[1] <- startval
+  for (i in 2:niter) {
+    currentx <- x[i - 1]  #status 1
+    proposedx <-  rnorm(1, mean = currentx, sd = proposalsd)  #status 2
+    #transform matrix, that is the matter, to sample target sampling
+    
+    A <- target(proposedx) / target(currentx)  
+    if (runif(1) < A) {
+      x[i] <- proposedx
+    } else {
+      x[i] <- currentx
+    }
+  }
+  return(x)
+}
+```
+
+Run the MCMC scheme 3 times with different start values
+
+It will be stable even if the start value is large. 
+```{r}
+# 
+par(mfrow = c(1, 1))
+z1 <- easyMCMC(1000,50,1)
+z2 <- easyMCMC(1000,5,1)
+z3 <- easyMCMC(1000,0.5,1)
+plot(z1, type = "l",col = "red")
+lines(z2, col = "black")
+lines(z3, col = "green")
+
+# posterior mean
+mean(z1)
+```
+
+How to calculate pie
+```{r}
+# generate random sample based on normal distribution or uniform
+# x=rnorm(10000, 0, 1.7) 
+x=runif(10000, -1, 1) 
+
+# target function
+y= sqrt (1-x^2)
+plot(x,y)
+
+# create uniform random numbers based on the value of density function
+s=numeric()
+for (i in 1:10000){
+  s[i]=runif(1, min = 0, max = 1)
+}
+s <- unlist(s)  
+plot(x,s)
+
+# calculate the dots including in the target function
+diff=y-s
+data=data.frame(x,s,y,diff)
+
+# select the qualified sample
+data2=data[data$diff>=0,]
+plot(data2$x,data2$s)
+hist(data2$x,100)
+
+# calculate the approximate integral, p* common function integral 
+p=nrow(data2)/10000
+
+# area of half circle
+p*2
+# vs
+pi/2
+```
+
+Monte Carlo Simulations Using the MonteCarlo Package 
+
+```{r MonteCarlo-package}
+library(pacman)
+pacman::p_load(data.table, fixest, stargazer, dplyr, magrittr, MonteCarlo)
+ 
+## Define the function for our OLS estimator
+
+ols_estimator <- function(n, beta_0, beta_1){
+  
+  # Generate data
+  U_i = rnorm(n, mean = 0, sd = 2) # Error
+  X_i = rnorm(n, mean = 5, sd = 5) # Independent variable
+  Y_i = beta_0 + beta_1*X_i + U_i  # Dependent variable
+  
+  # Formulate data.table
+  data_i = data.table(Y = Y_i, X = X_i)
+  
+  # Run regressions
+  ols_i <- feols(data = data_i, Y ~ X)
+  
+  # Extract slope coefficient and save
+```
+
+
+```{r MonteCarlo-package}
+slope
+```
+
+
+```{r MonteCarlo-package}
+<- ols_i$coefficients[2]
+  
+  # Return Results in a list
+  return(list("beta_1" = unname(slope)))
+  
+  
+}
+
+# set start values at only one interation 
+ols_estimator(n = 100, beta_0 = 1.5, beta_1 = 2.0)
+# $beta_1
+# [1] 1.947254
+```
+
+MonteCarlo interation
+```{r}
+## Define parameter grid for MonteCarlo interation
+n_grid <- c(100, 500, 1000)   # Sample sizes
+beta0_grid <- c(2.0)          # Intercept
+beta1_grid <- c(1.5)          # Slope coefficient
+
+## Collect parameter grids in list
+param_list = list("n" = n_grid, "beta_0" = beta0_grid, "beta_1" = beta1_grid)
+
+## Run simulation
+MC_result_OLS <- MonteCarlo(func = ols_estimator,    #  iteration estimator
+                            nrep = 500,              
+                            ######## set times of iterates, 500 results
+                            
+                            param_list = param_list, # Parameter grid (Sample size and betas)
+                            ncpus = 1,               # Number of computers
+                            time_n_test = TRUE)      
+```
+
+
+```{r review-results, warning = FALSE, message = FALSE}
+## View results
+res <- MC_result_OLS$results
+res <- res$beta_1
+
+n_100 <- res[1,,,]   # Sample size of 100
+n_500 <- res[2,,,]   # Sample size of 500
+n_1000 <- res[3,,,]  # Sample size of 1000 
+
+hist(n_100, xlim = c(1.20,1.70))
+hist(n_500, xlim = c(1.20,1.70))
+hist(n_1000, xlim = c(1.20,1.70))
+```
+
+
+```{r}
+# Summary statistics
+estimates_DT <- data.table(n_100 = n_100, n_500 = n_500, n_1000=n_1000)
+
+stargazer(estimates_DT[, c("n_100", "n_500","n_1000")], type = "text")
+```
+

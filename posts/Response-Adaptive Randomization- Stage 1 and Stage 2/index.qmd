@@ -1,0 +1,693 @@
+---
+title: "Response-Adaptive Randomization: Stage 1 and Stage 2"
+description: "A practical R learning guide to Response-Adaptive Randomization: Stage 1 and Stage 2, with concise explanations, reproducible examples, and interpretation guidance."
+date: 2026-08-31
+section: "Clinical Trial Process & Design"
+category: "Randomization & Blinding"
+topic: "Response-Adaptive Randomization: Stage 1 and Stage 2"
+type: article
+tags: ["Randomization & Blinding", "Clinical Trial Process & Design", "Response-Adaptive", "Randomization", "Stage"]
+status: published
+featured: true
+youtube: []
+pdf: []
+downloads: []
+validate-yaml: false
+execute:
+  echo: true
+  warning: false
+  error: true
+---
+
+## Why This Topic Matters
+
+Randomization protects treatment comparisons from systematic allocation bias, while blinding reduces differential behavior and assessment.
+
+## Learning Objectives
+
+After working through this material, you should be able to:
+
+- explain the main ideas behind **Response-Adaptive Randomization: Stage 1 and Stage 2**;
+- interpret the R workflow and its output; and
+- adapt the examples to a related analysis.
+
+## Lesson Roadmap
+
+The original material is organized around the following topics:
+
+1. Overview
+2. 1. Set Seed
+3. 2. Stage 1: First 100 Patients
+4. 3. Simulate Stage 1 Responses
+5. 4. Calculate Observed Response Rates
+6. 5. Calculate Adaptive Allocation Probability
+
+## How to Use This Lesson
+
+Read the explanation before each workflow, then run the R chunks in sequence. Code and output are shown together so that each numerical or graphical result can be connected to the command that produced it. Some source examples require optional packages or external data. Those setup-dependent chunks remain visible for reference but are marked `eval: false` when they cannot be reproduced safely in a clean website build.
+
+## Reproducible Learning Check
+
+This short R chunk confirms the scope of the lesson and always produces a visible output.
+
+```{r}
+#| label: learning-overview
+learning_overview <- data.frame(
+  section = "Clinical Trial Process & Design",
+  category = "Randomization & Blinding",
+  topic = "Response-Adaptive Randomization: Stage 1 and Stage 2"
+)
+learning_overview
+```
+
+## Learning Material
+
+The following material develops **Response-Adaptive Randomization: Stage 1 and Stage 2** from core ideas to practical implementation. Definitions and assumptions come first; worked code then shows how the ideas are represented computationally.
+
+### Conceptual Foundation
+
+The material below closely follows the original R Markdown source, with its examples retained for study and reuse.
+
+#### Overview
+
+<!-- generated-learning-note -->
+This subsection explains **Overview** and shows how it contributes to the overall Response-Adaptive Randomization: Stage 1 and Stage 2 workflow.
+
+
+This example demonstrates a simple **response-adaptive randomization** design with two stages.
+
+* **Stage 1:** The first 100 patients are randomized 1:1 to Treatment or Control.
+* Observed response rates are calculated after Stage 1.
+* The Stage 2 allocation probability is updated according to the observed response rates.
+* **Stage 2:** The next 100 patients are randomized using the updated allocation probability.
+* A randomization dataset is created for possible use in an EDC or IRT/RTSM workflow.
+
+The adaptive allocation probability is defined as:
+
+$$
+P(\text{Treatment})
+=
+\frac{\hat p_{\text{Treatment}}}
+{\hat p_{\text{Treatment}}+\hat p_{\text{Control}}}
+$$
+
+To avoid extreme allocation, the probability is restricted to:
+
+$$
+0.30 \leq P(\text{Treatment}) \leq 0.70
+$$
+
+#### 1. Set Seed
+
+<!-- generated-learning-note -->
+This subsection explains **1. Set Seed** and shows how it contributes to the overall Response-Adaptive Randomization: Stage 1 and Stage 2 workflow.
+
+### R Workflow and Examples
+
+Run the examples in order because later blocks may reuse objects created earlier. Each block includes a short purpose statement and guidance for reading its output.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+set.seed(123)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+#### 2. Stage 1: First 100 Patients
+
+<!-- generated-learning-note -->
+This subsection explains **2. Stage 1: First 100 Patients** and shows how it contributes to the overall Response-Adaptive Randomization: Stage 1 and Stage 2 workflow.
+
+
+The first 100 patients are randomized equally between Treatment and Control.
+
+Treatment coding is:
+
+* `1 = Treatment`
+* `0 = Control`
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block generates controlled example data. Simulation makes the data-generating assumptions explicit and provides a known setting in which to study the method.
+
+```{r}
+n_stage1 <- 100
+
+trt1 <- rbinom(
+  n_stage1,
+  1,
+  0.50
+)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the generated sample with the parameters used to create it. Differences reflect random variation unless the code intentionally introduces bias or structure.
+
+
+#### 3. Simulate Stage 1 Responses
+
+<!-- generated-learning-note -->
+This section prepares the information needed for **3. Simulate Stage 1 Responses**. Check variable definitions, units, coding, and missing values before moving to analysis.
+
+
+For illustration, assume the true response rates are:
+
+$$
+P(\text{Response}|\text{Treatment}) = 0.70
+$$
+
+and
+
+$$
+P(\text{Response}|\text{Control}) = 0.50
+$$
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block generates controlled example data. Simulation makes the data-generating assumptions explicit and provides a known setting in which to study the method.
+
+```{r}
+response1 <- rbinom(
+  n_stage1,
+  1,
+  prob = ifelse(
+    trt1 == 1,
+    0.70,
+    0.50
+  )
+)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the generated sample with the parameters used to create it. Differences reflect random variation unless the code intentionally introduces bias or structure.
+
+
+#### 4. Calculate Observed Response Rates
+
+<!-- generated-learning-note -->
+This subsection explains **4. Calculate Observed Response Rates** and shows how it contributes to the overall Response-Adaptive Randomization: Stage 1 and Stage 2 workflow.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block calculates descriptive summaries. Check the denominator, grouping variables, units, and treatment of missing values.
+
+```{r}
+rate_trt <- mean(
+  response1[trt1 == 1]
+)
+
+rate_ctl <- mean(
+  response1[trt1 == 0]
+)
+
+cat(
+  "Observed Treatment response rate =",
+  round(rate_trt, 3),
+  "\n"
+)
+
+cat(
+  "Observed Control response rate =",
+  round(rate_ctl, 3),
+  "\n"
+)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Use the displayed values to understand center, spread, frequency, and missingness; investigate any implausible or unexpected result.
+
+
+#### 5. Calculate Adaptive Allocation Probability
+
+<!-- generated-learning-note -->
+This subsection explains **5. Calculate Adaptive Allocation Probability** and shows how it contributes to the overall Response-Adaptive Randomization: Stage 1 and Stage 2 workflow.
+
+
+The Stage 2 Treatment allocation probability is calculated as:
+
+$$
+P(\text{Treatment})
+=
+\frac{\hat p_T}
+{\hat p_T+\hat p_C}
+$$
+
+where:
+
+* (\hat p_T) is the observed Treatment response rate;
+* (\hat p_C) is the observed Control response rate.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+prob_trt_next <- rate_trt /
+  (rate_trt + rate_ctl)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+To avoid extreme allocation, restrict the Treatment probability to the interval 0.30 to 0.70.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+prob_trt_next <- max(
+  0.30,
+  min(
+    0.70,
+    prob_trt_next
+  )
+)
+
+prob_ctl_next <- 1 -
+  prob_trt_next
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+Display the Stage 2 allocation probabilities.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+cat(
+  "Stage 2 Treatment allocation probability =",
+  round(prob_trt_next, 3),
+  "\n"
+)
+
+cat(
+  "Stage 2 Control allocation probability =",
+  round(prob_ctl_next, 3),
+  "\n"
+)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+#### 6. Stage 2: Randomize the Next 100 Patients
+
+<!-- generated-learning-note -->
+This subsection explains **6. Stage 2: Randomize the Next 100 Patients** and shows how it contributes to the overall Response-Adaptive Randomization: Stage 1 and Stage 2 workflow.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+n_stage2 <- 100
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+#### 7. Create Subject IDs
+
+<!-- generated-learning-note -->
+This subsection explains **7. Create Subject IDs** and shows how it contributes to the overall Response-Adaptive Randomization: Stage 1 and Stage 2 workflow.
+
+
+The next 100 patients are assigned Subject IDs from `SUBJ-101` through `SUBJ-200`.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+subject_id <- sprintf(
+  "SUBJ-%03d",
+  101:200
+)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+#### 8. Create Randomization Numbers
+
+<!-- generated-learning-note -->
+This subsection explains **8. Create Randomization Numbers** and shows how it contributes to the overall Response-Adaptive Randomization: Stage 1 and Stage 2 workflow.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+randomization_number <- sprintf(
+  "R%04d",
+  101:200
+)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+#### 9. Generate Random Numbers
+
+<!-- generated-learning-note -->
+This subsection explains **9. Generate Random Numbers** and shows how it contributes to the overall Response-Adaptive Randomization: Stage 1 and Stage 2 workflow.
+
+
+For each Stage 2 patient, generate one random number from a Uniform(0,1) distribution.
+
+$$
+U_i \sim Uniform(0,1)
+$$
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block generates controlled example data. Simulation makes the data-generating assumptions explicit and provides a known setting in which to study the method.
+
+```{r}
+u_random <- runif(
+  n_stage2
+)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the generated sample with the parameters used to create it. Differences reflect random variation unless the code intentionally introduces bias or structure.
+
+
+#### 10. Assign Treatment
+
+<!-- generated-learning-note -->
+This subsection explains **10. Assign Treatment** and shows how it contributes to the overall Response-Adaptive Randomization: Stage 1 and Stage 2 workflow.
+
+
+The randomization rule is:
+
+$$
+\text{Treatment}_i =
+\begin{cases}
+\text{Treatment}, & U_i \leq P(\text{Treatment}) \
+\text{Control}, & U_i > P(\text{Treatment})
+\end{cases}
+$$
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+trt2 <- ifelse(
+  u_random <= prob_trt_next,
+  1,
+  0
+)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+#### 11. Create Treatment Labels
+
+<!-- generated-learning-note -->
+This subsection explains **11. Create Treatment Labels** and shows how it contributes to the overall Response-Adaptive Randomization: Stage 1 and Stage 2 workflow.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+treatment_assignment <- ifelse(
+  trt2 == 1,
+  "Treatment",
+  "Control"
+)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+#### 12. Create Blinded Treatment Codes
+
+<!-- generated-learning-note -->
+This subsection explains **12. Create Blinded Treatment Codes** and shows how it contributes to the overall Response-Adaptive Randomization: Stage 1 and Stage 2 workflow.
+
+
+For illustration:
+
+* `A = Treatment`
+* `B = Control`
+
+In a real double-blind trial, the actual mapping between blinded code and treatment would normally be restricted.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+treatment_code <- ifelse(
+  trt2 == 1,
+  "A",
+  "B"
+)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+#### 13. Create the Stage 2 Randomization Dataset
+
+<!-- generated-learning-note -->
+This section prepares the information needed for **13. Create the Stage 2 Randomization Dataset**. Check variable definitions, units, coding, and missing values before moving to analysis.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+stage2_randomization <- data.frame(
+  
+  Subject_ID =
+    subject_id,
+  
+  Randomization_Number =
+    randomization_number,
+  
+  Stage =
+    2,
+  
+  Allocation_Probability_Treatment =
+    rep(
+      prob_trt_next,
+      n_stage2
+    ),
+  
+  Allocation_Probability_Control =
+    rep(
+      prob_ctl_next,
+      n_stage2
+    ),
+  
+  Random_Number =
+    round(
+      u_random,
+      6
+    ),
+  
+  Treatment_Code =
+    treatment_code,
+  
+  Treatment_Assignment =
+    treatment_assignment,
+  
+  stringsAsFactors = FALSE
+)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+#### 14. Display the First 10 Randomized Patients
+
+<!-- generated-learning-note -->
+This subsection explains **14. Display the First 10 Randomized Patients** and shows how it contributes to the overall Response-Adaptive Randomization: Stage 1 and Stage 2 workflow.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+head(
+  stage2_randomization,
+  10
+)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+#### 15. Check Stage 2 Treatment Allocation
+
+<!-- generated-learning-note -->
+This subsection explains **15. Check Stage 2 Treatment Allocation** and shows how it contributes to the overall Response-Adaptive Randomization: Stage 1 and Stage 2 workflow.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block calculates descriptive summaries. Check the denominator, grouping variables, units, and treatment of missing values.
+
+```{r}
+table(
+  stage2_randomization$
+    Treatment_Assignment
+)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Use the displayed values to understand center, spread, frequency, and missingness; investigate any implausible or unexpected result.
+
+
+#### 16. Calculate Observed Stage 2 Allocation Proportions
+
+<!-- generated-learning-note -->
+This subsection explains **16. Calculate Observed Stage 2 Allocation Proportions** and shows how it contributes to the overall Response-Adaptive Randomization: Stage 1 and Stage 2 workflow.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block calculates descriptive summaries. Check the denominator, grouping variables, units, and treatment of missing values.
+
+```{r}
+prop.table(
+  table(
+    stage2_randomization$
+      Treatment_Assignment
+  )
+)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Use the displayed values to understand center, spread, frequency, and missingness; investigate any implausible or unexpected result.
+
+
+#### Interpretation
+
+<!-- generated-learning-note -->
+This section focuses on **Interpretation**. Emphasize effect size, uncertainty, diagnostics, and scientific relevance rather than a single threshold.
+
+
+The overall adaptive randomization process is:
+
+$$
+\text{Stage 1: 1:1 Randomization}
+$$
+
+$$
+\downarrow
+$$
+
+$$
+\text{Observe Stage 1 Responses}
+$$
+
+$$
+\downarrow
+$$
+
+$$
+\text{Calculate New Allocation Probability}
+$$
+
+$$
+\downarrow
+$$
+
+$$
+\text{Stage 2 Adaptive Randomization}
+$$
+
+For example, if the observed Stage 1 response rates are:
+
+$$
+\hat p_T = 0.70
+$$
+
+and
+
+$$
+\hat p_C = 0.50
+$$
+
+then:
+
+$$
+P(\text{Treatment})
+=
+ \frac{0.70}{0.70+0.50}
+=
+0.583
+$$
+
+Therefore, approximately 58.3% of Stage 2 patients would be randomized to Treatment and 41.7% to Control.
+
+Importantly, the exact number of patients assigned to each group will not necessarily equal these proportions because each patient is still randomized individually.
+
+#### Practical Clinical Trial Note
+
+<!-- generated-learning-note -->
+This subsection explains **Practical Clinical Trial Note** and shows how it contributes to the overall Response-Adaptive Randomization: Stage 1 and Stage 2 workflow.
+
+
+This example uses one adaptation after the first 100 patients.
+
+Therefore, all Stage 2 patients use the same updated allocation probability.
+
+The design is:
+
+$$
+100\text{ patients}
+\rightarrow
+\text{Interim Analysis}
+\rightarrow
+\text{Update Allocation Probability}
+\rightarrow
+100\text{ additional patients}
+$$
+
+This is operationally simpler than updating the allocation probability after every individual patient.
+
+In an actual clinical trial, the randomization algorithm, allocation restrictions, timing of adaptation, treatment-code mapping, and IRT/RTSM implementation should be prespecified and validated.
+
+## Interpreting the Results
+
+Check allocation balance, reproducibility, and whether the simulated or generated sequence matches the intended design. Treat the output as evidence generated under the stated data, coding choices, and assumptions. Before using the workflow in practice, replace example inputs with validated data and confirm that the method targets the intended scientific question.
+
+## Key Takeaways
+
+- **Connect method to purpose.** Identify the question and target quantity before choosing code or a model.
+- **Read code and output together.** Confirm what each object, estimate, interval, table, or plot represents.
+- **Check assumptions and diagnostics.** A successful computation is not by itself evidence that the result is reliable.
+- **Adapt deliberately.** When applying the example elsewhere, document changes to data definitions, parameters, and analytical choices.

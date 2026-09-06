@@ -1,0 +1,464 @@
+---
+title: "Mixed model and linear model, Join model and Two stages model, MCMC"
+output: html_document
+date: '2024-09-05'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Join model, Mixed model and linear model
+
+Stage 1: A mixed model: Random intercept and slope.
+
+Stage.1  = lmer(EFW3 ~ 1+t1 + t2 + t3 + tt1 + tt2 + tt3+(1+t1| Subject_ID)   , data = train.data, REML = TRUE)
+
+Stage 2: linear regression model
+
+Stage.2 =lm(data=data_lm,NDSBWGT_fm024~alpha+beta+EFW35+diff)
+
+
+```{r}
+# Clean 'Global Environment'  
+rm(list = ls())
+# Download the needed libraries
+library(tidyverse)
+library(caret)
+library(ggplot2)
+library(rms)
+library(reshape) 
+library(nlme)
+library(mvtnorm)
+library(lme4)
+library("rms")
+library(ROCR)
+library(magicfor)
+library(coda)
+library(rjags)
+library(ROCR)
+library(boot)
+library(data.table)
+library("gridExtra")
+```
+
+### Data manipulation
+```{r, echo=FALSE}
+# load data
+setwd("N:\\DIPHRData\\Fetal 3D Study\\Projects\\BW prediction with Velocity\\output\\two stage model")
+DF <- read.csv("Analytic_1719 - v1.081618.csv")
+# length(unique(DF$Subject_ID))
+
+# manage the data
+# create diff and spline terms
+DF_1 = DF[  c(  "Subject_ID" ,   "GA_WKS" ,      "EFW3"      ,"NDSBWGT_fm024",   "VISNO","GADel","GA_WKS" )]
+DF_1$diff=round((DF_1$GADel-DF_1$GA_WKS)*7,0)
+nDF = na.omit(DF_1) #or imputation
+Zeta = quantile(nDF$GA_WKS, probs = c(25, 50, 75)/100, na.rm = TRUE)
+newDF = data.frame(Subject_ID = nDF$Subject_ID, 
+                   EFW3 =  (nDF$EFW3), 
+                   t1 = nDF$GA_WKS, 
+                   t2 = nDF$GA_WKS**2, 
+                   t3 = nDF$GA_WKS**3,
+                   tt1 = (nDF$GA_WKS - Zeta[1])**3 * (nDF$GA_WKS > Zeta[1]),
+                   tt2 = (nDF$GA_WKS - Zeta[2])**3 * (nDF$GA_WKS > Zeta[2]),
+                   tt3 = (nDF$GA_WKS - Zeta[3])**3 * (nDF$GA_WKS > Zeta[3]),
+                   NDSBWGT_fm024=nDF$NDSBWGT_fm024,
+                   VISNO=nDF$VISNO,
+                   GADel=nDF$GADel,
+                   GA_WKS=nDF$GA_WKS,
+                   diff=nDF$diff)
+# nrow(newDF)
+
+ts1=newDF[,c(1,3,10)]
+ts2=reshape(ts1, idvar = "Subject_ID", timevar = "VISNO", direction = "wide")
+ts22=na.omit(ts2)
+index=ts22$Subject_ID
+# length(index)
+newDF=newDF[newDF$Subject_ID %in% index, ]
+# table(newDF$VISNO)
+
+ 
+```
+
+```{r}
+# colnames(train.data)
+# ncol(train.data)
+# nrow(train.data)
+```
+
+### Prepare the data input (list() format)
+```{r}
+
+
+```
+
+### Model fitting
+```{r}
+ 
+```
+
+### Create a JAGS model
+```{r}
+
+```
+
+`can not have missing for the predictors.`
+
+
+```{r}
+# quantile.model.JMB
+```
+
+### Prediction
+
+```{r}
+out_rmse=NULL #for RMSE ci calculation
+out_para=NULL #two stage coefficients, mixed and linear regression
+for (B in c(1:1)){ # calculate rmse- root mean square error 
+
+# split the data
+  set.seed(NULL)
+  index=sample(unique(newDF$Subject_ID),length(unique(newDF$Subject_ID))*0.9)
+  train.data  <- newDF[newDF$Subject_ID %in% index, ]
+  test.data <- newDF[!(newDF$Subject_ID %in% index), ]
+  
+# Prepare the data input needed for fitting the Bayesian model-------------------------------------------------------------------------------- 
+  ## order by VISNO and remove duplicated Subject_ID
+  data= train.data
+  M <- as.numeric (length(unique(train.data$VISNO))) # Number of weeks 6
+  M
+  N <- as.numeric (length(unique(train.data$Subject_ID))) # Number of patients , 1545
+  N
+  
+  ts1=train.data[,c(1,3,10)]
+  ts2=reshape(ts1, idvar = "Subject_ID", timevar = "VISNO", direction = "wide")[-1]
+  t1 = as.matrix(ts2)
+  dim(t1)
+  
+  ts1=train.data[,c(1,4,10)]
+  ts2=reshape(ts1, idvar = "Subject_ID", timevar = "VISNO", direction = "wide")[-1]
+  t2 = as.matrix(ts2)
+  dim(t2)
+  
+  ts1=train.data[,c(1,5,10)]
+  ts2=reshape(ts1, idvar = "Subject_ID", timevar = "VISNO", direction = "wide")[-1]
+  t3 = as.matrix(ts2)
+  dim(t3)
+  
+  ts1=train.data[,c(1,6,10)]
+  ts2=reshape(ts1, idvar = "Subject_ID", timevar = "VISNO", direction = "wide")[-1]
+  tt1 = as.matrix(ts2)
+  dim(tt1)
+  
+  ts1=train.data[,c(1,7,10)]
+  ts2=reshape(ts1, idvar = "Subject_ID", timevar = "VISNO", direction = "wide")[-1]
+  tt2 = as.matrix(ts2)
+  dim(tt2)
+  
+  ts1=train.data[,c(1,8,10)]
+  ts2=reshape(ts1, idvar = "Subject_ID", timevar = "VISNO", direction = "wide")[-1]
+  tt3 = as.matrix(ts2)
+  dim(tt3)
+
+
+  data_merge2 <- train.data[order(train.data$VISNO, decreasing=TRUE),]
+  data_lm <- data_merge2[!duplicated(data_merge2$Subject_ID),]
+  # nrow(data_lm)
+  
+  NDSBWGT_fm024=data_lm$NDSBWGT_fm024 # the GTN status: Binary outcome  
+  length(NDSBWGT_fm024) #1545
+  
+  ts1=train.data[,c(1,2,10)]
+  ts2=reshape(ts1, idvar = "Subject_ID", timevar = "VISNO", direction = "wide")[-1]
+  EFW3 = as.matrix(ts2) # The matrix of the repeated log(hCG) measurements 
+  dim(EFW3)
+  
+  diff=data_lm$diff # The age at the time of evacuation
+  length(diff)
+  
+  EFW35=data_lm$EFW3
+  length(EFW35)
+
+ # Model fitting: The bayesian joint model (JMBB)----------------------------------------------------------------------------------------------
+  
+  Model_string.JMB = "model {
+for (i in 1:N) {
+## random effects 
+## mean is 0
+b0[i,1] = 0   
+b0[i,2] = 0
+b[i,1:2] ~ dmnorm(b0[i,1:2],ISigma[,]) ## MV normal
+
+for (j in 1:M) {
+## The mixed model
+EFW3[i,j] ~ dnorm(mu[i,j], tau)
+mu[i,j] = beta[1]+b[i,1] + (beta[2]+b[i,2])*t1[i,j] + beta[3]*t2[i,j]   + beta[4]*t3[i,j] + beta[5]*tt1[i,j] + beta[6]*tt2[i,j] + beta[7]*tt3[i,j]
+}
+
+## linear regression model 
+NDSBWGT_fm024[i] ~ dnorm(m[i],1)
+m[i] = a[1] + a[2]*b[i,1] + a[3]*b[i,2]+a[4]*EFW35[i]+a[5]*diff[i]
+}
+
+## prior distribution of the parameters
+
+#(1) Coefficients
+for (l in 1:7) { beta[l] ~dnorm(0, .01) }
+for (ll in 1:5) { a[ll] ~ dnorm(0, .01) }
+
+#(2) Precision parameters
+tau ~dgamma(.01,.01)
+sigma.tau = 1/tau
+
+#(3) Variance-covariance matrix, prior 
+ISigma[1:2,1:2] ~dwish(R[,],3)  
+#Evaluate the Density of the Wishart Distribution, inverse of co variance distribution
+Sigma[1:2,1:2] = inverse(ISigma[,]) 
+R[1,1] =1
+R[1,2] =0
+R[2,2] =1
+R[2,1] =0
+}"
+
+
+# In Bayesian statistics, the Wishart distribution is (the conjugate prior of ) the inverse covariance-matrix of a multivariate-normal random-vector
+
+# library(mnormt )
+# library(MCMCpack)
+# 
+# mu <- c(0,0,0)
+# Sigma <- matrix(c(1,2,0,2,5,0.5,0,0.5,3), 3, 3)
+# f <- dmnorm( (c(1,.3,.3 ) ), mu, Sigma)
+# f #mean distribution
+# density <- dwish(matrix(c(1,.3,.3,1),2,2), mu, Sigma)
+# density #co variance distribution
+
+# Create a JAGS model object
+Model.JMB = jags.model(textConnection(Model_string.JMB), 
+                       data = list(EFW3=EFW3,N=N,M=M,NDSBWGT_fm024=NDSBWGT_fm024,t1=t1,t2=t2, t3=t3,tt1=tt1,tt2=tt2,tt3=tt3,diff=diff,EFW35=EFW35 ),
+                       n.chains=3)
+
+update(Model.JMB, 10000, progress.bar="none") #Updating the model
+
+params=c('beta', 'a','Sigma','sigma.tau') # Generate posterior samples in mcmc.list format
+samps = coda.samples(Model.JMB, params, n.iter = 10000) 
+
+burn.in = 1000  # burn in period 
+summary.model.JMB=summary(window(samps, start = burn.in))  # the posterior means of the joint model coefficients 
+
+quantile.model.JMB=as.data.frame(summary.model.JMB$quantiles)
+
+# B=99
+
+Params.boot=as.data.frame(summary.model.JMB[["quantiles"]][,3])
+Params.boot.new=as.data.frame(transpose(Params.boot))
+Params.boot.new=cbind(B,Params.boot.new)
+names(Params.boot.new)=c("B","d11","d12","d21","d22","Alpha0", "Alpha1","Alpha2","Alpha3","Alpha4","Beta0","Beta1","Beta2","Beta3","Beta4","Beta5","Beta6","Sigma.res")
+head(Params.boot.new)
+
+outcome1=NULL #prediction vs bw
+outcome2=NULL # coefficients
+for (BB in 1: length(unique (test.data$Subject_ID ))) {
+# new data, internal cross validation
+new.patient=test.data[test.data$Subject_ID %in% c(unique (test.data$Subject_ID )[BB]),] #calculate one subject prediction
+
+Xbeta=Params.boot.new$Beta0+Params.boot.new$Beta1*new.patient$t1 +
+  Params.boot.new$Beta2*new.patient$t2 +
+  Params.boot.new$Beta3*new.patient$t3 +
+  Params.boot.new$Beta4*new.patient$tt1 +
+  Params.boot.new$Beta5*new.patient$tt2 +
+  Params.boot.new$Beta6*new.patient$tt3 #calcualte fixed effect
+ 
+R=diag(length(new.patient$EFW3))*(Params.boot.new$Sigma.res **2) # The residuals variance matrix
+
+Z=matrix(c(rep(1,length(new.patient$EFW3)),new.patient$t1),nrow=length(new.patient$EFW3),ncol=2) # The random effects design matrix 
+
+kk=new.patient$EFW3-Xbeta #diff between bw with fixed effect
+
+G=matrix(c(Params.boot.new$d11**2,Params.boot.new$d12,Params.boot.new$d12,Params.boot.new$d22**2),nrow=2,ncol=2) #G matrix, random effect covariance
+
+SigmaMatrix=Z%*%G%*%t(Z)+R #y covariance matrix= fixed effect covariance
+
+Inversigma=solve(SigmaMatrix) #inversigma? 
+
+REPredicted=G%*%t(Z)%*%Inversigma%*%  kk # random effect coefficients
+
+RandomIntercept=REPredicted[1,1]
+RandmSlope=REPredicted[2,1]
+
+# caculate bw prediction
+bw=Params.boot.new$Alpha0+Params.boot.new$Alpha1*RandomIntercept +Params.boot.new$Alpha2*RandmSlope+ 
+  Params.boot.new$Alpha3*tail(new.patient$EFW3,1) +Params.boot.new$Alpha4*tail(new.patient$diff,1)
+  
+# output bw prediction and observation  
+out=cbind(BB,unique (test.data[,c(1,9)])$NDSBWGT_fm024[BB],bw)
+outcome1=rbind(outcome1,out)
+}
+
+RMSE = round(RMSE(outcome1[,3], outcome1[,2]),3)
+Rsquare = round(R2(outcome1[,3], outcome1[,2]),3)
+
+result=cbind(RMSE,Rsquare )
+
+out_rmse=rbind(out_rmse,result)
+}
+
+# output results
+out_rmse=as.data.frame(out_rmse)
+quants <- c(0.025, 0.50, 0.975 )
+ci=round(apply( out_rmse[1:2] , 2 , quantile , probs = quants , na.rm = TRUE ),3)
+colnames(ci)=c("join_model_RMSE"  ,  "join_model_Rsquare")
+ci
+
+# > ci
+#          RMSE Rsquare
+# 2.5%  241.368   0.456
+# 50%   282.596   0.591
+# 97.5% 442.610   0.701
+```
+
+`give random effect coefficients based on the new data then predict`
+
+### Perfermance measurement
+```{r}
+
+```
+
+
+## Two stages model
+
+```{r}
+out_rmse=NULL #for RMSE ci calculation
+out_para=NULL #two stage coefficients, mixed and linear regression
+for (j in c(1:50)){ # calculate rmse- root mean square error 
+set.seed(NULL)
+index=sample(unique(newDF$Subject_ID),length(unique(newDF$Subject_ID))*0.9)
+train.data  <- newDF[newDF$Subject_ID %in% index, ]
+test.data <- newDF[!(newDF$Subject_ID %in% index), ]
+# j=1
+# Stage 1: A mixed model: Random intercept and slope.
+Stage.1  = lmer(EFW3 ~ 1+t1 + t2 + t3 + tt1 + tt2 + tt3+(1+t1| Subject_ID)   , data = train.data, REML = TRUE) 
+# summary(Stage.1)
+RE = ranef(Stage.1)[["Subject_ID"]]  # The random effects coefficients
+df1 = cbind(Subject_ID = rownames(RE), RE)
+# head(df1)
+colnames(df1)=c("Subject_ID"    ,"alpha",  "beta")
+df1$Subject_ID=as.integer(df1$Subject_ID)
+# summary(df1)
+# length(unique(df1$Subject_ID))
+
+# Stage 2: linear regression for bw using the random effects coefficients and other predictors
+df2= train.data
+# merge above two datasets
+data_merge=full_join(df1, df2, by = "Subject_ID") 
+# subset/filter a dataset with last visit EFW3
+## order by VISNO and remove duplicated Subject_ID
+data_merge2 <- data_merge[order(data_merge$VISNO, decreasing=TRUE),]
+data_merge3 <- data_merge2[!duplicated(data_merge2$Subject_ID),]
+data_lm=data_merge3 %>% filter(VISNO>3) #keep after 3th visit
+
+# linear regression model
+M=lm(data=data_lm,NDSBWGT_fm024~alpha+beta+EFW3+diff)
+# summary(M)
+
+# calculate the prediction of bw using two stage model
+# fixed effect coefficients
+Beta0= round(as.numeric(fixef(Stage.1)[1]), 2)
+Beta1= round(as.numeric(fixef(Stage.1)[2]), 2)
+Beta2= round(as.numeric(fixef(Stage.1)[3]), 2)
+Beta3= round(as.numeric(fixef(Stage.1)[4]), 2)
+Beta4= round(as.numeric(fixef(Stage.1)[5]), 2)
+Beta5= round(as.numeric(fixef(Stage.1)[6]), 2)
+Beta6= round(as.numeric(fixef(Stage.1)[7]), 2)
+# random effect covariance
+vcov = as.data.frame(VarCorr(Stage.1))
+d11= round(vcov$sdcor[1], 2)
+d22= round(vcov$sdcor[2], 2)
+d12= round(vcov$sdcor[3] * d11* d22, 2)
+Sigma.res= round(vcov$sdcor[4], 2)
+# linear regression coefficients
+Alpha0= round(as.numeric(coefficients(M)[1]), 2)
+Alpha1= round(as.numeric(coefficients(M)[2] ), 2)
+Alpha2= round(as.numeric(coefficients(M)[3] ), 2)
+Alpha3= round(as.numeric(coefficients(M)[4]), 2)
+Alpha4= round(as.numeric(coefficients(M)[5]), 2)
+# organize these coefficients
+B=j
+Param=rbind(B,Beta0,Beta1,Beta2,Beta3,Beta4,Beta5,Beta6,Sigma.res,
+            d11,d12,d22, Alpha0, Alpha1,Alpha2,Alpha3,Alpha4)
+Params.boot=as.data.frame(Param)
+Params.boot.new=as.data.frame(transpose(Params.boot))
+names(Params.boot.new)=c("B","Beta0","Beta1","Beta2","Beta3","Beta4","Beta5","Beta6","Sigma.res","d11","d12","d22","Alpha0", "Alpha1","Alpha2","Alpha3","Alpha4")
+head(Params.boot.new)
+
+
+# using new data to do internal cross validation
+out_bw_pred=NULL #for prediction and birthweight
+s_test=unique(test.data$Subject_ID)
+len=length(s_test)
+for (i in c(1:len)) {
+  # i=1
+new.patient=test.data[test.data$Subject_ID %in% s_test[i],] #calculate prediction subject by subject
+
+Xbeta=Params.boot.new$Beta0+Params.boot.new$Beta1*new.patient$t1 +
+  Params.boot.new$Beta2*new.patient$t2 +
+  Params.boot.new$Beta3*new.patient$t3 +
+  Params.boot.new$Beta4*new.patient$tt1 +
+  Params.boot.new$Beta5*new.patient$tt2 +
+  Params.boot.new$Beta6*new.patient$tt3 #calculate fixed effect
+  
+R=diag(length(new.patient$EFW3))*(Params.boot.new$Sigma.res **2) # The residuals variance matrix
+
+Z=matrix(c(rep(1,length(new.patient$EFW3)),new.patient$t1),nrow=length(new.patient$EFW3),ncol=2) # The random effects design matrix 
+
+kk=new.patient$EFW3-Xbeta #diff between bw with fixed effect
+
+G=matrix(c(Params.boot.new$d11**2,Params.boot.new$d12,Params.boot.new$d12,Params.boot.new$d22**2),nrow=2,ncol=2) #G matrix, random effect covariance matrix
+
+SigmaMatrix=Z%*%G%*%t(Z)+R #y covariance matrix= fixed effect covariance matrix
+
+Inversigma=solve(SigmaMatrix) #inversigma? 
+
+REPredicted=G%*%t(Z)%*%Inversigma%*%  kk # random effect coefficients
+
+RandomIntercept=REPredicted[1,1]
+RandmSlope=REPredicted[2,1]
+
+# using 0 instead of NA? 
+Params.boot.new$Alpha1= ifelse((is.na(Params.boot.new$Alpha1 )==T | Params.boot.new$Alpha1>10000),0,Params.boot.new$Alpha1 ) 
+Params.boot.new$Alpha2= ifelse((is.na(Params.boot.new$Alpha2 )==T | Params.boot.new$Alpha2>10000),0,Params.boot.new$Alpha2 ) 
+
+# calculate bw prediction
+bw=Params.boot.new$Alpha0+Params.boot.new$Alpha1*RandomIntercept +Params.boot.new$Alpha2*RandmSlope+ 
+  Params.boot.new$Alpha3*tail(new.patient$EFW3,1) +Params.boot.new$Alpha4*tail(new.patient$diff,1)
+
+# output bw prediction and observation  
+out=cbind(i,new.patient$NDSBWGT_fm024[1],bw)
+out_bw_pred=rbind(out_bw_pred,out)
+# print(i)
+}
+
+# calculate RMSE,Rsquare
+RMSE = round(RMSE(out_bw_pred[,3], out_bw_pred[,2]),3)
+Rsquare = round(R2(out_bw_pred[,3], out_bw_pred[,2]),3)
+
+# output RMSE,Rsquare  
+out3=cbind(j,RMSE,Rsquare)
+out_rmse=rbind(out_rmse,out3)
+# print(j)
+}
+
+# output results
+out_rmse=as.data.frame(out_rmse)
+quants <- c(0.025, 0.50, 0.975 )
+ci=round(apply( out_rmse[2:3] , 2 , quantile , probs = quants , na.rm = TRUE ),3)
+colnames(ci)=c("two_stage_RMSE"  ,  "two_stage_Rsquare")
+ci
+
+
+```
+
+
+
+

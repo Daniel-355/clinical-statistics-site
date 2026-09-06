@@ -1,0 +1,379 @@
+---
+title: "Bayesian safety monitoring"
+output: html_document
+date: "2026-05-26"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Bayesian safety monitoring
+
+#### Blinded pooled AE data   
+
+Input blinded pooled AE data.
+Define Bayesian beta prior distribution.
+Separate the data by AE preferred term.
+Process interim looks in chronological order.
+Update the posterior distribution using pooled AE counts and total subjects.
+Treat the previous posterior as the prior for the next interim look.
+Generate posterior simulations for the pooled AE rate.
+Estimate the posterior mean AE rate and 95% credible interval.
+Calculate the posterior probability that the pooled AE rate exceeds the safety threshold (rate_threshold = 0.10).
+Apply predefined decision rules.
+Classify each AE term as:
+  NO SIGNAL
+WATCH
+ALERT
+Generate a blinded pooled Bayesian safety monitoring table.
+
+
+```{r cars}
+# =========================================================
+# Blinded / Pooled Bayesian Safety Monitoring
+# Aggregated AE Monitoring without Treatment Group
+# Beta-Binomial Sequential Updating
+# =========================================================
+
+bayes_pooled_safety_monitor <- function(
+    pooled_data,
+    alpha_prior = 0.5,
+    beta_prior  = 0.5,
+    rate_threshold = 0.10,
+    prob_threshold_watch = 0.80,
+    prob_threshold_alert = 0.90,
+    nsim = 100000,
+    seed = 123
+) {
+  
+  set.seed(seed)
+  
+  ae_terms <- unique(pooled_data$ae_term)
+  looks <- sort(unique(pooled_data$look))
+  
+  results <- data.frame()
+  
+  for (ae in ae_terms) {
+    
+    dat_ae <- pooled_data[pooled_data$ae_term == ae, ]
+    
+    alpha_post <- alpha_prior
+    beta_post  <- beta_prior
+    
+    for (lk in looks) {
+      
+      dat_lk <- dat_ae[dat_ae$look == lk, ]
+      
+      if (nrow(dat_lk) == 0) next
+      
+      ae_count <- dat_lk$ae_count
+      n_total  <- dat_lk$n_total
+      
+      # Sequential Bayesian updating
+      # Previous posterior becomes current prior
+      alpha_post <- alpha_post + ae_count
+      beta_post  <- beta_post  + n_total - ae_count
+      
+      # Posterior simulation for pooled AE rate
+      p_pooled <- rbeta(nsim, alpha_post, beta_post)
+      
+      post_mean_rate <- mean(p_pooled)
+      ci_rate <- quantile(p_pooled, c(0.025, 0.975))
+      
+      prob_exceed <- mean(p_pooled > rate_threshold)
+      
+      signal_level <- ifelse(
+        prob_exceed >= prob_threshold_alert,
+        "ALERT",
+        ifelse(
+          prob_exceed >= prob_threshold_watch,
+          "WATCH",
+          "NO SIGNAL"
+        )
+      )
+      
+      ae_cum <- alpha_post - alpha_prior
+      n_cum  <- alpha_post + beta_post - alpha_prior - beta_prior
+      
+      results <- rbind(
+        results,
+        data.frame(
+          look = lk,
+          ae_term = ae,
+          ae_cum = ae_cum,
+          n_cum = n_cum,
+          observed_pooled_rate = ae_cum / n_cum,
+          posterior_alpha = alpha_post,
+          posterior_beta = beta_post,
+          posterior_mean_rate = post_mean_rate,
+          rate_ci_lower = ci_rate[1],
+          rate_ci_upper = ci_rate[2],
+          rate_threshold = rate_threshold,
+          prob_rate_gt_threshold = prob_exceed,
+          signal_level = signal_level
+        )
+      )
+    }
+  }
+  
+  return(results)
+}
+
+
+# =========================================================
+# Example blinded pooled safety data
+# Each row = one AE term at one interim look
+# =========================================================
+
+pooled_data <- data.frame(
+  look = c(
+    1,1,1,
+    2,2,2,
+    3,3,3,
+    4,4,4
+  ),
+  
+  ae_term = c(
+    "Nausea", "Headache", "Liver enzyme increased",
+    "Nausea", "Headache", "Liver enzyme increased",
+    "Nausea", "Headache", "Liver enzyme increased",
+    "Nausea", "Headache", "Liver enzyme increased"
+  ),
+  
+  ae_count = c(
+    37, 32, 9,
+    28, 27, 12,
+    31, 29, 15,
+    35, 31, 17
+  ),
+  
+  n_total = c(
+    400, 400, 400,
+    300, 300, 300,
+    300, 300, 300,
+    400, 400, 400
+  )
+)
+
+
+
+pooled_results <- bayes_pooled_safety_monitor(
+  pooled_data = pooled_data,
+  alpha_prior = 0.5,
+  beta_prior = 0.5,
+  rate_threshold = 0.10,
+  prob_threshold_watch = 0.80,
+  prob_threshold_alert = 0.90,
+  nsim = 100000,
+  seed = 123
+)
+
+print(pooled_results)
+```
+
+
+
+  
+ 
+#### Unblinded pooled AE data by treatment groups  
+
+Input interim safety data for multiple AE preferred terms.
+Specify Bayesian beta prior distributions.
+Separate data by AE term.
+Perform sequential Bayesian updating at each interim look.
+Update posterior distributions using AE counts and non-AE counts.
+Generate posterior simulations using beta distributions.
+Estimate treatment and control AE rates.
+Calculate posterior Risk Difference (RD) and Risk Ratio (RR).
+Compute posterior probabilities:
+  Pr(RD > threshold)
+Pr(RR > threshold) (rd_threshold = 0.03, rr_threshold = 1.5), 
+Apply predefined Bayesian safety decision rules.
+Classify signals as:
+  NO SIGNAL
+WATCH
+ALERT
+Generate interim Bayesian safety monitoring tables for DMC/safety review.
+
+
+```{r   }
+# =========================================================
+# Industrial-style Bayesian Safety Signal Monitoring
+# Multiple AE Preferred Terms
+# Beta-Binomial Sequential Updating
+# =========================================================
+
+bayes_safety_monitor_industry <- function(
+    safety_data,
+    alpha_prior = 0.5,
+    beta_prior  = 0.5,
+    rd_threshold = 0.03,
+    rr_threshold = 1.5,
+    prob_threshold_watch = 0.80,
+    prob_threshold_alert = 0.90,
+    nsim = 100000,
+    seed = 123
+) {
+  
+  set.seed(seed)
+  
+  ae_terms <- unique(safety_data$ae_term)
+  looks <- sort(unique(safety_data$look))
+  
+  results <- data.frame()
+  
+  for (ae in ae_terms) {
+    
+    dat_ae <- safety_data[safety_data$ae_term == ae, ]
+    
+    alpha_trt <- alpha_prior
+    beta_trt  <- beta_prior
+    
+    alpha_ctl <- alpha_prior
+    beta_ctl  <- beta_prior
+    
+    for (lk in looks) {
+      
+      dat_lk <- dat_ae[dat_ae$look == lk, ]
+      
+      if (nrow(dat_lk) == 0) next
+      
+      ae_trt <- dat_lk$ae_trt
+      n_trt  <- dat_lk$n_trt
+      
+      ae_ctl <- dat_lk$ae_ctl
+      n_ctl  <- dat_lk$n_ctl
+      
+      # Sequential Bayesian updating
+      alpha_trt <- alpha_trt + ae_trt
+      beta_trt  <- beta_trt  + n_trt - ae_trt
+      
+      alpha_ctl <- alpha_ctl + ae_ctl
+      beta_ctl  <- beta_ctl  + n_ctl - ae_ctl
+      
+      # Posterior simulation
+      p_trt <- rbeta(nsim, alpha_trt, beta_trt)
+      p_ctl <- rbeta(nsim, alpha_ctl, beta_ctl)
+      
+      rd <- p_trt - p_ctl
+      rr <- p_trt / p_ctl
+      
+      prob_rd_signal <- mean(rd > rd_threshold)
+      prob_rr_signal <- mean(rr > rr_threshold)
+      
+      # Industrial-style traffic light decision
+      signal_level <- ifelse(
+        prob_rd_signal >= prob_threshold_alert | prob_rr_signal >= prob_threshold_alert,
+        "ALERT",
+        ifelse(
+          prob_rd_signal >= prob_threshold_watch | prob_rr_signal >= prob_threshold_watch,
+          "WATCH",
+          "NO SIGNAL"
+        )
+      )
+      
+      results <- rbind(
+        results,
+        data.frame(
+          look = lk,
+          ae_term = ae,
+          
+          trt_ae_cum = alpha_trt - alpha_prior,
+          trt_n_cum  = alpha_trt + beta_trt - alpha_prior - beta_prior,
+          trt_rate   = (alpha_trt - alpha_prior) /
+            (alpha_trt + beta_trt - alpha_prior - beta_prior),
+          
+          ctl_ae_cum = alpha_ctl - alpha_prior,
+          ctl_n_cum  = alpha_ctl + beta_ctl - alpha_prior - beta_prior,
+          ctl_rate   = (alpha_ctl - alpha_prior) /
+            (alpha_ctl + beta_ctl - alpha_prior - beta_prior),
+          
+          post_mean_rd = mean(rd),
+          rd_ci_lower  = quantile(rd, 0.025),
+          rd_ci_upper  = quantile(rd, 0.975),
+          
+          post_mean_rr = mean(rr),
+          rr_ci_lower  = quantile(rr, 0.025),
+          rr_ci_upper  = quantile(rr, 0.975),
+          
+          prob_rd_gt_threshold = prob_rd_signal,
+          prob_rr_gt_threshold = prob_rr_signal,
+          
+          signal_level = signal_level
+        )
+      )
+    }
+  }
+  
+  return(results)
+}
+
+
+# =========================================================
+# Example safety data
+# Each row = one AE term at one interim look
+# =========================================================
+
+safety_data <- data.frame(
+  look = c(
+    1,1,1,
+    2,2,2,
+    3,3,3,
+    4,4,4
+  ),
+  
+  ae_term = c(
+    "Nausea", "Headache", "Liver enzyme increased",
+    "Nausea", "Headache", "Liver enzyme increased",
+    "Nausea", "Headache", "Liver enzyme increased",
+    "Nausea", "Headache", "Liver enzyme increased"
+  ),
+  
+  ae_trt = c(
+    25, 18, 6,
+    18, 15, 8,
+    20, 16, 10,
+    22, 17, 12
+  ),
+  
+  n_trt = c(
+    200, 200, 200,
+    150, 150, 150,
+    150, 150, 150,
+    200, 200, 200
+  ),
+  
+  ae_ctl = c(
+    12, 14, 3,
+    10, 12, 4,
+    11, 13, 5,
+    13, 14, 5
+  ),
+  
+  n_ctl = c(
+    200, 200, 200,
+    150, 150, 150,
+    150, 150, 150,
+    200, 200, 200
+  )
+)
+
+
+results <- bayes_safety_monitor_industry(
+  safety_data = safety_data,
+  alpha_prior = 0.5,
+  beta_prior = 0.5,
+  rd_threshold = 0.03,
+  rr_threshold = 1.5,
+  prob_threshold_watch = 0.80,
+  prob_threshold_alert = 0.90,
+  nsim = 100000,
+  seed = 123
+)
+
+print(results)
+```
+
+Based on a comprehensive assessment of these factors—including AE severity, SAEs, AESIs, time-to-onset, exposure-adjusted incidence, medical review, multiplicity, and benefit-risk—a judgment is rendered.
+

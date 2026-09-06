@@ -1,0 +1,72 @@
+
+
+### Outcome regression and propensity scores
+
+These two methods are only suitable in simpler situations. Keep in mind, these two methods are not suitable for complex longitudinal data.
+
+#### Outcome regression
+
+Load data
+
+```{r pressure, echo=FALSE}
+library("readxl")
+library(tidyverse)
+library(here)
+nhefs <- read.csv("C:\\Users\\hed2\\Downloads\\mybook2\\mybook2\\nhefs.csv")
+```
+
+Regression on effect modification 
+```{r}
+# regression on covariates, allowing for some effect modification
+fit <- glm(wt82_71 ~ qsmk + sex + race + age + I(age*age) + as.factor(education)
+           + smokeintensity + I(smokeintensity*smokeintensity) + smokeyrs
+           + I(smokeyrs*smokeyrs) + as.factor(exercise) + as.factor(active)
+           + wt71 + I(wt71*wt71) + I(qsmk*smokeintensity), data=nhefs)
+summary(fit)
+```
+
+```{r}
+# (step 1) build the contrast matrix with all zeros
+# this function builds the blank matrix 
+# install.packages("multcomp") # install packages if necessary
+library("multcomp")
+```
+
+- Using contrast matrix 
+```{r}
+makeContrastMatrix <- function(model, nrow, names) {
+  m <- matrix(0, nrow = nrow, ncol = length(coef(model)))
+  colnames(m) <- names(coef(model))
+  rownames(m) <- names
+  return(m)
+}
+
+K1 <- makeContrastMatrix(fit, 2, c('Effect of Quitting Smoking at Smokeintensity of 5',
+                                      'Effect of Quitting Smoking at Smokeintensity of 40'))
+
+# (step 2) fill in the relevant non-zero elements 
+K1[1:2, 'qsmk'] <- 1
+K1[1:2, 'I(qsmk * smokeintensity)'] <- c(5, 40)
+
+# (step 3) check the contrast matrix
+K1 
+```
+
+```{r}
+# (step 4) estimate the contrasts, get tests and confidence intervals for them
+estimates1 <- glht(fit, K1)
+  summary(estimates1)
+```
+
+```{r}
+confint(estimates1)
+```
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,1675 @@
+---
+title: "ggplot2 parameters"
+description: "A practical R learning guide to ggplot2 parameters, with concise explanations, reproducible examples, and interpretation guidance."
+date: 2026-08-31
+section: "Data Management & Programming"
+category: "Data Cleaning & Quality Control"
+topic: "ggplot2 parameters"
+type: article
+tags: ["Data Cleaning & Quality Control", "Data Management & Programming", "ggplot2", "parameters"]
+status: published
+featured: true
+youtube: []
+pdf: []
+downloads: []
+validate-yaml: false
+execute:
+  enabled: false
+  echo: true
+  warning: false
+  error: true
+---
+
+## Why This Topic Matters
+
+Data cleaning and quality control make analytical results traceable and reduce errors caused by inconsistent or implausible values.
+
+## Learning Objectives
+
+After working through this material, you should be able to:
+
+- explain the main ideas behind **ggplot2 parameters**;
+- interpret the R workflow and its output; and
+- adapt the examples to a related analysis.
+
+## Lesson Roadmap
+
+The original material is organized around the following topics:
+
+1. ggplot2 parameters
+2. Components of plot
+3. Create main title, axis labels, caption
+4. Create legend title, position
+5. Change plot colors
+6. Change points shapes, transparent and size
+
+## How to Use This Lesson
+
+Read the explanation before each workflow, then run the R chunks in sequence. Code and output are shown together so that each numerical or graphical result can be connected to the command that produced it. Some source examples require optional packages or external data. Those setup-dependent chunks remain visible for reference but are marked `eval: false` when they cannot be reproduced safely in a clean website build.
+
+## Reproducible Learning Check
+
+This short R chunk confirms the scope of the lesson and always produces a visible output.
+
+```{r}
+#| label: learning-overview
+learning_overview <- data.frame(
+  section = "Data Management & Programming",
+  category = "Data Cleaning & Quality Control",
+  topic = "ggplot2 parameters"
+)
+learning_overview
+```
+
+## Learning Material
+
+The following material develops **ggplot2 parameters** from core ideas to practical implementation. Definitions and assumptions come first; worked code then shows how the ideas are represented computationally.
+
+### Conceptual Foundation
+
+The material below closely follows the original R Markdown source, with its examples retained for study and reuse.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+For detail, please read this [article](http://www.sthda.com/english/wiki/be-awesome-in-ggplot2-a-practical-guide-to-be-highly-effective-r-software-and-data-visualization#change-colors-automatically-and-manually) and this [one](https://ggplot2-book.org/). 
+
+<!-- https://bookdown.org/wangminjie/R4DS/tidyverse-ggplot2-scales.html -->
+
+### R Workflow and Examples
+
+Run the examples in order because later blocks may reuse objects created earlier. Each block includes a short purpose statement and guidance for reading its output.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This source block depends on optional software, external data, or a machine-specific path. It is retained as a reference and is not executed during the website build.
+
+```{r, echo=FALSE}
+#| eval: false
+#| code-fold: true
+packages <- c(
+  'ggplot2',
+  'ggrepel',
+  'patchwork',
+  'ggraph',
+  'dplyr',
+  'gganimate',
+  'gifski',
+  'ggforce',
+  'ggthemes',
+  'maps',
+  'sf',
+  'tidyr',
+  'concaveman',
+  'remotes'
+)
+# Uncomment the next lines (remove the first #) to install the packages
+# install.packages(packages)
+# remotes::install_github("hrbrmstr/hrbrthemes")
+# Load standard packages
+library(ggplot2)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Because this block is not executed, it produces no website output. Enable it only after its dependencies and input paths have been validated.
+
+
+#### ggplot2 parameters
+
+<!-- generated-learning-note -->
+This section uses **ggplot2 parameters** to make patterns visible. Confirm what each axis, group, scale, and annotation represents.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r}
+library(datasauRus)
+  ggplot( )+
+    geom_point(data=datasaurus_dozen[datasaurus_dozen$dataset=="dino",], aes(x = x, y = y),color= "#7CAE00" ) +
+    theme_void()+
+    theme(legend.position = "none") 
+ 
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+
+
+#### Components of plot
+
+<!-- generated-learning-note -->
+This section uses **Components of plot** to make patterns visible. Confirm what each axis, group, scale, and annotation represents.
+
+- Components of plot
+  - Data: is a data frame
+  - Aesthetics: is used to indicate x and y variables and to control the color, the size or the shape ...
+  - Geometry: the type of graphics (bar plot, line plot, scatter plot...)
+- adjust parameters
+  - adjust legend using `guide_`  
+  - adjust color, size, and shape using `scale_`, `guide_` can further adjust `scale_`
+  - adjust panel, background, axis (font, color, size, angle), title, legend (position), caption using theme
+- types of plots
+  - geom_boxplot(): Box plot
+  - geom_violin(): Violin plot
+  - geom_dotplot(): Dot plot
+  - geom_jitter(): Jitter charts
+  - geom_line(): Line plot
+  - geom_bar(): Bar plot
+  - geom_errorbar(): Error bars
+  - geom_point(): Scatter plot
+  - geom_smooth(): Add smoothed curve
+  - geom_quantile(): Add quantile lines  
+  - geom_text(): Textual annotations
+  - geom_density(): Create a smooth density curve
+  - geom_histogram(): Histogram
+
+`example`  
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block imports or selects the data used in the example. Verify the file location, column types, coding, and missing values when substituting your own data.
+
+```{r}
+data("faithful")
+# Basic scatterplot
+ggplot(data = faithful, 
+       mapping = aes(x = eruptions, y = waiting)) + 
+  geom_point()+
+  stat_density_2d(aes(fill = ..level..), geom="polygon")   
+  
+# Data and mapping can be given both as global (in ggplot()) or per layer
+# ggplot() + 
+#   geom_point(mapping = aes(x = eruptions, y = waiting),
+#              data = faithful)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Inspect dimensions, names, types, and several rows of the imported data. Unexpected structure at this stage will propagate into every later result.
+
+
+#### Create main title, axis labels, caption
+
+<!-- generated-learning-note -->
+This subsection explains **Create main title, axis labels, caption** and shows how it contributes to the overall ggplot2 parameters workflow.
+
+
+pay attention whether argument is factor or continuous.
+
+<!-- generated-learning-note -->
+**Purpose.** This source block depends on optional software, external data, or a machine-specific path. It is retained as a reference and is not executed during the website build.
+
+```{r}
+#| eval: false
+#| code-fold: true
+ggplot(data = faithful, 
+       mapping = aes(x = eruptions, y = waiting)) + 
+  geom_point()+
+  
+  labs(title = "Number of xxx",
+       caption = "source: http://xxx",
+       x = "Eruptions" ,
+       y = "Waiting time" ) +
+# customize title, axis, caption  
+  theme(
+plot.title = element_text(color="red", size=14, face="bold.italic"),
+plot.caption = element_text(color="red", size=10, face="italic"),
+axis.title.x = element_text(color="blue", size=14, face="bold"),
+axis.title.y = element_text(color="#993333", size=14, face="bold")
+)+
+  
+# hide main title  
+theme(plot.title = element_blank() )
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Because this block is not executed, it produces no website output. Enable it only after its dependencies and input paths have been validated.
+
+
+#### Create legend title, position
+
+<!-- generated-learning-note -->
+This subsection explains **Create legend title, position** and shows how it contributes to the overall ggplot2 parameters workflow.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+p <- ggplot(faithful) + 
+  geom_point(aes(x = eruptions, y = waiting, colour = eruptions < 3))+
+  labs(color="Numbers of eruptions") +
+  
+  theme(legend.position = "left")+
+# Change the appearance of legend title and labels
+  theme(legend.title = element_text(colour="blue"),
+          legend.text = element_text(colour="red"))+
+# Change legend box background color
+  theme(legend.background = element_rect(fill=NULL))
+print(p)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+- `customize legends using scale functions`
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+# how to change order of legend?  
+# Set legend title and labels
+p+ scale_color_discrete(name = "Numbers of eruptions change", labels = c("F", "T" ))
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+ 
+- customize legend
+
+`guide_colorbar(): continuous colors`
+
+`guide_legend(): discrete values (shapes, colors)`
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+ggplot(faithful) + 
+  geom_point(aes(x = eruptions, y = waiting, size = eruptions < 3))+
+  guides(size = guide_legend(
+    # legend title
+    title = "title is too low",
+    title.position = "bottom",
+    title.vjust = -5,
+    # legend label
+    label.position = "left",
+    label.hjust = 1,
+    label.theme = element_text(size = 15,
+                               face = "italic",
+                               colour = "red",
+                               angle = 0),
+    # label reverse
+    reverse = TRUE,
+    
+    # width of bin
+    keywidth = 1,
+    
+    ncol = 4
+    
+   )
+  )
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+ 
+
+
+- delete a legend
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+  ggplot(mpg, aes(x = displ, y = hwy, color = class, size = cyl)) +
+  geom_point() +
+  guides(
+    color = guide_legend("type"),      # keep
+    size = "none"                      # remove
+  )
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+- combine two legends when they use the same variable (mapping)
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+  ggplot(mpg, aes(x = displ, y = hwy, color = cyl, size = cyl)) +
+  geom_point() +
+  scale_color_viridis_c() +
+  
+  guides(
+    color = guide_legend("title"),
+    size = guide_legend("title")
+  )
+
+# guide = "legend"
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+#### Change plot colors
+
+<!-- generated-learning-note -->
+This section uses **Change plot colors** to make patterns visible. Confirm what each axis, group, scale, and annotation represents.
+
+`set color into aes()` 
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+ggplot(faithful) + 
+  geom_point(aes(x = eruptions, y = waiting, colour = eruptions < 3))
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+`set color outside of aes()`
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+ggplot(faithful) + 
+  geom_point(aes(x = eruptions, y = waiting),
+             colour = 'steelblue')
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+- Colour the histogram with `color` and `fill `
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+ggplot(faithful) + 
+  geom_histogram(aes(x = eruptions,color=eruptions < 3, fill=eruptions < 4))
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+  
+
+- Colour the histogram by `waiting` and changing `position`
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+ggplot(faithful) + 
+  geom_histogram(aes(x = eruptions,color=waiting>60), position = 'dodge')
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+ggplot(faithful) + 
+  geom_histogram(aes(x = eruptions,color=waiting>60), position = 'identity')
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+For fill and stack position, please see `position` section.  
+
+
+- `change colors manually using scale`
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r,message=FALSE}
+ggplot(faithful) + 
+  geom_histogram(aes(x = eruptions,color=eruptions < 3, fill=eruptions < 4))+
+  # Box plot
+  scale_fill_manual(values=c("#999999", "#E69F00"))
+# Scatter plot
+  scale_color_manual(values=c( "#E69F00", "#56B4E9"))
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+- `using scale brewer automatically`   
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+ggplot(faithful) + 
+  geom_histogram(aes(x = eruptions,color=eruptions < 3, fill=eruptions < 4))+
+  # Box plot
+  scale_fill_brewer(palette="Dark2")
+# Scatter plot
+  scale_color_brewer(palette="Set1")
+  # using guide to change the color of legend key
+  
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+- `using gray colors using scale`
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+# 
+p + scale_fill_grey()  #no fill element
+# 
+p + scale_color_grey()  
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+- `Gradient or continuous colors (can set the middle point as `white`)`
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+# Color by cty values
+sp2<-ggplot(mpg, aes(x = displ, y = hwy)) +
+  geom_point(aes(color = cty))
+sp2
+# Change the low and high colors
+# Sequential color scheme
+sp2+scale_color_gradient(low="blue", high="red")
+# Diverging color scheme
+mid<-mean(mpg$cty)
+sp2+scale_color_gradient2(midpoint=mid, low="blue", mid="white",
+                          high="red"  )
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+
+#### Change points shapes, transparent and size
+
+<!-- generated-learning-note -->
+This subsection explains **Change points shapes, transparent and size** and shows how it contributes to the overall ggplot2 parameters workflow.
+
+
+make the points larger and slightly transparent.
+ 
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+ggplot(faithful) + 
+  geom_point(aes(x = eruptions, y = waiting, shape= eruptions < 3, size=eruptions), color="steelblue", alpha=0.5)
+
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+ 
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+# hwo to reverse order of legend size 
+ggplot(faithful) + 
+  geom_point(aes(x = eruptions, y = waiting, shape= eruptions < 3, size=eruptions), color="steelblue", alpha=0.5)+
+
+  scale_shape_manual(values=c(10, 23 ))+
+ 
+  theme(legend.position="top")
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+
+#### Change bars position
+
+<!-- generated-learning-note -->
+This subsection explains **Change bars position** and shows how it contributes to the overall ggplot2 parameters workflow.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r}
+p <- ggplot(mpg, aes(fl, fill = drv))
+
+p1 <- p + geom_bar ()
+
+p2 <- p + geom_bar(position = "dodge")
+ 
+p3 <-p + geom_bar(position = "fill")
+ 
+p4 <-p + geom_bar(position = "stack")
+
+library(gridExtra)
+grid.arrange(p1, p2, p3,p4, ncol=2)
+ 
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+
+
+#### Add text annotations
+
+<!-- generated-learning-note -->
+This subsection explains **Add text annotations** and shows how it contributes to the overall ggplot2 parameters workflow.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+ggplot(data=mpg[(1:100), ], aes(x = displ, y = hwy)) +
+  geom_point(aes(color = cty))+
+  
+  geom_text(aes(label = manufacturer ),
+               size = 2, vjust = -1)  #vjust is site not direction
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+#### Add a line that (separates points)
+
+<!-- generated-learning-note -->
+This subsection explains **Add a line that (separates points)** and shows how it contributes to the overall ggplot2 parameters workflow.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+ggplot(faithful) + 
+  geom_point(aes(x = eruptions, y = waiting))+
+  
+  geom_abline(slope=-13,intercept = 100,color="red", linetype = "dashed")+
+  # Add horizontal line at y = 2O; change line type and color
+  geom_hline(yintercept=20, linetype="dotted", color = "red")+
+# Add vertical line at x = 3; change line type, color and size
+  geom_vline(xintercept = 3, color = "blue", size=1.5)
+# Add regression line
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+`add segment and arrow`
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+ggplot(mpg, aes(x = displ, y = hwy )) +
+  geom_point() +
+# Add horizontal line segment
+  geom_segment(aes(x = 2, y = 15, xend = 3, yend = 15, size=3, color="red")) +
+  geom_segment(aes(x = 3, y = 33, xend = 2.5 , yend = 30),
+                  arrow = arrow(length = unit(0.5, "cm")))
+
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+`fitted curve`
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+ggplot(data=mpg[mpg$fl!="c",], aes(x = displ, y = hwy)) +
+  geom_point( ) +
+  geom_smooth(color="red") #fitted curve
+  
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+ggplot(data=mpg[mpg$fl!="c",], aes(x = displ, y = hwy)) +
+  geom_point( ) + 
+  geom_quantile() +
+  geom_rug()+
+  theme_minimal()
+  
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+`customize line`
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+ggplot(mpg, aes(x = displ, y = hwy, color = fl, linetype = fl, size=fl)) +
+  geom_point() +
+  geom_line(aes( ) )+
+  labs(color="What is fl")+
+  
+# customize linetype, color, size  
+  scale_linetype_manual(values=c("twodash", "dotted","twodash", "dotted","twodash"))+
+  scale_color_manual(name = "continents",breaks = c("c", "d", "e", "Europe", "Oceania"),labels = c("africa", "americas", "asia", "europe", "oceania"),  values=c('#999999','#E69F00','#999999','#E69F00','#999999')   )+ #using breaks define three labels   
+  scale_size_manual(values=seq(1,4, 0.2))+
+  theme(legend.position="top") +
+  
+  guides(color="legend")
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+
+ 
+
+#### Using scale function
+
+<!-- generated-learning-note -->
+This subsection explains **Using scale function** and shows how it contributes to the overall ggplot2 parameters workflow.
+
+all mappings have associated scales even if not specified. 
+
+- uisng `scale_colour_brewer`. 
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+ggplot(mpg) + 
+  geom_point(aes(x = displ, y = hwy, colour = class)) + 
+  scale_colour_brewer(type = 'qual')
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+
+
+`RColorBrewer`
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r}
+RColorBrewer::display.brewer.all()
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+
+- using different palettes 
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+ggplot(mpg) + 
+  geom_point(aes(x = displ, y = hwy, colour = class)) + 
+  scale_colour_brewer (palette = 'Paired')
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+ 
+- showing `cyl` with size 
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+ggplot(mpg) + 
+  geom_point(aes(x = displ, y = hwy, colour =  class, size=cyl)) + 
+  scale_colour_brewer(palette  = 'Set1' ) +
+  scale_size (breaks = c(4,6))   
+
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+<!-- - **Can use `breaks` to select the legend you want** -->
+<!-- ```{r} -->
+<!-- # how to remove a legend? -->
+<!-- ggplot(mpg) +  -->
+<!--   geom_point(aes(x = displ, y = hwy, colour =  class, size=cyl)) +  -->
+<!--   scale_colour_brewer(palette  = 'Set1') + -->
+<!--   scale_size (breaks = c(40,60))    -->
+
+<!-- ggplot(mpg) +  -->
+<!--   geom_point(aes(x = displ, y = hwy, colour =  class, size=cyl)) +  -->
+<!--   scale_colour_brewer(palette  = 'Set1', breaks = c(4,6)) + -->
+<!--   scale_size (breaks = c(4,6))    -->
+
+<!-- ``` -->
+
+- using `guides` to modify the `scale_` 
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+ ggplot(mpg) +
+   geom_point(aes(x = displ, y = hwy, colour = cyl, size=cyl)) +
+   # scale_colour_brewer(palette  = 'Set1') +   #can not continuous 
+   scale_size (breaks = c(4,5,6))  +
+  
+   guides( size = guide_legend(
+            override.aes = list(color = c('red', 'blue', 'black'))))
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+ 
+
+- unite legends 
+
+when multiple aesthetics are mapped to the same variable.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+ggplot(mpg) + 
+  geom_point(aes(x = displ, y = hwy, colour = cyl, size=cyl))   +
+  guides(colour="legend")
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+`category is also ok` 
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+ggplot(mpg) + 
+  geom_point(aes(x = displ, y = hwy, colour = fl, size=fl))   +
+  guides(colour="legend") #size is not ok
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+ 
+ 
+ - x and y also have associated scales 
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+ggplot(mpg) + 
+  geom_point(aes(x = displ, y = hwy)) + 
+  scale_x_continuous(breaks = c(3.5, 5, 6)) + 
+  scale_y_continuous(trans = 'log2')
+``` 
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+ 
+ 
+
+
+#### Change coordinates
+
+<!-- generated-learning-note -->
+This subsection explains **Change coordinates** and shows how it contributes to the overall ggplot2 parameters workflow.
+
+
+Changing the coordinate system can have dramatic effects 
+
+- coord_polar
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+ggplot(mpg) + 
+  geom_bar(aes(x = class)) + 
+  coord_polar()
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+ggplot(mpg) + 
+  geom_bar(aes(x = class)) + 
+  coord_polar(theta = 'y') + 
+  expand_limits(y = 70)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+- specify the scale of coordinate 
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r}
+require(scales)
+ggplot(mpg) + 
+  geom_bar(aes(x = class)) + 
+  scale_y_continuous(limits = c(0, 50), breaks = seq(0, 50, 01)) 
+  
+  # scale_y_continuous(labels = percent) # labels as percents
+  # +
+  # scale_x_discrete(labels=c(1:7)  )
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+
+- using coord_cartesian `zoom in` 
+ 
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+# have been deleted 
+ggplot(mpg) + 
+  geom_bar(aes(x = class)) + 
+  scale_y_continuous(limits = c(0, 30))+
+  scale_x_discrete( limit=c("midsize","compact"))
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+ggplot(mpg) + 
+  geom_bar(aes(x = class)) + 
+  coord_cartesian( ylim = c(0, 30))+
+  scale_x_discrete( limit=c("midsize","compact"))
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+ 
+
+- reverse direction of axes
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+ggplot(mpg) + 
+  geom_point(aes(x = hwy, y = displ))+
+  
+  scale_x_continuous(breaks = c(20, 30, 35,40)) + 
+  scale_y_reverse()+
+  scale_y_continuous(trans="log2")
+  
+# log10, sqrt, reverse, scale_y_continuous(trans="log2")
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+ 
+
+#### Customize axis ticks
+
+<!-- generated-learning-note -->
+This subsection explains **Customize axis ticks** and shows how it contributes to the overall ggplot2 parameters workflow.
+
+- change axis text font, color, size, angle using theme 
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+# when use theme, scale, guide? 
+ggplot(mpg) + 
+  geom_point(aes(x = hwy, y = displ))+
+  
+  theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=14, angle=45),
+          axis.text.y = element_text(face="bold", color="blue", 
+                           size=7, angle=90))
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+- `remove aixs ticks and tick labels`
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+ggplot(mpg) + 
+  geom_point(aes(x = hwy, y = displ))+
+theme(
+  axis.text.x = element_blank(), # Remove x axis tick labels
+  axis.text.y = element_blank(), # Remove y axis tick labels
+  axis.ticks = element_blank()) # Remove ticks
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+#### Flip and reverse plot
+
+<!-- generated-learning-note -->
+This section uses **Flip and reverse plot** to make patterns visible. Confirm what each axis, group, scale, and annotation represents.
+
+
+
+- boxplot and violin 
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+ggplot(mpg ) + 
+  geom_violin( aes(x = as.factor(cyl), y=hwy ,color=as.factor(cyl) ) ,trim = FALSE,width = 4 ) +
+  geom_boxplot( aes(x = as.factor(cyl), y=hwy  ), notch = F , width = 0.1)  
+ 
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+- dotplot
+`using stat_ function` 
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+ggplot(mpg ,aes(x = as.factor(cyl), y=hwy ) )+ 
+  geom_dotplot(aes(color =as.factor(cyl), fill = as.factor(cyl)), 
+                 binaxis = "y", stackdir = "center") + 
+  stat_summary(fun.data="mean_sdl" )  
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+- errorbar
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r,echo=FALSE}
+# Calculate the mean and the SD in each group
+#+++++++++++++++++++++++++
+# data : a data frame
+# varname : the name of the variable to be summariezed
+# grps : column names to be used as grouping variables
+data_summary <- function(data, varname, grps){
+  require(plyr)
+  summary_func <- function(x, col){
+    c(mean = mean(x[[col]], na.rm=TRUE),
+      sd = sd(x[[col]], na.rm=TRUE))
+  }
+  data_sum<-ddply(data, grps, .fun=summary_func, varname)
+  data_sum <- rename(data_sum, c("mean" = varname))
+ return(data_sum)
+}
+
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+df3 <- data_summary(mpg, varname="hwy", grps= c("cyl" ))
+head(df3)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+ggplot( df3, aes(as.factor(cyl) ,  (hwy), ymin = hwy-sd, ymax = hwy+sd)  ) +
+  geom_line(aes(group = 0 )) +
+  geom_errorbar(aes(color = as.factor(cyl) ),width = 0.2) 
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+ggplot( df3, aes(as.factor(cyl) ,  (hwy), ymin = hwy-sd, ymax = hwy+sd)  ) +
+  geom_bar(aes(fill = as.factor(cyl)), stat = "identity",
+             position = "dodge") +
+  geom_errorbar(aes(   ),width = 0.2) +
+  coord_flip()
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+*using original data* 
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+ 
+  ggplot(mpg, aes(cyl, hwy)) +
+  stat_summary(geom = "bar") +
+  stat_summary(geom = "errorbar")
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+
+`flip`
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+ggplot(mpg) + 
+  geom_bar(aes(x = class)) +
+  coord_flip()
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+
+`reverse`
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+ggplot(mpg) + 
+  geom_bar(aes(x = class)) +
+  scale_y_reverse()
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+
+#### Create stats
+
+<!-- generated-learning-note -->
+This subsection explains **Create stats** and shows how it contributes to the overall ggplot2 parameters workflow.
+
+
+*Every geom has a stat. The stat can be overwritten if we use any additional computations.*
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+ggplot(mpg ) + 
+  geom_bar (aes(x = cyl ),position = 'identity' ) #using original data
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+- using transformed variables
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r,message=FALSE,warning=FALSE}
+library(dplyr)
+mpg_counted <- mpg %>% 
+  count(cyl, name = 'count')
+head(mpg_counted)
+
+ggplot(mpg_counted) + 
+  geom_smooth(aes(x = cyl, y = count)) +
+  geom_bar (aes(x = cyl, y = count), stat = 'identity') #using summary data 
+ 
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+
+- using the `after_stat()` function inside `aes()`.  
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r}
+require(scales)
+ggplot(mpg) + 
+  geom_bar(aes(x = class, y = after_stat(  count / sum(count))))+
+  scale_y_continuous(labels = percent) # labels decimals as percents
+  
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+
+- using `density` geometric in histogram 
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+ggplot(mpg,aes(x = hwy)) + 
+  geom_histogram(aes(y=..density..))+
+  geom_density(  ) 
+
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+ 
+- Use `stat_summary()` to add the mean of `hwy` for each group
+
+`STAT vs. GEOM`
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r}
+p1 <- ggplot(mpg,aes(x = class, y = hwy) ) + 
+  stat_summary(
+    geom = "pointrange",
+    fun.data = mean_se
+  )
+
+p2 <- ggplot(mpg,aes(x = class, y = hwy) ) + 
+  stat_summary( 
+  )
+
+p3 <- ggplot(mpg,aes(x = class, y = hwy) ) + 
+  stat_summary( 
+  )+
+  stat_summary(
+    fun.data = ~mean_se(., mult = 1.96), # Increase `mult` value for bigger interval!
+    geom = "errorbar",
+  )
+
+library(patchwork)
+p1+p2+p3
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+ggplot(mpg) + 
+  geom_point(aes(x = class, y = hwy), width = 0.2)+
+  stat_summary(aes( x = class,y = hwy), geom="point",color="red",size=4)
+ 
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+`jitter points`
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+ggplot(mpg) + 
+  geom_jitter(aes(x = class, y = hwy), width = 0.2)+
+  stat_summary(aes( x = class,y = hwy), geom="point",color="red",size=4)
+ 
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+
+#### Facets
+
+<!-- generated-learning-note -->
+This subsection explains **Facets** and shows how it contributes to the overall ggplot2 parameters workflow.
+
+`facet_wrap()` allows you to place facet side by side into a rectangular layout. `facet_grid()` allows you to specify different directions and works on two variables. 
+
+- share the axes between the different panels 
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+ggplot(mpg) + 
+  geom_point(aes(x = displ, y = hwy)) + 
+  facet_wrap(~ class)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+  
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+ggplot(mpg) + 
+  geom_point(aes(x = displ, y = hwy)) + 
+  facet_grid(drv~ .  )
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+ggplot(mpg) + 
+  geom_point(aes(x = displ, y = hwy)) + 
+  facet_grid(~ drv  )
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+ggplot(mpg) + 
+  geom_point(aes(x = displ, y = hwy)) + 
+  facet_grid(year ~ drv)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+- do not share the axes between the different panels 
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+ggplot(mpg) + 
+  geom_point(aes(x = displ, y = hwy)) + 
+  facet_wrap(~ drv , scales = "free")
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+`only free y axes`
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+ggplot(mpg) + 
+  geom_point(aes(x = displ, y = hwy)) + 
+  facet_wrap(~ drv , scales = "free_y")
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+ 
+- adjust y scale (space) between the panels 
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+ggplot(mpg) + 
+  geom_bar(aes(y = manufacturer)) + 
+  facet_grid(class ~ .)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+ggplot(mpg) + 
+  geom_bar(aes(y = manufacturer)) + 
+  facet_grid(class ~ ., space = "free_y", scales = "free_y")
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+- display by adding multiple variables together 
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+ggplot(mpg) + 
+  geom_point(aes(x = displ, y = hwy)) + 
+  facet_wrap(year ~ drv)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+#### Theme
+
+<!-- generated-learning-note -->
+This subsection explains **Theme** and shows how it contributes to the overall ggplot2 parameters workflow.
+
+ 
+`theme_minimal`
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+ggplot(mpg) + 
+  geom_bar(aes(y = class)) + 
+  facet_wrap(~year) + 
+  theme_minimal()
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+`Further adjustments`  
+`theme_bw` 
+
+<!-- generated-learning-note -->
+**Purpose.** This source block depends on optional software, external data, or a machine-specific path. It is retained as a reference and is not executed during the website build.
+
+```{r,message=FALSE,warning=FALSE}
+#| eval: false
+#| code-fold: true
+ggplot(mpg) + 
+  geom_bar(aes(y = class)) + 
+  facet_wrap(~year) + 
+  
+  labs(title = "Number of car models per class",
+       caption = "source: http://fueleconomy.gov",
+       x = NULL,
+       y = NULL) +
+   
+  theme_bw() + 
+  theme(
+ 
+    strip.text = element_text(face = 'bold', hjust = 0),
+    
+    plot.caption = element_text(face = 'italic'),
+    
+    panel.grid.major = element_line('white', size = 0.5),
+    panel.grid.minor = element_blank(),
+    panel.grid.major.y = element_blank()
+    # ,
+    # panel.ontop = TRUE
+  )
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Because this block is not executed, it produces no website output. Enable it only after its dependencies and input paths have been validated.
+
+
+`theme_classic`
+
+<!-- generated-learning-note -->
+**Purpose.** This source block depends on optional software, external data, or a machine-specific path. It is retained as a reference and is not executed during the website build.
+
+```{r}
+#| eval: false
+#| code-fold: true
+ggplot(mpg) + 
+  geom_bar(aes(y = class, fill = drv)  ,position = "dodge") + 
+  facet_wrap(~year) + 
+  labs(title = "Number of car models per class",
+       caption = "source: http://fueleconomy.gov",
+       x = 'Number of cars',
+       y = NULL)+
+  
+  scale_fill_manual(name = "Drive Models",values=c("black", "grey50",  "grey80"), labels = c("4w","Fw","Rw" )) +
+  
+  # scale_x_continuous(expand = c(0, NA)) + 
+  
+  theme_classic() + 
+  theme(
+    # text = element_text('Avenir Next Condensed'),
+    # strip.text = element_text(face = 'bold', hjust = 0),
+    
+    plot.caption = element_text(face = 'italic'),
+    
+    panel.grid.major = element_line('white', size = 0.5),
+    panel.grid.minor = element_blank(),
+    panel.grid.major.y = element_blank()
+    
+    # panel.ontop = TRUE)
+  )
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Because this block is not executed, it produces no website output. Enable it only after its dependencies and input paths have been validated.
+
+
+- using ggthemes
+
+<!-- generated-learning-note -->
+**Purpose.** This source block depends on optional software, external data, or a machine-specific path. It is retained as a reference and is not executed during the website build.
+
+```{r}
+#| eval: false
+#| code-fold: true
+library(ggthemes)
+ggplot(mpg) + 
+  geom_bar(aes(y = class, fill = drv)  ,position = "dodge") + 
+  facet_wrap(~year) + 
+  labs(title = "Number of car models per class",
+       caption = "source: http://fueleconomy.gov",
+       x = 'Number of cars',
+       y = NULL)+
+  
+  ggthemes::theme_economist()
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Because this block is not executed, it produces no website output. Enable it only after its dependencies and input paths have been validated.
+
+
+- customized theme
+
+<!-- generated-learning-note -->
+**Purpose.** This source block depends on optional software, external data, or a machine-specific path. It is retained as a reference and is not executed during the website build.
+
+```{r}
+#| eval: false
+#| code-fold: true
+ggplot(mpg) + 
+  geom_bar(aes(y = class, fill = drv)  ,position = "dodge") + 
+  facet_wrap(~year) + 
+  labs(title = "Number of car models per class",
+       caption = "source: http://fueleconomy.gov",
+       x = 'Number of cars',
+       y = NULL)+
+  
+theme(
+  
+    # 1 change legend
+    legend.background = element_rect(
+      fill = "#fff6c2",
+      color = "black",
+      linetype = "dashed"
+    ),
+    legend.key = element_rect(fill = "grey", color = "brown"),
+    legend.position = "bottom", 
+    
+    # 2 change panel (middle erea) background 
+    panel.background = element_rect(
+      fill = "#005F59",
+      color = "red", size = 3
+    ),
+    panel.border = element_rect(
+      color = "black",
+      fill = "transparent",
+      linetype = "dashed", size = 3
+    ),
+    
+    # 3 change plot background
+    plot.background = element_rect(
+      fill = "#a1dce9",
+      color = "black",
+      size = 1.3
+    ),
+    
+   
+    
+    # 4 change axis elements
+    axis.line = element_line(color = "orange", size = 2),
+    axis.title = element_text(color = "red", face = "italic"),
+    axis.ticks = element_line(color = "purple", size = 3),
+    axis.text = element_text(color = "blue"),
+    axis.text.x = element_text(angle = 45, hjust = 1), 
+    
+    # 5 change facet panel
+    strip.background = element_rect(fill = "orange"),
+    strip.text = element_text(color = "red"),
+    panel.spacing = unit(0.3, "inch") 
+  )
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Because this block is not executed, it produces no website output. Enable it only after its dependencies and input paths have been validated.
+
+## Interpreting the Results
+
+Use summaries and visual checks to confirm ranges, distributions, duplicates, and missing-data patterns. Treat the output as evidence generated under the stated data, coding choices, and assumptions. Before using the workflow in practice, replace example inputs with validated data and confirm that the method targets the intended scientific question.
+
+## Key Takeaways
+
+- **Connect method to purpose.** Identify the question and target quantity before choosing code or a model.
+- **Read code and output together.** Confirm what each object, estimate, interval, table, or plot represents.
+- **Check assumptions and diagnostics.** A successful computation is not by itself evidence that the result is reliable.
+- **Adapt deliberately.** When applying the example elsewhere, document changes to data definitions, parameters, and analytical choices.

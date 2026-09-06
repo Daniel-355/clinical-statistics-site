@@ -1,0 +1,312 @@
+---
+title: "Linear regression MCMC"
+output: html_document
+date: '2024-09-05'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Simple linear regression
+
+`makes the posterior to be near prior = MCMC stability` 
+
+
+```{r}
+# Creating data
+trueA = 5
+trueB = 0
+trueSd = 10
+sampleSize = 31
+# create independent x-values
+x =(-(sampleSize-1)/2):((sampleSize-1)/2)
+# create dependent values according to ax + b + N(0,sd)
+y = trueA * x + trueB + rnorm(n=sampleSize,mean=0,sd=trueSd)
+plot(x,y, main="Test Data")
+
+```
+
+```{r}
+# For estimating parameters in a Bayesian analysis, we need to derive the likelihood function for the model 
+likelihood = function(param){
+  a = param[1]
+  b = param[2]
+  sd = param[3]
+  
+  pred = a*x + b
+  singlelikelihoods = dnorm(y, mean = pred, sd = sd, log = T)
+  sumll = sum(singlelikelihoods)
+  return(sumll)
+}
+
+# Defining the prior
+# Prior distribution
+prior = function(param){
+  a = param[1]
+  b = param[2]
+  sd = param[3]
+  aprior = dunif(a, min=0, max=10, log = T)
+  bprior = dnorm(b, sd = 5, log = T)
+  sdprior = dunif(sd, min=0, max=30, log = T)
+  return(aprior+bprior+sdprior)
+}
+
+# The posterior
+posterior = function(param){
+  return (likelihood(param) + prior(param))
+}
+```
+
+### Metropolis-Hastings algorithm
+```{r}
+# proposal function
+proposalfunction = function(param){
+  return(rnorm(3,mean = param, sd= c(0.1,0.5,0.3)))
+}
+
+# MH algorithm 
+run_metropolis_MCMC = function(startvalue, iterations){
+  chain = array(dim = c(iterations+1,3))
+  chain[1,] = startvalue
+  for (i in 1:iterations){
+    proposal = proposalfunction(chain[i,])
+    
+    probab = exp(posterior(proposal) - posterior(chain[i,]))     #p1/p2 = exp[log(p1)-log(p2)].
+    if (runif(1) < probab){   #get the uniform distribution points which meet the requirement / accept rate 
+      chain[i+1,] = proposal
+    }else{
+      chain[i+1,] = chain[i,]
+    }
+  }
+  return(chain)
+}
+
+# run MH
+startvalue = c(4,0,10)
+chain = run_metropolis_MCMC(startvalue, 10000)
+
+# acceptance rate
+burnIn = 5000
+acceptance = 1-mean(duplicated(chain[-(1:burnIn),]))  #The acceptance rate can be influenced by the proposal function
+```
+
+
+```{r}
+acceptance
+```
+### Plot parameters 
+```{r}
+
+### Summary: #######################
+
+par(mfrow = c(2,3))
+hist(chain[-(1:burnIn),1],nclass=30, , main="Posterior of a", xlab="True value = red line" )
+abline(v = mean(chain[-(1:burnIn),1]))
+abline(v = trueA, col="red" )
+hist(chain[-(1:burnIn),2],nclass=30, main="Posterior of b", xlab="True value = red line")
+abline(v = mean(chain[-(1:burnIn),2]))
+abline(v = trueB, col="red" )
+hist(chain[-(1:burnIn),3],nclass=30, main="Posterior of sd", xlab="True value = red line")
+abline(v = mean(chain[-(1:burnIn),3]) )
+abline(v = trueSd, col="red" )
+plot(chain[-(1:burnIn),1], type = "l", xlab="True value = red line" , main = "Chain values of a", )
+abline(h = trueA, col="red" )
+plot(chain[-(1:burnIn),2], type = "l", xlab="True value = red line" , main = "Chain values of b", )
+abline(h = trueB, col="red" )
+plot(chain[-(1:burnIn),3], type = "l", xlab="True value = red line" , main = "Chain values of sd", )
+abline(h = trueSd, col="red" )
+```
+```{r}
+# slope
+mean(chain[-(1:burnIn),1])
+# intercept
+mean(chain[-(1:burnIn),2])
+
+```
+
+
+## Linear regression MCMC in JAGS
+
+```{r}
+# create data
+snakes1 <- data.frame(b_length = x, b_mass = y)
+head(snakes1)
+```
+
+```{r}
+library(R2jags)
+jagsdata_s1 <- with(snakes1, list(b_mass = b_mass, b_length = b_length, N = length(b_mass)))
+
+lm1_jags <- function(){
+  # Likelihood:
+  for (i in 1:N){
+    b_mass[i] ~ dnorm(mu[i], tau) # tau is precision (1 / variance)
+    mu[i] <- alpha + beta * b_length[i]
+  }
+  # Priors:
+  alpha ~ dnorm(0, 0.01) # intercept
+  beta ~ dnorm(0, 0.01) # slope
+  sigma ~ dunif(0, 100) # standard deviation
+  tau <- 1 / (sigma * sigma) # sigma^2 doesn't work in JAGS
+}
+
+init_values <- function(){
+  list(alpha = rnorm(1), beta = rnorm(1), sigma = runif(1))
+}
+
+params <- c("alpha", "beta", "sigma")
+
+fit_lm1 <- jags(data = jagsdata_s1, inits = init_values, parameters.to.save = params, model.file = lm1_jags,
+                n.chains = 3, n.iter = 12000, n.burnin = 5000, n.thin = 10, DIC = F)
+
+fit_lm1
+```
+
+### Plot(fit_lm1)
+```{r}
+# plot
+# plot(fit_lm1)
+traceplot(fit_lm1, mfrow = c(2, 2), ask = F)
+
+lm1_mcmc <- as.mcmc(fit_lm1)
+plot(lm1_mcmc)
+```
+
+`If the Rhat values are substantially larger than one, the chains haven’t mixed properly and the posterior estimates cannot be trusted. `
+
+### Prediction
+```{r}
+# new dataset
+nvalues <- 100
+b_length_new <- seq(min(snakes1$b_length), max(snakes1$b_length), length.out = nvalues)
+
+# we combine the three chains into one
+lm1_mcmc_combi <- as.mcmc(rbind(lm1_mcmc[[1]], lm1_mcmc[[2]], lm1_mcmc[[3]]))
+
+# calculate the expected value of y for each of the new x
+pred_mean_mean <- mean(lm1_mcmc_combi[, "alpha"]) + b_length_new * mean(lm1_mcmc_combi[, "beta"])
+```
+
+
+```{r}
+head(pred_mean_mean)
+```
+
+### A kind of CI
+```{r}
+# the uncertainty around this mean. 
+# ci
+pred_mean_dist <- matrix(NA, nrow = nrow(lm1_mcmc_combi), ncol = nvalues)
+for (i in 1:nrow(pred_mean_dist)){
+  pred_mean_dist[i,] <- lm1_mcmc_combi[i,"alpha"] + b_length_new * lm1_mcmc_combi[i,"beta"]
+}
+credible_lower <- apply(pred_mean_dist, MARGIN = 2, quantile, prob = 0.025)
+credible_upper <- apply(pred_mean_dist, MARGIN = 2, quantile, prob = 0.975)
+```
+
+### Percentiles
+```{r}
+# percentile
+lm1_mcmc_combi_rep <- do.call(rbind, rep(list(lm1_mcmc_combi), 50)) # replication
+
+# Draw random values for all parameter combinations (rows) and body length values (columns):
+pred_data_dist <- matrix(NA, nrow = nrow(lm1_mcmc_combi_rep), ncol = nvalues)
+for (i in 1:nrow(pred_data_dist)){
+  pred_data_dist[i,] <- lm1_mcmc_combi_rep[i,"alpha"] + b_length_new * lm1_mcmc_combi_rep[i,"beta"] +
+    rnorm(nvalues, mean = 0, sd = lm1_mcmc_combi_rep[i, "sigma"])
+}
+
+# Calculate quantiles:
+uncertain_lower <- apply(pred_data_dist, MARGIN = 2, quantile, prob = 0.025)
+uncertain_upper <- apply(pred_data_dist, MARGIN = 2, quantile, prob = 0.975)
+```
+
+
+### Plot CI and percentiles
+```{r}
+# plot
+par(mfrow = c(1, 1))
+plot(b_mass ~ b_length, data = snakes1)
+lines(b_length_new, pred_mean_mean)
+lines(b_length_new, credible_lower, lty = 2)
+lines(b_length_new, credible_upper, lty = 2)
+lines(b_length_new, uncertain_lower, lty = 2, col = "red")
+lines(b_length_new, uncertain_upper, lty = 2, col = "red")
+```
+
+Comparison with SLR:
+```{r}
+summary(lm(snakes1$b_mass~snakes1$b_length))
+
+```
+
+
+
+**The above three methonds have similar results. **
+
+### Multiple regression in JAGS
+```{r}
+# multiple regression 
+# create dataset
+snakes2 <- data.frame(b_length = x, b_mass = y, sex = rep(c(0,1),times=16)[1:31] )
+head(snakes2)
+```
+```{r}
+summary(lm( snakes2$b_mass~snakes2$b_length +snakes2$sex,data=snakes2))
+```
+
+```{r}
+plot(b_mass ~ b_length, col = (sex + 1), data = snakes2)
+```
+
+```{r}
+# format the data
+jagsdata_s2 <- with(snakes2, list(b_mass = b_mass, b_length = b_length, sex = sex, N = length(b_mass)))
+
+# an R function containing the JAGS code:
+  lm2_jags <- function(){
+    # Likelihood:
+    for (i in 1:N){
+      b_mass[i] ~ dnorm(mu[i], tau) # tau is precision (1 / variance)
+      mu[i] <- alpha[1]   + beta[1] * sex[i] + beta[2] * b_length[i]
+    }
+    # Priors:
+    alpha[1] ~ dnorm(0, 0.01)
+    for (i in 1:2){
+      
+      beta[i] ~ dnorm(0, 0.01)
+    }
+    sigma ~ dunif(0, 100)
+    tau <- 1 / (sigma * sigma)
+  }
+
+  
+  # Markov chains and initial values
+  init_values <- function(){
+    list(alpha = rnorm(1), beta = rnorm(2), sigma = runif(1))
+  }
+  
+  params <- c("alpha", "beta", "sigma")
+  
+  fit_lm2 <- jags(data = jagsdata_s2, inits = init_values, parameters.to.save = params, model.file = lm2_jags,
+                  n.chains = 3, n.iter = 12000, n.burnin = 2000, n.thin = 10, DIC = F)
+
+  fit_lm2
+```
+**Results are similar to the multiple regression**
+
+References
+
+[1](https://biometry.github.io/APES//LectureNotes/StatsCafe/Linear_models_jags.html)
+
+[2](https://theoreticalecology.wordpress.com/2010/09/17/metropolis-hastings-mcmc-in-r/)
+
+[3](https://pubmed.ncbi.nlm.nih.gov/31777998/)
+
+[4]()
+
+
+
+
+

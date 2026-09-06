@@ -1,0 +1,579 @@
+---
+title: "Bias analysis and control"
+description: "A practical R learning guide to Bias analysis and control, with concise explanations, reproducible examples, and interpretation guidance."
+date: 2026-08-31
+section: "Epidemiology & Real-World Evidence"
+category: "Bias & Confounding"
+topic: "Bias analysis and control"
+type: article
+tags: ["Bias & Confounding", "Epidemiology & Real-World Evidence", "Bias", "control"]
+status: published
+featured: true
+youtube: []
+pdf: []
+downloads: []
+validate-yaml: false
+execute:
+  echo: true
+  warning: false
+  error: true
+---
+
+## Why This Topic Matters
+
+Bias analysis examines how systematic error can move an estimate away from the target effect.
+
+## Learning Objectives
+
+After working through this material, you should be able to:
+
+- explain the main ideas behind **Bias analysis and control**;
+- interpret the R workflow and its output; and
+- adapt the examples to a related analysis.
+
+## Lesson Roadmap
+
+The original material is organized around the following topics:
+
+1. Selection Bias
+2. No selection bias
+3. Corrected selection bias
+4. Information Bias (Misclassification)
+5. No differential miscllasification
+6. Differential miscllasification
+
+## How to Use This Lesson
+
+Read the explanation before each workflow, then run the R chunks in sequence. Code and output are shown together so that each numerical or graphical result can be connected to the command that produced it. Some source examples require optional packages or external data. Those setup-dependent chunks remain visible for reference but are marked `eval: false` when they cannot be reproduced safely in a clean website build.
+
+## Reproducible Learning Check
+
+This short R chunk confirms the scope of the lesson and always produces a visible output.
+
+```{r}
+#| label: learning-overview
+learning_overview <- data.frame(
+  section = "Epidemiology & Real-World Evidence",
+  category = "Bias & Confounding",
+  topic = "Bias analysis and control"
+)
+learning_overview
+```
+
+## Learning Material
+
+The following material develops **Bias analysis and control** from core ideas to practical implementation. Definitions and assumptions come first; worked code then shows how the ideas are represented computationally.
+
+### Conceptual Foundation
+
+The material below closely follows the original R Markdown source, with its examples retained for study and reuse.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+[Refrerence](https://cran.r-project.org/web/packages/episensr/vignettes/episensr.html)
+
+
+
+#### Selection Bias
+
+<!-- generated-learning-note -->
+This subsection explains **Selection Bias** and shows how it contributes to the overall Bias analysis and control workflow.
+
+
+Selection Bias, occurs when the study selected population doesn’t `represent` the target
+population (like refuse answer and leave study).
+
+#### No selection bias
+
+<!-- generated-learning-note -->
+This subsection explains **No selection bias** and shows how it contributes to the overall Bias analysis and control workflow.
+
+
+
+- if the response rate is 100%. 
+
+bias_parms is 4 probabilities: among cases exposed (1), among cases unexposed(2), among noncases exposed(3), and among noncases unexposed(4).
+
+### R Workflow and Examples
+
+Run the examples in order because later blocks may reuse objects created earlier. Each block includes a short purpose statement and guidance for reading its output.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r}
+library(episensr)
+
+stang <- selection(matrix(c(136, 107, 297, 165),
+                          dimnames = list(c("UM+", "UM-"), c("Mobile+", "Mobile-")),
+                          nrow = 2, byrow = TRUE),
+                   bias_parms = c(1, 1, 1, 1))
+stang
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+
+or 
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r}
+library(episensr)
+
+stang <- selection(matrix(c(136, 107, 297, 165),
+                          dimnames = list(c("UM+", "UM-"), c("Mobile+", "Mobile-")),
+                          nrow = 2, byrow = TRUE),
+                   bias_parms = 1)
+stang
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+
+
+
+#### Corrected selection bias
+
+<!-- generated-learning-note -->
+This subsection explains **Corrected selection bias** and shows how it contributes to the overall Bias analysis and control workflow.
+
+
+by 4 probabilities: among cases exposed (1), among cases unexposed(2), among noncases exposed(3), and among noncases unexposed(4). 
+
+or a single positive selection-bias factor which is **the ratio of the exposed versus
+unexposed selection probabilities (important)** comparing cases and noncases [(1/2)/(3/4)=0.8]. 
+
+- If there is 0.8 response rate in nocase exposed, there is a selection bias in the control group because not good representative. The association is toward null. 
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r}
+library(episensr)
+
+stang <- selection(matrix(c(136, 107, 297, 165),
+                          dimnames = list(c("UM+", "UM-"), c("Mobile+", "Mobile-")),
+                          nrow = 2, byrow = TRUE),
+                   bias_parms = 1/0.8)
+stang
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+
+or
+
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r}
+library(episensr)
+
+stang <- selection(matrix(c(136, 107, 297, 165),
+                          dimnames = list(c("UM+", "UM-"), c("Mobile+", "Mobile-")),
+                          nrow = 2, byrow = TRUE),
+                   bias_parms = c(1, 1, 0.8, 1))
+stang
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+
+
+- If the response rate is 0.45-0.9 in case group, can not correct selection bias by this approach. you have to compare the characters of response population to no response population.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r}
+library(episensr)
+
+stang <- selection(matrix(c(136, 107, 297, 165),
+                          dimnames = list(c("UM+", "UM-"), c("Mobile+", "Mobile-")),
+                          nrow = 2, byrow = TRUE),
+                   bias_parms = c(0.45, 0.9, 0.5, 1))
+stang
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+
+#### Information Bias (Misclassification)
+
+<!-- generated-learning-note -->
+This subsection explains **Information Bias (Misclassification)** and shows how it contributes to the overall Bias analysis and control workflow.
+
+
+Highly sensitive tests (>90%) yield few false negatives, so a negative result constitutes strong evidence to rule out or exclude the target disease. Conversely, highly specific tests (>90%) generate a very low number of false positives, so a positive result strongly implies that the target disease/condition is present. Note the prevalence (low) also affect the `diagnosis` test result. The association is toward to null. 
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+misclassification(matrix(c(126, 92, 71, 224),
+                         dimnames = list(c("Case", "Control"),
+                                         c("Smoking +", "Smoking - ")),
+                         nrow = 2, byrow = TRUE),
+                  type = "exposure",
+                  bias_parms =c(0.90, 0.90, 0.90, 0.90))
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+#### No differential miscllasification
+
+<!-- generated-learning-note -->
+This subsection explains **No differential miscllasification** and shows how it contributes to the overall Bias analysis and control workflow.
+
+
+non-differential misclassification will always bias towards the null.
+
+- Let’s say the sensitivity of self-reported smoking is 94% and specificity is 97%, for both the case and control groups. 
+
+The argument bias_parms should be made of the following components: (1) Sensitivity of classification among those with the outcome, (2) Sensitivity of classification among those without the outcome, (3) Specificity of classification among those with the outcome, and (4) Specificity of classification among those without the outcome.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+misclassification(matrix(c(126, 92, 71, 224),
+                         dimnames = list(c("Case", "Control"),
+                                         c("Smoking +", "Smoking - ")),
+                         nrow = 2, byrow = TRUE),
+                  type = "exposure",
+                  bias_parms = c(0.94, 0.94, 0.97, 0.97))
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+
+#### Differential miscllasification
+
+<!-- generated-learning-note -->
+This subsection explains **Differential miscllasification** and shows how it contributes to the overall Bias analysis and control workflow.
+
+
+The effects of differential misclassification and selection bias will depend on the details.
+
+Let’s say the sensitivity of self-reported smoking and specificity are different in the case and control groups. 
+
+- Higher sensitivity (false positive) are in the case group. The association is away null. 
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+misclassification(matrix(c(126, 92, 71, 224),
+                         dimnames = list(c("Case", "Control"),
+                                         c("Smoking +", "Smoking - ")),
+                         nrow = 2, byrow = TRUE),
+                  type = "exposure",
+                  bias_parms = c(0.95, 1, 0.80, 1))
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+- Higher sensitivity (false positive) are in the control group. The association is toward null. 
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+misclassification(matrix(c(126, 92, 71, 224),
+                         dimnames = list(c("Case", "Control"),
+                                         c("Smoking +", "Smoking - ")),
+                         nrow = 2, byrow = TRUE),
+                  type = "exposure",
+                  bias_parms = c(1, 0.95, 1, 0.80))
+
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+- Higher sensitivity (false positive) are in the case group with low sensitivity and specificity in the control group. The association is toward null. 
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+misclassification(matrix(c(126, 92, 71, 224),
+                         dimnames = list(c("Case", "Control"),
+                                         c("Smoking +", "Smoking - ")),
+                         nrow = 2, byrow = TRUE),
+                  type = "exposure",
+                  bias_parms = c(0.95, 0.80, 0.80, 0.80))
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+- Higher sensitivity (false positive) are in the control group with low sensitivity and specificity in the case group. The association is toward null. 
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+misclassification(matrix(c(126, 92, 71, 224),
+                         dimnames = list(c("Case", "Control"),
+                                         c("Smoking +", "Smoking - ")),
+                         nrow = 2, byrow = TRUE),
+                  type = "exposure",
+                  bias_parms = c(0.80, 0.95, 0.80, 0.80))
+
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+#### Covariate misclassification
+
+<!-- generated-learning-note -->
+This subsection explains **Covariate misclassification** and shows how it contributes to the overall Bias analysis and control workflow.
+
+
+- No covariate misclassification
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+misclassification.cov(array(c(1319, 38054, 5641, 405546, 565, 3583,
+                              781, 21958, 754, 34471, 4860, 383588),
+                            dimnames = list(c("Twins+", "Twins-"),
+                                            c("Folic acid+", "Folic acid-"),
+                                            c("Total", "IVF+", "IVF-")),
+                            dim = c(2, 2, 3)),
+                      bias_parms = NULL)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+- No differential misclassifcation
+
+Data on IVF were not available and a proxy for it was used, period of involuntary childlessness. However, it was a poor proxy for IVF, with a sensitivity of 60% (here use 0.9) and a specificity of 95%. These bias parameters were assumed to be nondifferential.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+misclassification.cov(array(c(1319, 38054, 5641, 405546, 565, 3583,
+                              781, 21958, 754, 34471, 4860, 383588),
+                            dimnames = list(c("Twins+", "Twins-"),
+                                            c("Folic acid+", "Folic acid-"),
+                                            c("Total", "IVF+", "IVF-")),
+                            dim = c(2, 2, 3)),
+                      bias_parms = c(.9, .9, .95, .95))
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+- Differential misclassifcation
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+misclassification.cov(array(c(1319, 38054, 5641, 405546, 565, 3583,
+                              781, 21958, 754, 34471, 4860, 383588),
+                            dimnames = list(c("Twins+", "Twins-"),
+                                            c("Folic acid+", "Folic acid-"),
+                                            c("Total", "IVF+", "IVF-")),
+                            dim = c(2, 2, 3)),
+                      bias_parms = c(0.6, 0.95, 0.95, 0.95))
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+The mantel haenszel association with missclassifiation is away null.
+
+
+#### Confounding bias
+
+<!-- generated-learning-note -->
+This subsection explains **Confounding bias** and shows how it contributes to the overall Bias analysis and control workflow.
+
+
+#### unmeasured or unknown confounders
+
+<!-- generated-learning-note -->
+This subsection explains **unmeasured or unknown confounders** and shows how it contributes to the overall Bias analysis and control workflow.
+
+
+The frequency of drug-attributed rash in relation to allopurinol exposure with sex treated as a potential confounding factor (`stratification`) 
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r}
+library(tidyverse)
+RR_no=0.5249886 # RR between confounder and outcome among non-exposed
+
+p1=0.5671642  # prevalence of confounder among exposed
+
+p2=0.5417661  # prevalence of confounder among unexposed 
+
+rash <- matrix(c(15, 94, 52, 1163),
+               dimnames = list(c("Rash +", "Rash -"),
+                               c("Allopurinol +", "Allopurinol -")),
+               nrow = 2, byrow = TRUE)
+
+rash %>% confounders(., type = "RR", bias_parms = c(RR_no, p1, p2))
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+
+- Generate three matrix by confounders or get these parameters from other researches
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+## Outcome by confounders
+rash_conf <- matrix(c(36, 58, 645, 518),
+                    dimnames = list(c("Rash +", "Rash -"),
+                                    c("Males", "Females")),
+                    nrow = 2, byrow = TRUE)
+rash_conf
+
+## By confounders: among males
+rash_males <- matrix(c(5, 36, 33, 645),
+                     dimnames = list(c("Rash +", "Rash -"),
+                                     c("Allopurinol +", "Allopurinol -")),
+                     nrow = 2, byrow = TRUE)
+rash_males
+
+## By confounders: among females
+rash_females <- matrix(c(10, 58, 19, 518),
+                       dimnames = list(c("Rash +", "Rash -"),
+                                       c("Allopurinol +", "Allopurinol -")),
+                       nrow = 2, byrow = TRUE)
+rash_females
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+(RR_no <- (36/(36+645))/(58/(58+518))) # RR between confounder and outcome among non-exposed
+## [1] 0.5249886
+(p1 <- (5+33)/(15+52)) # prevalence of confounder among exposed
+## [1] 0.5671642
+(p2 <- (36+645)/(94+1163)) # prevalence of confounder among unexposed
+## [1] 0.5417661
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+
+
+- Adjust RR directly 
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+confounders.ext(RR = 2, bias_parms = c(0.1, 0.9, 0.1, 0.4))
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+
+
+#### Summary
+
+<!-- generated-learning-note -->
+This section focuses on **Summary**. Emphasize effect size, uncertainty, diagnostics, and scientific relevance rather than a single threshold.
+
+ 
+
+* There are several mechanisms that can produce selectinon bias:
+
+  - Selection of a comparison group ("controls") that is not representative of the population that produced the cases in a case-control study. (Control selection bias)
+  - Differential loss to follow up in a cohort study, such that the likelihood of being lost to follow up is related to outcome status and exposure status. (Loss to follow-up bias)
+  - Refusal, non-response, or agreement to participate that is related to the exposure and disease (Self-selection bias)
+  - Using the general population as a comparison group for an occupational cohort study ("Healthy worker effect")
+  - Differential referral or diagnosis of subjects
+  
+* There are several mechanisms that can produce misclassification bias:  
+  - Recall bias
+  - Interviewer Bias
+  - Differences in the Quality of Information
+
+* Unlike selection and information bias, which can be introduced by the investigator or by the subjects, confounding is a type of bias that can be adjusted for in the analysis.
+
+
+* Confounding bias can be analyzed by regression and the association can be adjusted by data from other studies (instrument variable, Bayesian).
+
+* Selection bias and misclassification bias can be adjusted. selection bias can be identified by no response rate (or comparing the characteristics) and misclassification bias can be identified by validity diagnostic test.
+
+## Interpreting the Results
+
+Use direction, magnitude, and sensitivity parameters to judge whether plausible bias could change the conclusion. Treat the output as evidence generated under the stated data, coding choices, and assumptions. Before using the workflow in practice, replace example inputs with validated data and confirm that the method targets the intended scientific question.
+
+## Key Takeaways
+
+- **Connect method to purpose.** Identify the question and target quantity before choosing code or a model.
+- **Read code and output together.** Confirm what each object, estimate, interval, table, or plot represents.
+- **Check assumptions and diagnostics.** A successful computation is not by itself evidence that the result is reliable.
+- **Adapt deliberately.** When applying the example elsewhere, document changes to data definitions, parameters, and analytical choices.

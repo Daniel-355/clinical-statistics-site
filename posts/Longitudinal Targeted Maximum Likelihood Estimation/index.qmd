@@ -1,0 +1,326 @@
+---
+title: "Longitudinal Targeted Maximum Likelihood Estimation"
+description: "A practical R learning guide to Longitudinal Targeted Maximum Likelihood Estimation, with concise explanations, reproducible examples, and interpretation guidance."
+date: 2026-08-31
+section: "Epidemiology & Real-World Evidence"
+category: "Causal Methods"
+topic: "Longitudinal Targeted Maximum Likelihood Estimation"
+type: article
+tags: ["Causal Methods", "Epidemiology & Real-World Evidence", "Longitudinal", "Targeted", "Maximum"]
+status: published
+featured: true
+youtube: []
+pdf: []
+downloads: []
+validate-yaml: false
+execute:
+  enabled: false
+  echo: true
+  warning: false
+  error: true
+---
+
+## Why This Topic Matters
+
+Causal methods combine design assumptions and statistical adjustment to estimate well-defined treatment or exposure contrasts.
+
+## Learning Objectives
+
+After working through this material, you should be able to:
+
+- explain the main ideas behind **Longitudinal Targeted Maximum Likelihood Estimation**;
+- interpret the R workflow and its output; and
+- adapt the examples to a related analysis.
+
+## Lesson Roadmap
+
+The original material is organized around the following topics:
+
+1. LMTLE: A Brief Introduction
+2. Inplementaion by hand
+3. Longitudinal Targeted Maximum Likelihood Estimation by package
+
+## How to Use This Lesson
+
+Read the explanation before each workflow, then run the R chunks in sequence. Code and output are shown together so that each numerical or graphical result can be connected to the command that produced it. Some source examples require optional packages or external data. Those setup-dependent chunks remain visible for reference but are marked `eval: false` when they cannot be reproduced safely in a clean website build.
+
+## Reproducible Learning Check
+
+This short R chunk confirms the scope of the lesson and always produces a visible output.
+
+```{r}
+#| label: learning-overview
+learning_overview <- data.frame(
+  section = "Epidemiology & Real-World Evidence",
+  category = "Causal Methods",
+  topic = "Longitudinal Targeted Maximum Likelihood Estimation"
+)
+learning_overview
+```
+
+## Learning Material
+
+The following material develops **Longitudinal Targeted Maximum Likelihood Estimation** from core ideas to practical implementation. Definitions and assumptions come first; worked code then shows how the ideas are represented computationally.
+
+### Conceptual Foundation
+
+The material below closely follows the original R Markdown source, with its examples retained for study and reuse.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#### LMTLE: A Brief Introduction
+
+<!-- generated-learning-note -->
+This section establishes the concepts and assumptions needed to understand **LMTLE: A Brief Introduction** in the context of Longitudinal Targeted Maximum Likelihood Estimation.
+
+This instruction (of causal inference) is for the complex longitudinal data.
+
+In detail please see the reference by [Ashley I Naimi](https://github.com/ainaimi/mlci_shortcourse).  
+
+#### Inplementaion by hand
+
+<!-- generated-learning-note -->
+This subsection explains **Inplementaion by hand** and shows how it contributes to the overall Longitudinal Targeted Maximum Likelihood Estimation workflow.
+
+Constructing stabilized IP weights
+
+### R Workflow and Examples
+
+Run the examples in order because later blocks may reuse objects created earlier. Each block includes a short purpose statement and guidance for reading its output.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This source block depends on optional software, external data, or a machine-specific path. It is retained as a reference and is not executed during the website build.
+
+```{r}
+#| eval: false
+#| code-fold: true
+library(tidyverse)
+# data management or manipulate to generate lag variables
+a <- read_csv("C:\\Users\\hed2\\Downloads\\mybook2\\mybook2\\2023_04_21-time-dependent.csv") %>% 
+group_by(ID) %>%
+  
+# lag after group id
+mutate(exposure_lag = lag(exposure, n = 1L,
+default = 0), c1_lag = lag(c1, n = 1L,
+default = 0), c2_lag = lag(c2, n = 1L,
+default = 0)) %>%
+ungroup()
+a
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Because this block is not executed, it produces no website output. Enable it only after its dependencies and input paths have been validated.
+
+
+Calculate stabilized IP weights by ID
+
+<!-- generated-learning-note -->
+**Purpose.** This block specifies and fits the statistical model. Identify the outcome, predictors, reference levels, link or distribution, and any correlation structure before interpreting coefficients.
+
+```{r}
+# numerator
+num <- glm(exposure ~ factor(Int), data = a,
+family = binomial("logit"))$fitted.values
+# denominator
+den <- glm(exposure ~ factor(Int) + exposure_lag +
+c1 + c2 + c1_lag + c2_lag, data = a,
+# using lag?
+  
+family = binomial("logit"))$fitted.values
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Focus on coefficient direction and scale, uncertainty intervals, fit statistics, and diagnostics. Statistical significance alone does not establish practical importance or model adequacy.
+
+
+Cumulative product wights by ID (each one has the different weights in different times)
+
+<!-- generated-learning-note -->
+**Purpose.** This block prepares the analysis data. Follow each transformation carefully because filtering, recoding, grouping, and reshaping determine the observations used downstream.
+
+```{r}
+# ip
+a <- a %>%
+mutate(sw_ = (num/den) * exposure + ((1 -
+num)/(1 - den)) * (1 - exposure)) %>%
+  
+# cumprod ip  
+group_by(ID) %>%
+mutate(sw = cumprod(sw_))  
+
+head(cbind(a$ID, a$Int,a$sw,a$sw_))
+  
+a <- a %>% ungroup() %>%
+select(-sw_)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the data before and after the transformation. Confirm that row counts, group sizes, missingness, and variable values changed as intended.
+
+
+Summary weights by time
+
+<!-- generated-learning-note -->
+**Purpose.** This block prepares the analysis data. Follow each transformation carefully because filtering, recoding, grouping, and reshaping determine the observations used downstream.
+
+```{r}
+# summary weights
+a %>%
+group_by(Int) %>%
+# group by time (close to 1) 
+summarise(meanSW = mean(sw), maxSW = max(sw))
+
+# a %>%
+# group_by(ID) %>%
+# # group by ID
+# summarise(meanSW = mean(sw), maxSW = max(sw))  
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the data before and after the transformation. Confirm that row counts, group sizes, missingness, and variable values changed as intended.
+
+
+Use these weights to fit an IP weighted MSM
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r}
+# aim to adjust the weight
+library(lmtest)
+library(sandwich)
+
+modMSM <- lm(Y ~ factor(Int) + I(exposure/4),  #why divided by 4, otherwise, coefficient *4
+data = a, weights = sw)
+
+coeftest(modMSM, vcov. = vcovCL(modMSM, cluster = a$ID,
+type = "HC3"))
+
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+
+#### Longitudinal Targeted Maximum Likelihood Estimation by package
+
+<!-- generated-learning-note -->
+This subsection explains **Longitudinal Targeted Maximum Likelihood Estimation by package** and shows how it contributes to the overall Longitudinal Targeted Maximum Likelihood Estimation workflow.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r}
+library(ltmle)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This source block depends on optional software, external data, or a machine-specific path. It is retained as a reference and is not executed during the website build.
+
+```{r}
+#| eval: false
+#| code-fold: true
+# read in data
+a <- read_csv("C:\\Users\\hed2\\Downloads\\mybook2\\mybook2\\2023_04_21-time-dependent.csv")
+a %>%
+print(n = 3)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Because this block is not executed, it produces no website output. Enable it only after its dependencies and input paths have been validated.
+
+
+Convert data from long to wide
+
+<!-- generated-learning-note -->
+**Purpose.** This block prepares the analysis data. Follow each transformation carefully because filtering, recoding, grouping, and reshaping determine the observations used downstream.
+
+```{r}
+# data transform, without lag
+# keep confounders
+b <- a %>%
+pivot_wider(names_from = Int, values_from = c(exposure,
+c1, c2, Y)) %>%
+mutate(Y_1 = if_else(is.na(Y_1), 1, Y_1),
+Y_2 = if_else(is.na(Y_2), 1, Y_2),
+Y_3 = if_else(is.na(Y_3), 1, Y_3),
+Y_4 = if_else(is.na(Y_4), 1, Y_4)) %>%
+select(exposure_1, c1_1, c2_1, Y_1, exposure_2,
+c1_2, c2_2, Y_2, exposure_3, c1_3,
+c2_3, Y_3, exposure_4, c1_4, c2_4,
+Y_4)
+
+head(b)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the data before and after the transformation. Confirm that row counts, group sizes, missingness, and variable values changed as intended.
+
+
+Setup parameters of model
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+# ltmle
+# super learner library, algorithm
+sl.lib <- c("SL.mean",
+"SL.glm",
+"SL.ranger")
+
+#ltmle
+result <- ltmle(b,
+Anodes=c(paste0("exposure_",1:4)),   #treatment
+Lnodes=c("c1_1", "c2_1", "c1_2", "c2_2",  #
+"c1_3", "c2_3", "c1_4", "c2_4"),
+Ynodes=c("Y_1","Y_2","Y_3","Y_4"),
+
+survivalOutcome = TRUE,
+SL.library = list(Q = sl.lib, g = sl.lib), #g computation and ps?
+
+abar=list(treament = c(1, 1, 1, 1),
+control = c(0, 0, 0, 0)),
+# estimate.time = T,
+# need to comment out to run
+stratify = T) 
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block extracts inferential or predictive results from fitted objects. Match each estimate, interval, contrast, or diagnostic to the quantity it represents.
+
+```{r}
+# summary(result)
+summary(result)[[2]]$ATE
+# result$fit$g
+# result$fit$Q
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Interpret estimates on the scale reported by the function, and use intervals or other uncertainty measures when drawing conclusions.
+
+## Interpreting the Results
+
+Check nuisance models, overlap, weights, balance, diagnostics, estimand alignment, and sensitivity to modeling choices. Treat the output as evidence generated under the stated data, coding choices, and assumptions. Before using the workflow in practice, replace example inputs with validated data and confirm that the method targets the intended scientific question.
+
+## Key Takeaways
+
+- **Connect method to purpose.** Identify the question and target quantity before choosing code or a model.
+- **Read code and output together.** Confirm what each object, estimate, interval, table, or plot represents.
+- **Check assumptions and diagnostics.** A successful computation is not by itself evidence that the result is reliable.
+- **Adapt deliberately.** When applying the example elsewhere, document changes to data definitions, parameters, and analytical choices.

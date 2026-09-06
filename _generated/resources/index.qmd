@@ -18,7 +18,30 @@ toc: false
 <main>
 <section class="category-block" id="sap-protocol-resources">
 <h2>SAP & Protocol Resources</h2>
-<p class="text-muted">No published notes yet.</p>
+<div class="topic-group">
+<h3>Clinical Statistical Modeling SOP</h3>
+<ul>
+<li><a href="../../posts/Clinical_Statistical_Modeling_SOP/index.qmd">Clinical Statistical Modeling SOP</a></li>
+</ul>
+</div>
+<div class="topic-group">
+<h3>Clinical Trial Statistical Analysis Plan (SAP) SOP</h3>
+<ul>
+<li><a href="../../posts/Clinical_Trial_SAP_SOP/index.qmd">Clinical Trial Statistical Analysis Plan (SAP) SOP</a></li>
+</ul>
+</div>
+<div class="topic-group">
+<h3>Statistical Analysis Plan (SAP) for Epidemiologic Studies</h3>
+<ul>
+<li><a href="../../posts/Epidemiologic_Study_SAP_Template/index.qmd">Statistical Analysis Plan (SAP) for Epidemiologic Studies</a></li>
+</ul>
+</div>
+<div class="topic-group">
+<h3>Statistics in clinical trial</h3>
+<ul>
+<li><a href="../../posts/Statistics in clinical trial/index.qmd">Statistics in clinical trial</a></li>
+</ul>
+</div>
 </section>
 <section class="category-block" id="regulatory-resources">
 <h2>Regulatory Resources</h2>
@@ -42,7 +65,19 @@ toc: false
 </section>
 <section class="category-block" id="reference-resources">
 <h2>Reference Resources</h2>
-<p class="text-muted">No published notes yet.</p>
+<div class="topic-group">
+<h3>Probability basics</h3>
+<ul>
+<li><a href="../../posts/Linear algebra/index.qmd">Probability basics</a></li>
+<li><a href="../../posts/Probability basics/index.qmd">Probability basics</a></li>
+</ul>
+</div>
+<div class="topic-group">
+<h3>Calculus</h3>
+<ul>
+<li><a href="../../posts/calculus/index.qmd">Calculus</a></li>
+</ul>
+</div>
 </section>
 </main>
 </div>

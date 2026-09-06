@@ -1,0 +1,122 @@
+---
+title: "Nested mixed model"
+output: html_document
+date: '2024-04-09'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Nested mixed model in R
+
+[reference](https://biostatmatt.com/archives/2718)
+
+- Load package and data
+```{r}
+# load package
+library(nlme)
+# read in data
+setwd("C:\\Users\\hed2\\OneDrive - National Institutes of Health\\Mixed model by SAS and R")
+DF <- read.csv("Oxide.csv")
+# specific the reference group
+DF$Source=as.factor(DF$Source) 
+DF <- within(DF, Source<- relevel(Source, ref = 2))
+```
+
+- Random intercept 
+
+```{r}
+# nested
+# using lme package
+model2 = lme(Thickness ~ Source  , 
+           random = (~ 1   |Lot/Wafer), data = DF, method= "REML")  #wafer nested into lot
+summary(model2)
+# using lme4 package
+library("lme4")
+model3 = lmer(Thickness ~ Source+(1   | Lot/Wafer), data=DF) #wafer nested into lot
+summary(model3)
+```
+
+- Random slope
+```{r}
+# nested
+# using lme package
+model2 = lme(Thickness ~ Source  , 
+           random = (~ 1 +Source  |Lot/Wafer), data = DF, method= "REML")  #wafer nested into lot
+summary(model2)
+
+# using lme4 package
+model3 = lmer(Thickness ~ Source+(1 +Source  | Lot/Wafer), data=DF) #wafer nested into lot
+summary(model3)
+```
+
+### Nested mixed model in SAS
+
+- Random intercept
+```{r}
+# /*nested*/
+# PROC MIXED DATA=Oxide METHOD=REML;
+# CLASS Lot    Wafer    Source  ;
+# MODEL Thickness  = Source   /solution;
+# RANDOM   int  /subject=Lot;
+# RANDOM   int  / subject= Wafer(Lot)    type=un ;  /*wafer nested into lot*/
+# RUN; QUIT; 
+```
+
+output
+
+```{r}
+# Solution for Fixed Effects 
+# Effect Source Estimate Standard
+# Error DF t Value Pr > |t| 
+# Intercept   2005.19 5.7716 6 347.43 <.0001 
+# Source 1 -10.0833 8.1622 48 -1.24 0.2227 
+# Source 2 0 . . . .
+```
+
+
+- Random slope
+```{r}
+# /*nested*/
+# PROC MIXED DATA=Oxide METHOD=REML;
+# CLASS Lot    Wafer    Source  ;
+# MODEL Thickness  = Source   /solution;
+# RANDOM   int Source/subject=Lot;
+# RANDOM   int Source/ subject= Wafer(Lot)    type=un ;  /*wafer nested into lot*/
+# RUN; QUIT; 
+```
+
+output
+```{r}
+# Solution for Fixed Effects 
+# Effect Source Estimate Standard
+# Error DF t Value Pr > |t| 
+# Intercept   2005.19 5.7596 0 348.15 . 
+# Source 1 -10.0833 8.1143 0 -1.24 . 
+# Source 2 0 . . . .
+```
+
+
+Summary:
+
+- Generally, when you know nothing else making very strong assumptions about the correlation structure over time (e.g. type=AR(1) or type=CS or just having a random subject effect on the intercept) is not advisable. If you have sufficient data, it is usually recommended to use an unstructured covariance [matrix](https://stats.stackexchange.com/questions/233475/mixed-model-for-multiple-measurements-in-a-crossover-study-sas). 
+
+- The values for any variable uniquely identify the levels of the physicians. Therefore, no nesting is [necessary](chrome-extension://efaidnbmnnnibpcajpcglclefindmkaj/https://support.sas.com/resources/papers/proceedings15/SAS1919-2015.pdf).
+
+
+- Nested designs arise when every level of one factor (B, say) is combined with (“nested inside”) only one level of another factor (A, say) in the design; this compares to the crossed design (or complete factorial designs) where all of the levels of factor A are combined with all of the levels of [factor B](chrome-extension://efaidnbmnnnibpcajpcglclefindmkaj/https://www.pnw.edu/wp-content/uploads/2020/03/Lecture-Notes-10-6.pdf).
+
+
+
+
+
+
+
+
+
+
+
+
+
+

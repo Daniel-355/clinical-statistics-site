@@ -1,0 +1,66 @@
+---
+title: "Sample size calculation"
+output: html_document
+date: '2022-07-07'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Sample size calculation
+
+```{r}
+#given proportion 
+px3=0.11
+px4=0.07
+px5=0.08
+px6=0.06
+px7=0.05
+
+###################
+
+  Outcome0 = NULL
+  
+  for (t in seq(350, 600, by=2)){  # change the possible sample size graudally from 400 to 700.  
+    
+    n=t
+    count=0
+    M=500   # times of simulation
+    for (i in 1:M){
+      
+      # for a given sample size (400), for the first simulation,
+      # we use rbinom function simulate the contingencey table as below with above given proportions,
+      # and calculate the p value by using Chi square test for the simulation
+      x3=rbinom(1,n,px3)
+      x4=rbinom(1,n,px4)
+      x5=rbinom(1,n,px5)
+      x6=rbinom(1,n,px6)
+      x7=rbinom(1,n,px7)
+            
+      data=matrix(c(x3,n-x3,x4,n-x4,x5,n-x5,x6,n-x6,x7,n-x7 ),ncol=2,byrow=T)   
+      
+      # if the p value of this simulation is less than 0.05, it means we get the significant result for the given this sample size this time. it means we detected the difference in this simulation experiment when the difference is true. 
+      pv=prop.test(data)$p.value      
+      
+      count=as.numeric(pv<0.05)+count  #sum of pv<0.05
+    }  #end loop of p value 
+    power0=count/M 
+    
+    temp <- data.frame(size=t,power=power0)
+    Outcome0 =  rbind(Outcome0, temp)
+  }  #end loop of power from different sample size
+  
+  # generate a new variable named "power_loess" by loess method because the curve of sample size and power is not enough smooth
+  power_loess <- round(predict(loess(Outcome0$power ~ Outcome0$size,data=Outcome0,span=0.6)),3)
+  Outcome0 =  data.frame(Outcome0, power_loess)
+  
+  # plot a line chart of the power and sample size, and smooth the curve by loess method
+  plot (Outcome0$size, Outcome0$power,type = "n", ylab = "Power",xlab="Sample size",
+        main = expression(paste("Power analysis for GDM"))) 
+  abline(h=0.9,col='red',lwd=2,lty=2)
+  abline(h=0.85, col='red',lwd=2,lty=2)
+  abline(h=0.8,col='red',lwd=2,lty=2)
+  lines(Outcome0$size,power_loess,col="blue",lwd=2)
+```
+

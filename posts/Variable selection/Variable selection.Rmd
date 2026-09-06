@@ -1,0 +1,498 @@
+---
+title: "Variable selection"
+output: html_document
+date: '2023-05-20'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+[References](https://alain-vandormael.netlify.app/post/varselect/)
+
+## Variable selection
+
+When this number of variables is close to or larger than the number of data points. 
+
+### Stepwise regression
+
+Data manipulation
+
+
+```{r}
+# load data
+crime <- suppressMessages(
+  readr::read_delim("http://www.statsci.org/data/general/uscrime.txt", delim="\t"))
+head(crime)
+```
+
+```{r}
+# scale the data, except: so and crime variables
+
+# we will recode the categorical variable as a factor and center (and scale) the numerical features.
+
+crime[, c(1, 3:15)] <- lapply(crime[, c(1,3:15)], function(x) round(scale(x), 2))
+head(crime)
+```
+
+- Forward direction for variables selection
+```{r}
+# Model with all variables
+mod_all <- lm(Crime ~ ., data=crime)
+AIC(mod_all)
+ 
+summary(mod_all)$r.squared
+ 
+```
+
+```{r}
+# Intercept only model
+mod0 <- lm(Crime ~ 1, data=crime)
+AIC(mod0)
+ 
+summary(mod0)$r.squared
+ 
+```
+
+`Pass the intercept only model (mod0) to the object argument and the full model (mod_all) to the scope argument. `
+
+```{r}
+library(MASS)
+fmod <- stepAIC(object = mod0, direction = "forward", 
+  scope = formula(mod_all), trace=FALSE)
+
+coef(fmod)
+ 
+AIC(fmod)
+ 
+summary(fmod)$r.squared
+ 
+```
+
+Prediction
+```{r}
+predict(fmod,crime[1:5,])
+```
+
+
+`Forward elimination selects 7 variables. the AIC get lower until the model stops step7.  `
+
+
+Compare to linear regression
+
+(modeling using the selected variables)
+```{r}
+lm <- lm(Crime~  Po1   +Ineq  +Ed+ M   +Prob +U2 , data=crime )
+coefficients(lm)
+
+predict(lm,crime[1:5,])
+```
+
+`Model interaction`
+```{r}
+# Model interaction
+mod_inter <- lm(Crime ~  (Po1+ Ineq+ Ed)^2, data=crime)
+
+itermod <- stepAIC(object = mod0, direction = "forward", 
+  scope = formula(mod_inter), trace=FALSE)
+
+coef(itermod) 
+ 
+```
+
+
+- Backward direction for variables selection
+
+```{r}
+bmod <- stepAIC(mod_all, direction = "backward", 
+  scope = formula(mod0), trace=FALSE)
+coef(bmod)
+ 
+AIC(bmod)
+ 
+summary(bmod)$r.squared
+ 
+
+```
+
+`Backwards elimination selects 9 variables. `
+
+- Both forward and backward directions
+
+```{r}
+smod <- stepAIC(mod_all, direction = "both", trace=FALSE)
+coef(smod)
+ 
+AIC(smod)
+ 
+summary(smod)$r.squared
+ 
+
+```
+
+`8 variables are selected. `
+
+
+- k-fold cross-validation for backward direction
+
+(10 fold, repeated 3 times; take the average of all the individual  scores; then train the model on the entire initial training data set with [the specific hyper-parameter value](https://medium.com/analytics-vidhya/regularization-and-cross-validation-how-to-choose-the-penalty-value-lambda-1217fa4351e5)) 
+
+
+
+The main thing to remember here is that we have to keep the test data away from the algorithm and do all the validation only on the training data.
+
+![](https://scikit-learn.org/stable/_images/grid_search_workflow.png)
+
+Three scenarios: 
+
+  - Collect another completely independent dataset and test your model. 
+
+  - If you have a sufficiently large dataset, you would then build your model on the remaining training samples and then test on these left-out samples.Usually splits the dataset into a large training set and a smaller test set (= holdout) and perform the k-fold CV on the training set, then validates on the test set.
+
+![](https://miro.medium.com/v2/resize:fit:1100/format:webp/1*kqVo1EWX-crwgqGiv-yXjA.png)
+
+  - If you have a smaller dataset, the validation is performed on every fold (k-fold CV).
+
+Caret cv
+```{r}
+library(caret)
+set.seed(100599)
+
+set_train <- trainControl(method="repeatedcv", number=10, repeats=3)
+
+cvmod <- train(Crime ~ ., data=crime,  scope = formula(mod0),
+  method="lmStepAIC", direction="backward", trace=FALSE, trControl=set_train)
+
+coef(cvmod$finalModel)
+ 
+AIC(cvmod$finalModel)
+ 
+
+```
+
+`8 are selected.`
+
+However, stepwise regression may not perform as well when testing the final set of variables on other data (external validation).
+
+
+### Ridge regression
+
+
+$$
+\text{RSS} + \lambda \sum_{j=1}^p \beta^2_j
+$$
+- Use the glmnet library to run ridge regression by selecting a=0 and search lambda. 
+
+```{r}
+library(glmnet)
+y <- as.matrix(dplyr::select(crime, Crime))
+x <- as.matrix(dplyr::select(crime, -Crime))
+
+lgrid <- c(seq(0, 1, by=0.1), seq(2, 9, by=1), seq(10, 100, by=10))
+lgrid 
+rmod <- glmnet(x, y, alpha=0, lambda=lgrid, standardize=FALSE)
+rmod
+
+```
+
+```{r}
+head(coefficients(rmod))
+```
+
+`Here, lamda =0 is the best fit.`
+
+
+```{r}
+set.seed(100599)
+
+ridge_model <- cv.glmnet(x , y , alpha = 0,nfolds = 10,    lambda=lgrid, family="gaussian",
+                standardize=FALSE )
+coefficients(ridge_model)
+
+```
+
+best coefficient
+```{r}
+coef(ridge_model, s = "lambda.min")
+```
+
+best parameter
+```{r}
+ridge_model$lambda.min
+```
+
+[cv.glmnet is close to Caret glmnet.](https://stats.stackexchange.com/questions/299653/caret-glmnet-vs-cv-glmnet)
+
+
+
+
+Compare to linear regression
+
+```{r}
+# lm <- lm(Crime~ .  , data=crime )
+# coefficients(lm)
+# 
+# predict(lm,crime[1:5,])
+```
+
+
+- Prediction
+They are regularized (not LSD). 
+
+```{r}
+predict(ridge_model, newx = x[1:5,], s = "lambda.min")
+ 
+# predict(ridge_model, newx = x[1:5,], s = "lambda.1se")
+
+# predict(ridge_model, newx = x[1:5,] )
+```
+
+- Using a cross-validated approach
+
+```{r}
+set.seed(100599)
+
+set_train <- trainControl(method="cv", number=10 ,returnResamp="all"
+                    )
+
+rmod <- train(Crime~., data = crime, method = 'glmnet', 
+   tuneGrid = expand.grid(alpha=0, lambda=lgrid), trControl = set_train)
+rmod
+# method = glnet not lmstepaic
+
+```
+
+best coefficient
+
+```{r}
+coef(rmod$finalModel, rmod$bestTune$lambda)
+```
+
+best parameter
+```{r}
+rmod$bestTune
+```
+
+
+```{r}
+plot(rmod$finalModel, xvar="lambda", label=TRUE)
+```
+
+
+```{r}
+las=glmnet(x, y, alpha=0, lambda=50, standardize=FALSE)
+coef(las)
+# predict(las,x)
+```
+
+
+Essentially, when lamda (50 is selected) is large, the beta coefficients are zero. However, ridge regresssion benefit comes at the cost of increased bias.
+
+
+### Lasso regression
+
+$$
+\text{RSS} + \lambda \sum_{j=1}^p |\beta_j|.
+$$
+
+Some coefficients can be forced to exactly zero when lambda is sufficiently large.
+
+```{r}
+lmod <- glmnet(x, y, alpha=1, lambda=lgrid, standardize=FALSE)
+lmod
+```
+
+```{r}
+g <- which(rev(lgrid==10))
+coef(lmod)[, 10]
+```
+
+Coefficient 
+```{r}
+lasso_model <- cv.glmnet(x , y , alpha = 1 )
+coefficients(lasso_model)
+
+```
+Plot MSE
+```{r}
+plot(lasso_model)
+
+log(10)
+```
+
+Plot coefficients
+```{r}
+plot(coef(lasso_model))
+
+# total 16 variables
+```
+
+
+
+
+
+`Here, four variables were reduced.`
+
+- Prediction
+
+They are regularized (not LSD). 
+```{r}
+predict(lasso_model, newx = x[1:5,], s = "lambda.min")
+#  
+# predict(lasso_model, newx = x[1:5,], s = "lambda.1se")
+
+```
+
+```{r}
+B=matrix (coefficients(lasso_model), 1,16)
+A <- matrix (c(1,x[2,]), 16,1)
+B%*%A
+```
+
+
+
+
+- Cross validation to search lambda
+
+(Alpha = 1 and lambda = 10)
+```{r}
+rmod_lasso <- train(Crime~., data = crime, method = 'glmnet',
+   tuneGrid = expand.grid(alpha=1, lambda=lgrid), trControl = set_train)
+rmod_lasso
+```
+
+Plot lambda and coefficient
+```{r}
+plot(rmod_lasso$finalModel, xvar="lambda", label=TRUE)
+```
+
+
+
+Arbitrarily eliminates variables that are strongly correlated with each other.
+
+Cross validation (stronger generalization) is how we choose the estimated best model with optimal hyper-parameter values (e.g. lambda). Use this same process with different types of algorithms like Ridge, LASSO, Elastic-Net, Random Forests, and Boosted trees.  
+
+### Elastic net
+
+$$
+\text{RSS} + \lambda \sum_{j=1}^p |\beta_j| + (1-\lambda) \sum_{j=1}^p \beta_i^2.
+$$
+Search alpha and lambda using cross validation. 
+
+```{r}
+emod <- train(Crime~., data = crime, method = 'glmnet',
+  tuneGrid = expand.grid(alpha=seq(0, 1, by=0.1), lambda=lgrid), trControl = set_train)
+
+emod
+```
+
+`Alpha = 1 and lambda = 6 are selected.
+`
+```{r}
+enmod <- glmnet(x, y, nfolds=10, alpha=1, lambda=6, standardize=FALSE)
+
+coef(enmod) 
+```
+
+### Machine learning approch 
+
+(Recursive feature elimination)
+```{r}
+set.seed(100)
+
+options(warn=-1)
+
+subsets <- c(1:14)  #tries all possible solutions (i.e., only 1 feature, 2 features, …, 13 features) to find the optimal features
+
+ctrl <- rfeControl(functions = rfFuncs,  #random forest algorithm
+                   method = "repeatedcv", #k fold cross validation repeated 5 times
+                   repeats = 5,
+                   verbose = FALSE, number=10)
+
+lmProfile <- rfe(x=x, y=y,
+                 sizes = subsets,
+                 rfeControl = ctrl)
+
+lmProfile
+```
+
+RFE recommends 14 features for the model. 
+
+```{r}
+predictors(lmProfile)
+```
+Plot the accuracy of various combinations 
+```{r}
+plot(lmProfile)
+```
+
+Importance of variable
+```{r}
+varimp_mars <- varImp(lmProfile)
+
+varimp_data <- data.frame(feature = row.names(varImp(lmProfile))[1:15],
+                          importance = varImp(lmProfile)[1:15, 1])
+
+dotchart(varimp_data$importance,label=varimp_data$feature, main="Variable Importance")
+
+```
+
+```{r}
+ggplot(data = varimp_data, 
+       aes(x = reorder(feature, -importance), y = importance, fill = feature)) +
+  geom_bar(stat="identity") + labs(x = "Features", y = "Variable Importance") + 
+  geom_text(aes(label = round(importance, 2)), vjust=1.6, color="white", size=4) + 
+  theme_bw() + theme(legend.position = "none")
+```
+
+```{r}
+# Post prediction
+# postResample(predict(lmProfile, x_test), y_test)
+```
+
+This demonstrates the sensitivity of RFE in finding important features and eliminating less relevant features.
+
+ATA and RFE may produce less desirable results if:
+
+`the sample size is smaller;
+
+non-random missingness is present in the response data set;
+
+there are problematic items (e.g., items with low discrimination or high guessing).`
+
+**See 2.1: Machine learning workflow.**
+
+Available algorithms in caret
+```{r}
+paste(names(getModelInfo()), collapse=',  ')
+```
+
+
+```{r}
+set.seed(100)
+
+options(warn=-1)
+
+subsets <- c(1:14)  #tries all possible solutions (i.e., only 1 feature, 2 features, …, 13 features) to find the optimal features
+
+ctrl <- rfeControl(functions = lmFuncs,  #random forest algorithm
+                   method = "repeatedcv", #k fold cross validation repeated 5 times
+                   repeats = 5,
+                   verbose = FALSE, number=10)
+
+lmProfile <- rfe(x=x, y=y,
+                 sizes = subsets,
+                 rfeControl = ctrl)
+
+lmProfile
+```
+
+only 4 are selected. 
+
+### Variable Selection for Generalized Linear Mixed Models
+[see here](chrome-extension://efaidnbmnnnibpcajpcglclefindmkaj/https://cran.r-project.org/web/packages/glmmLasso/glmmLasso.pdf)
+
+
+
+
+

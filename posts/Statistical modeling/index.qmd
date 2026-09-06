@@ -1,0 +1,196 @@
+---
+title: "Statistical modeling"
+description: "A practical R learning guide to Statistical modeling, with concise explanations, reproducible examples, and interpretation guidance."
+date: 2026-08-31
+section: "Biostatistics"
+category: "Statistical Models"
+topic: "Statistical modeling"
+type: article
+tags: ["Statistical Models", "Biostatistics", "Statistical", "modeling"]
+status: published
+featured: true
+youtube: []
+pdf: []
+downloads: []
+validate-yaml: false
+execute:
+  echo: true
+  warning: false
+  error: true
+---
+
+## Why This Topic Matters
+
+A statistical model is a structured approximation that links observed data to an estimand or prediction target.
+
+## Learning Objectives
+
+After working through this material, you should be able to:
+
+- explain the main ideas behind **Statistical modeling**;
+- interpret the R workflow and its output; and
+- adapt the examples to a related analysis.
+
+## Lesson Roadmap
+
+The original material is organized around the following topics:
+
+1. Statistical modeling
+2. Summary
+3. Core Competencies
+4. Professional Experience
+
+## How to Use This Lesson
+
+Read the explanation before each workflow, then run the R chunks in sequence. Code and output are shown together so that each numerical or graphical result can be connected to the command that produced it. Some source examples require optional packages or external data. Those setup-dependent chunks remain visible for reference but are marked `eval: false` when they cannot be reproduced safely in a clean website build.
+
+## Reproducible Learning Check
+
+This short R chunk confirms the scope of the lesson and always produces a visible output.
+
+```{r}
+#| label: learning-overview
+learning_overview <- data.frame(
+  section = "Biostatistics",
+  category = "Statistical Models",
+  topic = "Statistical modeling"
+)
+learning_overview
+```
+
+## Learning Material
+
+The following material develops **Statistical modeling** from core ideas to practical implementation. Definitions and assumptions come first; worked code then shows how the ideas are represented computationally.
+
+### Conceptual Foundation
+
+The material below closely follows the original R Markdown source, with its examples retained for study and reuse.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#### Statistical modeling
+
+<!-- generated-learning-note -->
+This section develops **Statistical modeling**. Read the model specification together with its assumptions and the scale of each reported effect.
+
+
+#### Summary
+
+<!-- generated-learning-note -->
+This section focuses on **Summary**. Emphasize effect size, uncertainty, diagnostics, and scientific relevance rather than a single threshold.
+
+
+•	Expert biostatistician with extensive experience in simulation-based study design, including adaptive clinical trials, power analysis, bioequivalence studies, and integrated meta-analyses. Proficient in advanced statistical modeling techniques such as mixed-effects models, joint models, survival analysis, and machine-learning–enhanced causal inference, leveraging R, SAS, and Monte Carlo/MCMC simulations for robust parameter estimation and predictive modeling. Skilled in developing reproducible pipelines, visualizations, and interactive tools to support data-driven decision-making and regulatory submissions. Proficient in from SAP to CDISC standards to regulatory submission. 
+
+#### Core Competencies
+
+<!-- generated-learning-note -->
+This subsection explains **Core Competencies** and shows how it contributes to the overall Statistical modeling workflow.
+
+
+•	Expert-level proficiency in mixed models, survival analysis, and the joint model.
+•	Deep knowledge of probability and statistical theory.
+•	Skilled in advanced statistical modeling and simulation techniques, data analysis, and data mining.
+•	Solid understanding of core statistical algorithms.
+•	Proficient in R and SAS programming and analysis.
+•	Strong data visualization and R Shiny application development skills.
+•	Experienced with machine learning methods and their implementation in R.
+•	Strong data management skills. 
+•	End-to-end clinical trial experience from design to Clinical study report. 
+
+
+#### Professional Experience
+
+<!-- generated-learning-note -->
+This subsection explains **Professional Experience** and shows how it contributes to the overall Statistical modeling workflow.
+
+
+1.	Adaptive Clinical Trial with Interim design Simulation 
+•	Designed an adaptive clinical trial simulation for exploring test power of compilated clinical trials. 
+•	Incorporated interim analyses for sample size re-estimation based on observed outcomes. 
+•	Simulated multiple trials to evaluate trial power, treatment effect estimation, and variability.
+•	Developed data visualizations of estimated treatment effects and treatment/control allocation distributions. 
+•	https://rpubs.com/Daniel_He/1361412 
+
+2.	Bioequivalence (BE) Simulation 
+•	Executed Monte Carlo simulations to generate virtual trials, compute AUC/Cmax, and perform BE statistical tests using defined PK parameters.
+•	Estimated BE pass probability (lay in a specific range) across 1000 simulated trials.
+•	Produced automated visual outputs- histograms, heatmaps, and sensitivity plots- to summarize BE simulation outcomes. 
+•	Propagated parameter uncertainty via simulation/ resampling to assess robustness.
+•	https://rpubs.com/Daniel_He/1360859 
+
+3.	Power Analysis of GDM treatment using Simulation
+•	Conducted simulation-based power analysis to determine optimal sample size for detecting differences in treatment response rates across multiple groups.
+•	Simulated data across a range of sample sizes for several treatment proportions.
+•	Performed repeated statistical tests to empirically estimate statistical power for each sample size.
+•	Determined the minimum sample size required to achieve desired power (e.g., 80%).
+•	https://danielbook.netlify.app/miscellaneous#sample-size-calculation 
+
+4.	The real-world study 
+•	Conducted baseline comparisons and applied propensity score matching (PSM) to adjust for confounding after collecting data.
+•	Modeled treatment effects using Cox proportional hazards regression.
+•	Assessed covariate balance with standardized mean differences and Love plots.
+•	Performed sensitivity analysis using inverse probability of treatment weighting (IPTW) to confirm robustness of findings.
+•	https://rpubs.com/Daniel_He/1360810 
+
+5.	Integrated Summary/ Meta-analysis 
+•	Designed and executed an Integrated Summary of Efficacy and Safety (ISE/ISS) simulation to evaluate pooled treatment effects across multiple clinical trials.
+•	Built R-based simulation pipelines to automate data creation, merging, and summary analyses. 
+•	Validated simulated outcomes through sensitivity analyses. 
+•	Delivered reproducible R code suitable for regulatory-style submissions.
+•	Rubin´s Rules (RR) were designed to pool parameter estimates, such as mean differences and standard errors, when the multiple imputation technique was used.  
+•	https://rpubs.com/Daniel_He/1361337 
+
+6.	Monte Carlo Method to Estimate Parameters of a Joint Model
+•	Developed a joint model to predict birth weight using longitudinal fetal weight measurements during pregnancy, integrating a mixed-effects model with linear regression.
+•	Implemented a Bayesian joint model by specifying prior distributions and parameter priors, and applied Markov chain Monte Carlo (MCMC) for parameter estimation and confidence interval computation.
+•	Used two MCMC chains with 1,000 burn-in and 10,000 sampling iterations to ensure convergence and stability of estimates.
+•	Reconstructed the components of the joint model and calculated birth weights on a test dataset and evaluated model performance via cross-validation, reporting RMSE and R².
+•	https://rpubs.com/Daniel_He/1315576 
+
+7.	Develop an online Fetal Growth Calculator 
+•	Developed a mixed-effects model with cubic splines in R to predict fetal weight using longitudinal data, incorporating gestational age and race/ethnicity as key predictors.
+•	Extracted all model parameters (fixed-effect coefficients, random-effect variances, covariance components, and residual variance) to ensure model portability across platforms.
+•	Manually reconstructed the predictive formula to enable fetal weight estimation from new gestational age and ethnicity inputs.
+•	Assumed a normal distribution to compute fetal weight percentiles based on estimated means and standard deviations.
+•	Collaborated with the IT department to develop an online Fetal Growth Calculator implementing this model.
+•	https://www.nichd.nih.gov/fetalgrowthcalculator 
+
+8.	Exploring the Impact of Fetal Growth Patterns on Birth Timing 
+•	Constructed a mixed-effects model using longitudinal fetal weight data across gestational ages.
+•	Simulated fetal weights from 15 to 40 weeks of gestation to generate complete 25-week growth profiles per subject.
+•	Performed cluster analysis on simulated trajectories to classify subjects into three distinct fetal growth pattern groups.
+•	Incorporated growth pattern clusters as a covariate in survival analysis to evaluate their association with birth timing.
+•	(Processing) 
+
+9.	Assessment of statistical robustness and quantify uncertainty 
+•	Utilized simulation and bootstrapping to assess statistical robustness and quantify uncertainty without strict distributional assumptions.
+•	Applied bootstrapping to repeatedly resample observed data, constructing empirical sampling distributions, calculating p-values, and estimating confidence intervals.
+•	Leveraged flexible or distribution-free methods for inference in complex or non-normal datasets.
+•	https://rpubs.com/Daniel_He/1128098 
+
+10.	Machine learning application in causal inference 
+•	Applied doubly robust targeted maximum likelihood estimation (TMLE) to estimate average treatment effects.
+•	Transformed outcomes to a bounded scale and fitted initial outcome (G-computation) and propensity score models.
+•	Computed clever covariates and adjusted predictions via maximum likelihood.
+•	Calculated and rescaled treatment effects using updated predictions.
+•	Derived confidence intervals from the efficient influence curve.
+•	Integrated machine learning with causal inference for robust effect estimation.
+•	https://rpubs.com/Daniel_He/1044972
+
+### Applying the Material
+
+This source is primarily conceptual or procedural. Use its definitions and decision points as a checklist, and document how each item is implemented in the intended study or analysis.
+
+## Interpreting the Results
+
+Interpret coefficients with their coding and scale, examine uncertainty, and use diagnostics to evaluate assumptions. Treat the output as evidence generated under the stated data, coding choices, and assumptions. Before using the workflow in practice, replace example inputs with validated data and confirm that the method targets the intended scientific question.
+
+## Key Takeaways
+
+- **Connect method to purpose.** Identify the question and target quantity before choosing code or a model.
+- **Read code and output together.** Confirm what each object, estimate, interval, table, or plot represents.
+- **Check assumptions and diagnostics.** A successful computation is not by itself evidence that the result is reliable.
+- **Adapt deliberately.** When applying the example elsewhere, document changes to data definitions, parameters, and analytical choices.

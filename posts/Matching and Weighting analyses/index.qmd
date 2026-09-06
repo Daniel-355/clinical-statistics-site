@@ -1,0 +1,699 @@
+---
+title: "Matching and Weighting analyses"
+description: "A practical R learning guide to Matching and Weighting analyses, with concise explanations, reproducible examples, and interpretation guidance."
+date: 2026-08-31
+section: "Epidemiology & Real-World Evidence"
+category: "Causal Methods"
+topic: "Matching and Weighting analyses"
+type: article
+tags: ["Causal Methods", "Epidemiology & Real-World Evidence", "Matching", "Weighting", "analyses"]
+status: published
+featured: true
+youtube: []
+pdf: []
+downloads: []
+validate-yaml: false
+execute:
+  enabled: false
+  echo: true
+  warning: false
+  error: true
+---
+
+## Why This Topic Matters
+
+Causal methods combine design assumptions and statistical adjustment to estimate well-defined treatment or exposure contrasts.
+
+## Learning Objectives
+
+After working through this material, you should be able to:
+
+- explain the main ideas behind **Matching and Weighting analyses**;
+- interpret the R workflow and its output; and
+- adapt the examples to a related analysis.
+
+## Lesson Roadmap
+
+The original material is organized around the following topics:
+
+1. Matching w/o stratification
+2. Stratification on the propensity score
+3. Weighting using ps
+4. PSM using matchit function
+5. Propensity scores analysis
+6. Differences between Matching and Regression
+
+## How to Use This Lesson
+
+Read the explanation before each workflow, then run the R chunks in sequence. Code and output are shown together so that each numerical or graphical result can be connected to the command that produced it. Some source examples require optional packages or external data. Those setup-dependent chunks remain visible for reference but are marked `eval: false` when they cannot be reproduced safely in a clean website build.
+
+## Reproducible Learning Check
+
+This short R chunk confirms the scope of the lesson and always produces a visible output.
+
+```{r}
+#| label: learning-overview
+learning_overview <- data.frame(
+  section = "Epidemiology & Real-World Evidence",
+  category = "Causal Methods",
+  topic = "Matching and Weighting analyses"
+)
+learning_overview
+```
+
+## Learning Material
+
+The following material develops **Matching and Weighting analyses** from core ideas to practical implementation. Definitions and assumptions come first; worked code then shows how the ideas are represented computationally.
+
+### Conceptual Foundation
+
+The material below closely follows the original R Markdown source, with its examples retained for study and reuse.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+1) Standardized `weighting` and propensity score analysis; 2) Stratification analysis and `matching` are used to calculate the causal effect..
+
+#### Matching w/o stratification
+
+<!-- generated-learning-note -->
+This subsection explains **Matching w/o stratification** and shows how it contributes to the overall Matching and Weighting analyses workflow.
+
+
+Using `matchthem` function for imputed data. 
+
+It also can apply to 1 imputed dataset if letting m=1.
+
+### R Workflow and Examples
+
+Run the examples in order because later blocks may reuse objects created earlier. Each block includes a short purpose statement and guidance for reading its output.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This source block depends on optional software, external data, or a machine-specific path. It is retained as a reference and is not executed during the website build.
+
+```{r}
+#| eval: false
+#| code-fold: true
+set.seed(123)
+# load dataset
+library(mice)
+library(MatchThem)
+library(tidyverse)
+load("C:\\Users\\hed2\\Downloads\\mybook2\\mybook2\\osteoarthritis.RData")
+
+# check NA,
+# a quick view data summary
+summary(osteoarthritis)
+md.pattern(osteoarthritis)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Because this block is not executed, it produces no website output. Enable it only after its dependencies and input paths have been validated.
+
+
+- Imputing the missing data, produces the 5 imputed datasets.
+
+  
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+imputed.datasets <- mice(osteoarthritis, m = 1)  #you can impute a no missing variable
+
+# Get completed data sets
+CDF = complete(imputed.datasets, 'long')
+md.pattern(CDF)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+imputed.datasets <- mice(CDF, m = 2)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+
+- Matching the imputed datasets
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+# Matching the imputed datasets on the propensity score
+matched.datasets <- matchthem(OSP ~ AGE + SEX + BMI + RAC + SMK,
+                              datasets = imputed.datasets,
+                              approach = 'within',
+                              method = 'nearest',     #k nearest method
+                              caliper = 0.05,
+                              ratio = 1)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+- Assessing balance on the matched datasets
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r}
+library(cobalt)
+bal.tab(matched.datasets, stats = c('m', 'ks'),
+        imp.fun = 'max')
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+
+Differneces are close to zero. 
+
+- Analyzing the matched datasets
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r}
+library(survey)
+matched.models <- with(matched.datasets,
+                       svyglm(KOA ~ OSP, family = quasibinomial()),
+                       cluster = TRUE)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+
+no svydesign() or weights arguments need to be specified as these are automatically supplied by with(). 
+
+- Pooling the causal effect estimates
+
+<!-- generated-learning-note -->
+**Purpose.** This block extracts inferential or predictive results from fitted objects. Match each estimate, interval, contrast, or diagnostic to the quantity it represents.
+
+```{r}
+# we must pool the estimated models using pool(), containing the models we fit above
+matched.results <- pool(matched.models)
+
+summary(matched.results, conf.int = TRUE)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Interpret estimates on the scale reported by the function, and use intervals or other uncertainty measures when drawing conclusions.
+
+
+#### Stratification on the propensity score
+
+<!-- generated-learning-note -->
+This subsection explains **Stratification on the propensity score** and shows how it contributes to the overall Matching and Weighting analyses workflow.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This source block depends on optional software, external data, or a machine-specific path. It is retained as a reference and is not executed during the website build.
+
+```{r}
+#| eval: false
+#| code-fold: true
+library("readxl")
+nhefs <- read.csv("C:\\Users\\hed2\\Downloads\\mybook2\\mybook2\\nhefs.csv")
+
+fit3 <- glm(qsmk ~ sex + race + age + I(age*age) + as.factor(education)
+            + smokeintensity + I(smokeintensity*smokeintensity) + smokeyrs
+            + I(smokeyrs*smokeyrs) + as.factor(exercise) + as.factor(active)
+            + wt71 + I(wt71*wt71), data=nhefs, family=binomial())
+summary(fit3)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Because this block is not executed, it produces no website output. Enable it only after its dependencies and input paths have been validated.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block extracts inferential or predictive results from fitted objects. Match each estimate, interval, contrast, or diagnostic to the quantity it represents.
+
+```{r}
+nhefs$ps <- predict(fit3, nhefs, type="response")
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Interpret estimates on the scale reported by the function, and use intervals or other uncertainty measures when drawing conclusions.
+
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block calculates descriptive summaries. Check the denominator, grouping variables, units, and treatment of missing values.
+
+```{r}
+# calculation of deciles
+nhefs$ps.dec <- cut(nhefs$ps, 
+                    breaks=c(quantile(nhefs$ps, probs=seq(0,1,0.1))),
+                    labels=seq(1:10),
+                    include.lowest=TRUE)
+
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Use the displayed values to understand center, spread, frequency, and missingness; investigate any implausible or unexpected result.
+
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block specifies and fits the statistical model. Identify the outcome, predictors, reference levels, link or distribution, and any correlation structure before interpreting coefficients.
+
+```{r}
+# regression on PS deciles, not allowing for effect modification
+fit.psdec <- glm(wt82_71 ~ qsmk + as.factor(ps.dec), data = nhefs)
+summary(fit.psdec)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Focus on coefficient direction and scale, uncertainty intervals, fit statistics, and diagnostics. Statistical significance alone does not establish practical importance or model adequacy.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block specifies and fits the statistical model. Identify the outcome, predictors, reference levels, link or distribution, and any correlation structure before interpreting coefficients.
+
+```{r}
+confint.lm(fit.psdec)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Focus on coefficient direction and scale, uncertainty intervals, fit statistics, and diagnostics. Statistical significance alone does not establish practical importance or model adequacy.
+
+
+
+- Standardized the outcome
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block specifies and fits the statistical model. Identify the outcome, predictors, reference levels, link or distribution, and any correlation structure before interpreting coefficients.
+
+```{r}
+# regression on the propensity score (linear term) p.qsmk instead by ps
+model6 <- glm(wt82_71 ~ qsmk + ps, data = nhefs)
+summary(model6)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Focus on coefficient direction and scale, uncertainty intervals, fit statistics, and diagnostics. Statistical significance alone does not establish practical importance or model adequacy.
+
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block extracts inferential or predictive results from fitted objects. Match each estimate, interval, contrast, or diagnostic to the quantity it represents.
+
+```{r}
+# standardization on the propensity score
+# (step 1) create two new datasets, one with all treated and one with all untreated
+treated <- nhefs
+  treated$qsmk <- 1
+
+untreated <- nhefs
+  untreated$qsmk <- 0
+
+# (step 2) predict values for everyone in each new dataset based on above model
+treated$pred.y <- predict(model6, treated)
+untreated$pred.y <- predict(model6, untreated)
+
+# (step 3) compare mean weight loss had all been treated vs. that had all been untreated
+mean1 <- mean(treated$pred.y, na.rm = TRUE)
+mean0 <- mean(untreated$pred.y, na.rm = TRUE)
+mean1 - mean0
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Interpret estimates on the scale reported by the function, and use intervals or other uncertainty measures when drawing conclusions.
+
+
+
+
+#### Weighting using ps
+
+<!-- generated-learning-note -->
+This subsection explains **Weighting using ps** and shows how it contributes to the overall Matching and Weighting analyses workflow.
+
+
+- Imputing the missing data, produces the 5 imputed datasets.
+
+- Weighting the imputed datasets.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+weighted.datasets <- weightthem(OSP ~ AGE + SEX + BMI + RAC + SMK,
+                                datasets = imputed.datasets,
+                                approach = 'across',
+                                method = 'ps',         #propensity score
+                                estimand = 'ATM')
+# and the output of the calls applied to each imputed dataset.
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+- Assessing balance on the weighted datasets
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+bal.tab(weighted.datasets, stats = c('m', 'ks'),
+        imp.fun = 'max')
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+- Analyzing the weighted datasets
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r}
+library(survey)
+weighted.models <- with(weighted.datasets,
+                        svyglm(KOA ~ OSP, family = quasibinomial()))
+#doesn't work for only 1 imputation
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+
+- Pooling the causal effect estimates
+
+<!-- generated-learning-note -->
+**Purpose.** This block extracts inferential or predictive results from fitted objects. Match each estimate, interval, contrast, or diagnostic to the quantity it represents.
+
+```{r}
+weighted.results <- pool(weighted.models)
+summary(weighted.results, conf.int = TRUE)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Interpret estimates on the scale reported by the function, and use intervals or other uncertainty measures when drawing conclusions.
+
+
+
+
+#### PSM using matchit function
+
+<!-- generated-learning-note -->
+This subsection explains **PSM using matchit function** and shows how it contributes to the overall Matching and Weighting analyses workflow.
+
+
+Table 1 in RHC data 
+
+<!-- generated-learning-note -->
+**Purpose.** This source block depends on optional software, external data, or a machine-specific path. It is retained as a reference and is not executed during the website build.
+
+```{r}
+#| eval: false
+#| code-fold: true
+# load the dataset
+ObsData <- read.csv("C:\\Users\\hed2\\Downloads\\mybook2\\mybook2\\obsdata.csv", header = TRUE)
+# add column for outcome Y: length of stay 
+# Y = date of discharge - study admission date
+# Y = date of death - study admission date if date of discharge not available
+ObsData$Y <- ObsData$dschdte - ObsData$sadmdte
+ObsData$Y[is.na(ObsData$Y)] <- ObsData$dthdte[is.na(ObsData$Y)] - 
+  ObsData$sadmdte[is.na(ObsData$Y)]
+# remove outcomes we are not examining in this example
+ObsData <- dplyr::select(ObsData, 
+                         !c(dthdte, lstctdte, dschdte, death, t3d30, dth30, surv2md1))
+# remove unnecessary and problematic variables 
+ObsData <- dplyr::select(ObsData, 
+                         !c(sadmdte, ptid, X, adld3p, urin1, cat2))
+
+# convert all categorical variables to factors 
+factors <- c("cat1", "ca", "cardiohx", "chfhx", "dementhx", "psychhx", 
+             "chrpulhx", "renalhx", "liverhx", "gibledhx", "malighx", 
+             "immunhx", "transhx", "amihx", "sex", "dnr1", "ninsclas", 
+             "resp", "card", "neuro", "gastr", "renal", "meta", "hema", 
+             "seps", "trauma", "ortho", "race", "income")
+ObsData[factors] <- lapply(ObsData[factors], as.factor)
+# convert our treatment A (RHC vs. No RHC) to a binary variable
+ObsData$A <- ifelse(ObsData$swang1 == "RHC", 1, 0)
+ObsData <- dplyr::select(ObsData, !swang1)
+# Categorize the variables to match with the original paper
+ObsData$age <- cut(ObsData$age,breaks=c(-Inf, 50, 60, 70, 80, Inf),right=FALSE)
+ObsData$race <- factor(ObsData$race, levels=c("white","black","other"))
+ObsData$sex <- as.factor(ObsData$sex)
+ObsData$sex <- relevel(ObsData$sex, ref = "Male")
+ObsData$cat1 <- as.factor(ObsData$cat1)
+levels(ObsData$cat1) <- c("ARF","CHF","Other","Other","Other",
+                          "Other","Other","MOSF","MOSF")
+ObsData$ca <- as.factor(ObsData$ca)
+levels(ObsData$ca) <- c("Metastatic","None","Localized (Yes)")
+ObsData$ca <- factor(ObsData$ca, levels=c("None",
+                                          "Localized (Yes)","Metastatic"))
+# Rename variables
+names(ObsData) <- c("Disease.category", "Cancer", "Cardiovascular", 
+                    "Congestive.HF", "Dementia", "Psychiatric", "Pulmonary", 
+                    "Renal", "Hepatic", "GI.Bleed", "Tumor", 
+                    "Immunosupperssion", "Transfer.hx", "MI", "age", "sex", 
+                    "edu", "DASIndex", "APACHE.score", "Glasgow.Coma.Score", 
+                    "blood.pressure", "WBC", "Heart.rate", "Respiratory.rate", 
+                    "Temperature", "PaO2vs.FIO2", "Albumin", "Hematocrit", 
+                    "Bilirubin", "Creatinine", "Sodium", "Potassium", "PaCo2", 
+                    "PH", "Weight", "DNR.status", "Medical.insurance", 
+                    "Respiratory.Diag", "Cardiovascular.Diag", 
+                    "Neurological.Diag", "Gastrointestinal.Diag", "Renal.Diag",
+                    "Metabolic.Diag", "Hematologic.Diag", "Sepsis.Diag", 
+                    "Trauma.Diag", "Orthopedic.Diag", "race", "income", 
+                    "Y", "A")
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Because this block is not executed, it produces no website output. Enable it only after its dependencies and input paths have been validated.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r}
+baselinevars <- names(dplyr::select(ObsData, 
+                                    !c(A,Y)))
+
+require(tableone)
+tab0 <- CreateTableOne(vars = c("age", "sex", "race", "Disease.category", "Cancer"),
+                       data = ObsData, 
+                       strata = "A", 
+                       test = T)
+print(tab0, showAllLevels = FALSE, )
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+
+
+Matching caliper setup
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r}
+set.seed(111)
+require(MatchIt)
+ps.formula <- as.formula(paste("A~", 
+                               paste(baselinevars, collapse = "+")))
+PS.fit <- glm(ps.formula,family="binomial", 
+              data=ObsData)
+ObsData$PS <- predict(PS.fit, 
+                      newdata = ObsData, type="response") 
+
+# propensity score
+logitPS <-  -log(1/ObsData$PS - 1)  
+
+match.obj <- matchit(ps.formula, data =ObsData,
+                     distance = ObsData$PS,
+                     method = "nearest", replace=FALSE,
+                     ratio = 1,
+                     caliper = .2*sd(logitPS))  #matching caliper 
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+
+PSM diagnostics
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r}
+require(cobalt)
+bal.plot(match.obj,  
+         var.name = "distance", 
+         which = "both", 
+         type = "histogram",  
+         mirror = TRUE)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+Plot 
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+bal.tab(match.obj, un = TRUE, 
+        thresholds = c(m = .1))
+
+love.plot(match.obj, binary = "std", 
+          thresholds = c(m = .1))  
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+Treatment effect calculation
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r}
+library(Publish)
+matched.data <- match.data(match.obj)   
+
+fit.matched <- glm(Y~A,
+                   family=gaussian,  
+                   data = matched.data)  
+publish(fit.matched)
+
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+
+
+#### Propensity scores analysis
+
+<!-- generated-learning-note -->
+This subsection explains **Propensity scores analysis** and shows how it contributes to the overall Matching and Weighting analyses workflow.
+
+
+`not inverse probability`
+
+<!-- generated-learning-note -->
+**Purpose.** This source block depends on optional software, external data, or a machine-specific path. It is retained as a reference and is not executed during the website build.
+
+```{r}
+#| eval: false
+#| code-fold: true
+library("readxl")
+nhefs <- read.csv("C:\\Users\\hed2\\Downloads\\mybook2\\mybook2\\nhefs.csv")
+
+fit3 <- glm(qsmk ~ sex + race + age + I(age*age) + as.factor(education)
+            + smokeintensity + I(smokeintensity*smokeintensity) + smokeyrs
+            + I(smokeyrs*smokeyrs) + as.factor(exercise) + as.factor(active)
+            + wt71 + I(wt71*wt71), data=nhefs, family=binomial())
+summary(fit3)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Because this block is not executed, it produces no website output. Enable it only after its dependencies and input paths have been validated.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block extracts inferential or predictive results from fitted objects. Match each estimate, interval, contrast, or diagnostic to the quantity it represents.
+
+```{r}
+nhefs$ps <- predict(fit3, nhefs, type="response")
+
+summary(nhefs$ps[nhefs$qsmk==0])
+summary(nhefs$ps[nhefs$qsmk==1])
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Interpret estimates on the scale reported by the function, and use intervals or other uncertainty measures when drawing conclusions.
+
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block prepares the analysis data. Follow each transformation carefully because filtering, recoding, grouping, and reshaping determine the observations used downstream.
+
+```{r}
+# alternative plot with histograms
+nhefs <- nhefs %>% mutate(qsmklabel = ifelse(qsmk == 1,
+                       yes = 'Quit Smoking 1971-1982',
+                       no = 'Did Not Quit Smoking 1971-1982'))
+ggplot(nhefs, aes(x = ps, fill = as.factor(qsmk), color = as.factor(qsmk))) +
+  geom_histogram(alpha = 0.3, position = 'identity', bins=15) +
+  facet_grid(as.factor(qsmk) ~ .) +
+  xlab('Probability of Quitting Smoking During Follow-up') +
+  ggtitle('Propensity Score Distribution by Treatment Group') +
+  scale_fill_discrete('') +
+  scale_color_discrete('') +
+  theme(legend.position = 'bottom', legend.direction = 'vertical')
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the data before and after the transformation. Confirm that row counts, group sizes, missingness, and variable values changed as intended.
+
+
+
+
+#### Differences between Matching and Regression
+
+<!-- generated-learning-note -->
+This section develops **Differences between Matching and Regression**. Read the model specification together with its assumptions and the scale of each reported effect.
+
+
+Compare to regression
+
+<!-- generated-learning-note -->
+**Purpose.** This block specifies and fits the statistical model. Identify the outcome, predictors, reference levels, link or distribution, and any correlation structure before interpreting coefficients.
+
+```{r}
+model=glm(KOA ~OSP+AGE + SEX + BMI + RAC + SMK,family = binomial,data=CDF)
+summary(model)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Focus on coefficient direction and scale, uncertainty intervals, fit statistics, and diagnostics. Statistical significance alone does not establish practical importance or model adequacy.
+
+
+Regression has more bias, while Matching has more variance. Matching may be more conservative than regression. Meanwhile, for Matching, there would be no need to make any functional form assumptions. The relationships between the covariates, the treatment and the outcome could be highly non-linear, as long as there is common support and the CIA holds. 
+
+At last, `are the confounders directly available as variables you can condition on?`
+
+## Interpreting the Results
+
+Check nuisance models, overlap, weights, balance, diagnostics, estimand alignment, and sensitivity to modeling choices. Treat the output as evidence generated under the stated data, coding choices, and assumptions. Before using the workflow in practice, replace example inputs with validated data and confirm that the method targets the intended scientific question.
+
+## Key Takeaways
+
+- **Connect method to purpose.** Identify the question and target quantity before choosing code or a model.
+- **Read code and output together.** Confirm what each object, estimate, interval, table, or plot represents.
+- **Check assumptions and diagnostics.** A successful computation is not by itself evidence that the result is reliable.
+- **Adapt deliberately.** When applying the example elsewhere, document changes to data definitions, parameters, and analytical choices.

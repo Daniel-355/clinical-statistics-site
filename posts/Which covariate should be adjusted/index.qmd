@@ -1,0 +1,114 @@
+---
+title: "Which covariate should be adjusted"
+description: "A practical R learning guide to Which covariate should be adjusted, with concise explanations, reproducible examples, and interpretation guidance."
+date: 2026-08-31
+section: "Epidemiology & Real-World Evidence"
+category: "Exposure, Outcome & Covariate Assessment"
+topic: "Which covariate should be adjusted"
+type: article
+tags: ["Exposure, Outcome & Covariate Assessment", "Epidemiology & Real-World Evidence", "Which", "covariate", "should"]
+status: published
+featured: true
+youtube: []
+pdf: []
+downloads: []
+validate-yaml: false
+execute:
+  echo: true
+  warning: false
+  error: true
+---
+
+## Why This Topic Matters
+
+Variable definitions determine what the analysis actually measures and whether adjustment supports the intended comparison.
+
+## Learning Objectives
+
+After working through this material, you should be able to:
+
+- explain the main ideas behind **Which covariate should be adjusted**;
+- interpret the R workflow and its output; and
+- adapt the examples to a related analysis.
+
+## Lesson Roadmap
+
+The original material is organized around the following topics:
+
+1. Which covariate should be adjusted
+
+## How to Use This Lesson
+
+Read the explanation before each workflow, then run the R chunks in sequence. Code and output are shown together so that each numerical or graphical result can be connected to the command that produced it. Some source examples require optional packages or external data. Those setup-dependent chunks remain visible for reference but are marked `eval: false` when they cannot be reproduced safely in a clean website build.
+
+## Reproducible Learning Check
+
+This short R chunk confirms the scope of the lesson and always produces a visible output.
+
+```{r}
+#| label: learning-overview
+learning_overview <- data.frame(
+  section = "Epidemiology & Real-World Evidence",
+  category = "Exposure, Outcome & Covariate Assessment",
+  topic = "Which covariate should be adjusted"
+)
+learning_overview
+```
+
+## Learning Material
+
+The following material develops **Which covariate should be adjusted** from core ideas to practical implementation. Definitions and assumptions come first; worked code then shows how the ideas are represented computationally.
+
+### Conceptual Foundation
+
+The material below closely follows the original R Markdown source, with its examples retained for study and reuse.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#### Which covariate should be adjusted
+
+<!-- generated-learning-note -->
+This subsection explains **Which covariate should be adjusted** and shows how it contributes to the overall Which covariate should be adjusted workflow.
+
+
+In this example, we assume to investigate the causality between smoking and mortality:  whether smoking will more likely cause mortality. We collect the following variables. 
+
+![](C:\Users\hed2\Downloads\mybook2\mybook2\dagitty-smoke dots.jpg) 
+
+Smoking is the exposure, Mortality is the outcome, and others are patient confounders.
+
+
+Then, we connect these knots by directed arrow according to our domain knowledge. It is called as directed acyclic graph (DAG).
+
+![](C:\Users\hed2\Downloads\mybook2\mybook2\dagitty-smoke.jpg) 
+
+We also can add unobserved variables into this graph, like Sport. The blue knots indicate the mediators, and the red ones are confounders which we need to adjust. If the purpose is to investigate the overall effect of smoking and mortality, we should not adjust the blue knots.
+
+After adjusted these confounders, we can get the average total effect between 
+them.
+
+![](C:\Users\hed2\Downloads\mybook2\mybook2\dagitty-smoke after adjusting.jpg)
+
+**`Minimal sufficient adjustment sets for estimating the total effect of Smoking on Mortality:
+Age, Alcohol, Psychosocial, Sex`**
+
+Using the [DAGitty tool](http://www.dagitty.net) ([Tutor](https://www.youtube.com/watch?v=3euqrnD9w7c&list=PLS6tnpTr39sFEzQGpWVT-K775iKbj5Bbp&index=2)), we can see that "There are no instruments or conditional instruments in this DAG" and "The direct effect cannot be estimated by covariate adjustment".
+
+Please notice we still can not adjust those unobserved variables and unconsidered factors by using this tool.
+
+### Applying the Material
+
+This source is primarily conceptual or procedural. Use its definitions and decision points as a checklist, and document how each item is implemented in the intended study or analysis.
+
+## Interpreting the Results
+
+Check timing, coding, measurement quality, missingness, and the causal role of each candidate covariate. Treat the output as evidence generated under the stated data, coding choices, and assumptions. Before using the workflow in practice, replace example inputs with validated data and confirm that the method targets the intended scientific question.
+
+## Key Takeaways
+
+- **Connect method to purpose.** Identify the question and target quantity before choosing code or a model.
+- **Read code and output together.** Confirm what each object, estimate, interval, table, or plot represents.
+- **Check assumptions and diagnostics.** A successful computation is not by itself evidence that the result is reliable.
+- **Adapt deliberately.** When applying the example elsewhere, document changes to data definitions, parameters, and analytical choices.

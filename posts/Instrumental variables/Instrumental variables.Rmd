@@ -1,0 +1,77 @@
+---
+title: "Instrumental variables"
+output: html_document
+date: '2023-05-05'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Instrumental variables
+
+[Reference](https://rpubs.com/wsundstrom/t_ivreg)   
+
+
+![](https://i.stack.imgur.com/NEaQRl.png)
+
+- Simple model
+```{r}
+library(AER)
+
+(data("CigarettesSW", package = "AER"))
+
+CigarettesSW$lquant=log(CigarettesSW$packs)
+CigarettesSW$lprice=log(CigarettesSW$price)
+CigarettesSW$lprice=log(CigarettesSW$price)
+CigarettesSW$lincome=log(CigarettesSW$income)
+CigarettesSW$tdiff= (CigarettesSW$taxs-CigarettesSW$tax)
+
+iv1 = ivreg(lquant ~ lprice | tdiff , data = CigarettesSW)
+
+```
+
+```{r}
+summary(iv1)
+```
+`tdiff` is a instrument variable. 
+
+Compare to general linear model
+```{r}
+iv1_1 = lm(lquant ~ lprice + tdiff , data = CigarettesSW)
+summary(iv1_1)
+```
+
+
+Note that we can have more than one instrument, and we can also include exogenous control variables. 
+
+$
+ivreg(Y ~ X + W | W + Z, ... )
+$
+
+Let Y be the outcome (dependent) variable of interest (lquant), X be the endogenous variable (lprice), W be any exogenous regressors, not including instruments, and Z be the instruments (tdiff). 
+ 
+Important note: Endogenous variables (X) can only appear before the vertical line; instruments (Z) can only appear after the vertical line; exogenous regressors that are not instruments (W) must appear both before and after the vertical line.
+
+
+- Complex model
+
+Let’s add an exogenous regressor: log per capita income.   Let’s also add another instrument: the real tax on cigarettes tax/cpi. 
+
+
+```{r}
+iv2 = ivreg(lquant ~ lprice + lincome | lincome + tdiff + I(tax/cpi),
+            data = CigarettesSW)
+summary(iv2, vcov = sandwich, diagnostics = TRUE)
+```
+ 
+Diagnostic tests:
+
+Weak instruments: The null hypothesis is essentially that we have weak instruments.
+
+Wu-Hausman: This tests the consistency of the OLS estimates under the assumption that the IV is consistent. 
+
+Sargan: If the null is rejected, it means that at least one of our instruments is invalid, and possibly all of them.
+
+
+

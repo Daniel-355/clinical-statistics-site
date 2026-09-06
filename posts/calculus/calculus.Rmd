@@ -1,0 +1,55 @@
+---
+title: "Calculus"
+date: "`r Sys.Date()`"
+author: Daniel 
+output: 
+  html_document:
+    theme: cerulean
+    toc: true 
+    toc_float: true
+---
+
+## Calculus 
+### Derivation
+```{r}
+dx <- deriv(y ~ x^3, "x"); dx
+mode(dx)
+x<-1:2   
+eval(dx)
+```
+```{r}
+dx <- deriv(y ~ sin(x), "x", func= TRUE) ;  
+mode(dx)
+dx(c(pi,4*pi))  
+```
+
+```{r}
+a<-2                
+dx<-deriv(y~a*cos(a*x),"x",func = TRUE)    
+dx(pi/3)
+   
+```
+
+```{r}
+fxy = expression(2*x^2+y+3*x*y^2)
+dxy = deriv(fxy, c("x", "y"), func = TRUE)
+dxy(1,2)  
+```
+###  Integration
+```{r}
+integrate(dnorm, -1.96, 1.96)
+ 
+integrate(dnorm, -Inf, Inf)
+```
+```{r}
+integrand <- function(x) {1/((x+1)*sqrt(x))}
+ 
+integrate(integrand, lower = 0, upper = Inf)
+```
+
+```{r}
+ integrand <- function(x) {sin(x)}
+ integrate(integrand, lower = 0, upper = pi/2) 
+```
+
+

@@ -35,7 +35,12 @@ toc: false
 </section>
 <section class="category-block" id="trial-designs">
 <h2>Trial Designs</h2>
-<p class="text-muted">No published notes yet.</p>
+<div class="topic-group">
+<h3>BOIN, CRM and 3+3</h3>
+<ul>
+<li><a href="../../posts/BOIN and CRM/index.qmd">BOIN, CRM and 3+3</a></li>
+</ul>
+</div>
 </section>
 <section class="category-block" id="treatment-arms-controls">
 <h2>Treatment Arms & Controls</h2>
@@ -43,7 +48,18 @@ toc: false
 </section>
 <section class="category-block" id="randomization-blinding">
 <h2>Randomization & Blinding</h2>
-<p class="text-muted">No published notes yet.</p>
+<div class="topic-group">
+<h3>Randomization of assignment</h3>
+<ul>
+<li><a href="../../posts/Randomization of assignment/index.qmd">Randomization of assignment</a></li>
+</ul>
+</div>
+<div class="topic-group">
+<h3>Response-Adaptive Randomization: Stage 1 and Stage 2</h3>
+<ul>
+<li><a href="../../posts/Response-Adaptive Randomization- Stage 1 and Stage 2/index.qmd">Response-Adaptive Randomization: Stage 1 and Stage 2</a></li>
+</ul>
+</div>
 </section>
 <section class="category-block" id="study-population-eligibility">
 <h2>Study Population & Eligibility</h2>
@@ -67,7 +83,12 @@ toc: false
 </section>
 <section class="category-block" id="safety-monitoring">
 <h2>Safety Monitoring</h2>
-<p class="text-muted">No published notes yet.</p>
+<div class="topic-group">
+<h3>Bayesian safety monitoring</h3>
+<ul>
+<li><a href="../../posts/Bayesian safety monitoring/index.qmd">Bayesian safety monitoring</a></li>
+</ul>
+</div>
 </section>
 <section class="category-block" id="dsmb-dmc">
 <h2>DSMB / DMC</h2>

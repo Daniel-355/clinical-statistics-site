@@ -1,0 +1,267 @@
+---
+title: "O'Brien-Fleming and Alpha-Spending Methods"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+  toc: true
+  toc_depth: 2
+  number_sections: true
+---
+
+# Overview
+
+Both classical O'Brien-Fleming and alpha-spending methods are used to control the overall Type I error when a clinical trial includes interim analyses.
+
+# Classical O'Brien-Fleming Method
+
+The main steps are:
+
+1. Specify the overall alpha level, number of analyses, and information fractions.
+
+2. Construct the joint correlation matrix of the sequential Z-statistics.
+
+3. Define the efficacy boundary at analysis (k) as:
+
+$$
+b_k = \frac{c}{\sqrt{t_k}},
+$$
+
+where (t_k) is the information fraction and (c) is a common boundary constant.
+
+4. Numerically solve for (c) so that the probability of crossing any efficacy boundary under the null hypothesis equals the overall alpha:
+
+$$
+P_{H_0}
+\left(
+Z_1 \ge b_1
+\text{ or }
+Z_2 \ge b_2
+\text{ or } \cdots \text{ or }
+Z_K \ge b_K
+\right)
+=
+\alpha.
+$$
+
+5. Convert the resulting Z boundaries into nominal p-value boundaries.
+
+In simple terms, the classical O'Brien-Fleming method starts by defining the shape of the sequential boundaries.
+
+```{r}
+# ============================================================
+# Calculate the O'Brien-Fleming constant c
+# Two analyses: 50% information and 100% information
+# Overall one-sided alpha = 0.025
+# ============================================================
+
+# Install once if needed:
+# install.packages("mvtnorm")
+
+library(mvtnorm)
+
+# Overall one-sided Type I error
+alpha <- 0.025
+
+# Information fractions
+t1 <- 0.50
+t2 <- 1.00
+
+# Correlation between the two Z statistics
+rho <- sqrt(t1 / t2)
+
+# Covariance/correlation matrix under H0
+sigma_z <- matrix(
+  c(
+    1,   rho,
+    rho, 1
+  ),
+  nrow = 2,
+  byrow = TRUE
+)
+
+# ------------------------------------------------------------
+# For a given value of c, calculate the total probability
+# of crossing at least one efficacy boundary under H0
+# ------------------------------------------------------------
+
+crossing_probability <- function(c) {
+  
+  # O'Brien-Fleming Z boundaries
+  boundary <- c(
+    c / sqrt(t1),
+    c / sqrt(t2)
+  )
+  
+  # Probability of NOT crossing either boundary:
+  # P(Z1 < b1 and Z2 < b2)
+  probability_no_crossing <- as.numeric(
+    pmvnorm(
+      lower = c(-Inf, -Inf),
+      upper = boundary,
+      mean = c(0, 0),
+      sigma = sigma_z
+    )
+  )
+  
+  # Probability of crossing at least one boundary
+  1 - probability_no_crossing
+}
+
+# ------------------------------------------------------------
+# Solve for c such that crossing probability = alpha
+# ------------------------------------------------------------
+
+objective_function <- function(c) {
+  crossing_probability(c) - alpha
+}
+
+solution <- uniroot(
+  f = objective_function,
+  interval = c(1.5, 2.5)
+)
+
+c_value <- solution$root
+
+# Calculate the two Z boundaries
+z_boundary_interim <- c_value / sqrt(t1)
+z_boundary_final   <- c_value / sqrt(t2)
+
+# Nominal one-sided p-value boundaries
+p_boundary_interim <- 1 - pnorm(z_boundary_interim)
+p_boundary_final   <- 1 - pnorm(z_boundary_final)
+
+# Display results
+results <- data.frame(
+  Analysis = c("Interim analysis", "Final analysis"),
+  Information_Fraction = c(t1, t2),
+  Z_Boundary = c(z_boundary_interim, z_boundary_final),
+  Nominal_One_Sided_P = c(
+    p_boundary_interim,
+    p_boundary_final
+  )
+)
+
+cat("O'Brien-Fleming constant c =", round(c_value, 4), "\n\n")
+
+print(results, digits = 5)
+
+cat(
+  "\nOverall crossing probability under H0 =",
+  round(crossing_probability(c_value), 5),
+  "\n"
+)
+
+```
+
+
+# Alpha-Spending Method
+
+The main steps are:
+
+1. Specify the overall alpha level and an alpha-spending function.
+
+2. At each information fraction (t_k), calculate the cumulative alpha available:
+
+$$
+\alpha(t_k).
+$$
+
+3. Determine the first interim boundary directly from the cumulative alpha available at the first analysis.
+
+4. For each later analysis, numerically solve for the Z boundary so that the cumulative probability of crossing any boundary up to that analysis equals the cumulative alpha spent:
+
+$$
+P_{H_0}
+\left(
+Z_1 \ge b_1
+\text{ or } \cdots \text{ or }
+Z_k \ge b_k
+\right)
+=
+\alpha(t_k).
+$$
+
+5. Verify that the cumulative Type I error at the final analysis equals the prespecified overall alpha.
+
+In simple terms, the alpha-spending method first specifies how alpha is accumulated and spent over information time, and then calculates the corresponding boundaries.
+
+```{r}
+library(mvtnorm)
+
+# Overall one-sided alpha
+alpha_total <- 0.025
+
+# Interim information fraction
+t1 <- 0.50
+
+z_final <- qnorm(1 - alpha_total)
+
+z_interim <- z_final / sqrt(t1)
+
+alpha_spent <- 1 - pnorm(z_interim)
+
+alpha_spent
+
+# Cumulative alpha spent at interim
+alpha_interim <- alpha_spent
+
+# Interim Z boundary
+z1 <- qnorm(1 - alpha_interim)
+
+# Correlation between interim and final Z statistics
+rho <- sqrt(t1)
+
+sigma_z <- matrix(
+  c(
+    1,   rho,
+    rho, 1
+  ),
+  nrow = 2,
+  byrow = TRUE
+)
+
+# Find the final Z boundary
+objective <- function(z2) {
+  
+  probability_no_crossing <- as.numeric(
+    pmvnorm(
+      lower = c(-Inf, -Inf),
+      upper = c(z1, z2),
+      mean = c(0, 0),
+      sigma = sigma_z
+    )
+  )
+  
+  overall_crossing_probability <-
+    1 - probability_no_crossing
+  
+  overall_crossing_probability - alpha_total
+}
+
+solution <- uniroot(
+  objective,
+  interval = c(1.5, 2.5)
+)
+
+z2 <- solution$root
+p2 <- 1 - pnorm(z2)
+
+cat("Interim Z boundary:", round(z1, 4), "\n")
+cat("Interim nominal p boundary:", alpha_interim, "\n\n")
+
+cat("Final Z boundary:", round(z2, 4), "\n")
+cat("Final nominal p boundary:", round(p2, 5), "\n")
+
+
+```
+
+
+# Main Difference
+
+The classical O'Brien-Fleming method starts from a predefined boundary shape:
+
+$$
+b_k = \frac{c}{\sqrt{t_k}}.
+$$
+
+The alpha-spending method starts from a function that specifies how much cumulative alpha may be spent at each information fraction. Alpha spending is generally more flexible because the boundaries can be recalculated using the actual information fractions when interim analyses occur earlier or later than originally planned. Original plan was 50%, actual analysis at 55%: With alpha-spending, boundaries can be recalculated based on the actual 55% point using the preset function; with a classic fixed-boundary design, the situation must be handled according to pre-specified rules for deviations. In simple terms, freeze the interim data, determine the actual information fraction, calculate the boundary using the prespecified rule, and then perform the unblinded interim analysis. 

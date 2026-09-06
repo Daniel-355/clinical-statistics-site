@@ -1,0 +1,717 @@
+---
+title: "Clinical Statistical Modeling SOP"
+description: "A practical R learning guide to Clinical Statistical Modeling SOP, with concise explanations, reproducible examples, and interpretation guidance."
+date: 2026-08-31
+section: "Resources"
+category: "SAP & Protocol Resources"
+topic: "Clinical Statistical Modeling SOP"
+type: article
+tags: ["SAP & Protocol Resources", "Resources", "Clinical", "Statistical", "Modeling"]
+status: published
+featured: true
+youtube: []
+pdf: []
+downloads: []
+validate-yaml: false
+execute:
+  echo: true
+  warning: false
+  error: true
+---
+
+## Why This Topic Matters
+
+A statistical analysis plan translates protocol objectives into pre-specified, reproducible analytical decisions.
+
+## Learning Objectives
+
+After working through this material, you should be able to:
+
+- explain the main ideas behind **Clinical Statistical Modeling SOP**;
+- interpret the R workflow and its output; and
+- adapt the examples to a related analysis.
+
+## Lesson Roadmap
+
+The original material is organized around the following topics:
+
+1. 1. Purpose
+2. 2. Define the Modeling Objective
+3. 3. Define the Analysis Population and Variables
+4. 4. Data Quality Assessment
+5. 5. Missing Data
+6. 6. Descriptive Analysis and EDA
+
+## How to Use This Lesson
+
+Read the explanation before each workflow, then run the R chunks in sequence. Code and output are shown together so that each numerical or graphical result can be connected to the command that produced it. Some source examples require optional packages or external data. Those setup-dependent chunks remain visible for reference but are marked `eval: false` when they cannot be reproduced safely in a clean website build.
+
+## Reproducible Learning Check
+
+This short R chunk confirms the scope of the lesson and always produces a visible output.
+
+```{r}
+#| label: learning-overview
+learning_overview <- data.frame(
+  section = "Resources",
+  category = "SAP & Protocol Resources",
+  topic = "Clinical Statistical Modeling SOP"
+)
+learning_overview
+```
+
+## Learning Material
+
+The following material develops **Clinical Statistical Modeling SOP** from core ideas to practical implementation. Definitions and assumptions come first; worked code then shows how the ideas are represented computationally.
+
+### Conceptual Foundation
+
+The material below closely follows the original R Markdown source, with its examples retained for study and reuse.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  warning = FALSE,
+  message = FALSE,
+  fig.width = 7,
+  fig.height = 5
+)
+```
+
+#### 1. Purpose
+
+<!-- generated-learning-note -->
+This subsection explains **1. Purpose** and shows how it contributes to the overall Clinical Statistical Modeling SOP workflow.
+
+
+This SOP provides a concise and reusable framework for clinical statistical modeling.
+
+It is intended for common clinical and epidemiologic modeling tasks, including:
+
+- binary outcomes,
+- continuous outcomes,
+- count outcomes,
+- time-to-event outcomes,
+- repeated-measures outcomes,
+- and clinical prediction models.
+
+The objective is to ensure that model development, assessment, validation, interpretation, and reporting are scientifically justified, reproducible, and clinically meaningful.
+
+#### 2. Define the Modeling Objective
+
+<!-- generated-learning-note -->
+This section develops **2. Define the Modeling Objective**. Read the model specification together with its assumptions and the scale of each reported effect.
+
+
+Before analysis, clearly define:
+
+- research question,
+- target population,
+- outcome,
+- candidate predictors or covariates,
+- time point or prediction horizon when relevant,
+- intended model use,
+- and primary estimand or performance target.
+
+The modeling objective should be classified as one of the following:
+
+1. **Explanation / association**
+2. **Causal effect estimation**
+3. **Prediction / risk estimation**
+
+The model-building strategy and interpretation should follow the scientific objective.
+
+#### 3. Define the Analysis Population and Variables
+
+<!-- generated-learning-note -->
+This section prepares the information needed for **3. Define the Analysis Population and Variables**. Check variable definitions, units, coding, and missing values before moving to analysis.
+
+
+Prespecify:
+
+- inclusion criteria,
+- exclusion criteria,
+- outcome definition,
+- predictor/covariate definitions,
+- reference categories,
+- baseline or measurement windows,
+- and variable coding.
+
+Variables that occur after the outcome or directly encode the outcome should not be used as predictors because they may introduce **outcome leakage**.
+
+#### 4. Data Quality Assessment
+
+<!-- generated-learning-note -->
+This section prepares the information needed for **4. Data Quality Assessment**. Check variable definitions, units, coding, and missing values before moving to analysis.
+
+
+Before modeling, assess:
+
+- duplicate subjects or records,
+- variable types,
+- categorical coding,
+- clinically implausible values,
+- inconsistent dates,
+- logical inconsistencies,
+- missing values,
+- and unexpected distributions.
+
+Potential errors should be investigated rather than automatically deleted.
+
+A statistical outlier should not automatically be treated as a data error.
+
+### R Workflow and Examples
+
+Run the examples in order because later blocks may reuse objects created earlier. Each block includes a short purpose statement and guidance for reading its output.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block extracts inferential or predictive results from fitted objects. Match each estimate, interval, contrast, or diagnostic to the quantity it represents.
+
+```{r data-quality-example, eval=FALSE}
+# Duplicate IDs
+sum(duplicated(data$id))
+
+# Missing values
+colSums(is.na(data))
+
+# Basic distributions
+summary(data)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Interpret estimates on the scale reported by the function, and use intervals or other uncertainty measures when drawing conclusions.
+
+
+#### 5. Missing Data
+
+<!-- generated-learning-note -->
+This section prepares the information needed for **5. Missing Data**. Check variable definitions, units, coding, and missing values before moving to analysis.
+
+
+Summarize missingness:
+
+- overall,
+- by variable,
+- and, when useful, by outcome or treatment group.
+
+The missing-data strategy should be prespecified.
+
+Common approaches include:
+
+- complete-case analysis when missingness is minimal and defensible,
+- multiple imputation,
+- or another justified model-based approach.
+
+For multiple imputation, the imputation model should generally include:
+
+- the outcome,
+- candidate predictors/covariates,
+- and variables related to missingness.
+
+When prediction-model validation uses resampling, imputation should ideally be incorporated within the resampling procedure.
+
+#### 6. Descriptive Analysis and EDA
+
+<!-- generated-learning-note -->
+This subsection explains **6. Descriptive Analysis and EDA** and shows how it contributes to the overall Clinical Statistical Modeling SOP workflow.
+
+
+Before fitting the final model:
+
+- summarize the outcome,
+- summarize candidate predictors,
+- inspect distributions,
+- identify sparse categories,
+- examine clinically important relationships,
+- and evaluate potential outliers.
+
+Continuous variables should generally be retained as continuous when possible rather than arbitrarily categorized.
+
+#### 7. Predictor / Covariate Selection
+
+<!-- generated-learning-note -->
+This subsection explains **7. Predictor / Covariate Selection** and shows how it contributes to the overall Clinical Statistical Modeling SOP workflow.
+
+
+Candidate variables should preferably be selected using:
+
+- clinical knowledge,
+- prior literature,
+- prespecified hypotheses,
+- and scientific relevance.
+
+Variables should not be removed solely because their univariable P-value exceeds 0.05.
+
+Traditional stepwise selection may be used for exploratory purposes but is generally not preferred as the primary model-building strategy because it can produce unstable variable selection and optimistic performance.
+
+When the number of candidate predictors is large relative to the available information, consider:
+
+- LASSO,
+- ridge regression,
+- elastic net,
+- or other shrinkage/penalization methods.
+
+#### 8. Model Selection by Outcome Type
+
+<!-- generated-learning-note -->
+This section develops **8. Model Selection by Outcome Type**. Read the model specification together with its assumptions and the scale of each reported effect.
+
+
+The statistical model should match the outcome structure.
+
+| Outcome | Common Model |
+|---|---|
+| Continuous | Linear regression |
+| Binary | Logistic regression |
+| Count | Poisson / Negative Binomial |
+| Time-to-event | Cox proportional hazards model |
+| Repeated continuous | Linear mixed model / MMRM |
+| Repeated binary | GEE / GLMM |
+
+The primary model should be prespecified whenever possible.
+
+#### 9. Functional Form of Continuous Variables
+
+<!-- generated-learning-note -->
+This section prepares the information needed for **9. Functional Form of Continuous Variables**. Check variable definitions, units, coding, and missing values before moving to analysis.
+
+
+Do not automatically assume that continuous predictors have linear effects.
+
+Assess nonlinear relationships when clinically or statistically plausible.
+
+Common approaches include:
+
+- restricted cubic splines,
+- fractional polynomials,
+- transformations,
+- or clinically justified piecewise functions.
+
+Example:
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r spline-example, eval=FALSE}
+library(rms)
+
+fit_spline <- lrm(
+  outcome ~ rcs(age, 4) + rcs(bmi, 4) + sex,
+  data = model_data
+)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+
+Avoid arbitrary categorization unless there is a strong clinical reason.
+
+#### 10. Interaction Assessment
+
+<!-- generated-learning-note -->
+This subsection explains **10. Interaction Assessment** and shows how it contributes to the overall Clinical Statistical Modeling SOP workflow.
+
+
+Interactions should be evaluated when there is a prespecified clinical or scientific rationale.
+
+Example:
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block specifies and fits the statistical model. Identify the outcome, predictors, reference levels, link or distribution, and any correlation structure before interpreting coefficients.
+
+```{r interaction-example, eval=FALSE}
+fit_interaction <- glm(
+  outcome ~ treatment * sex + age + bmi,
+  family = binomial(),
+  data = model_data
+)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Focus on coefficient direction and scale, uncertainty intervals, fit statistics, and diagnostics. Statistical significance alone does not establish practical importance or model adequacy.
+
+
+When an interaction is important, interpretation should focus on the treatment or predictor effect within relevant levels of the interacting variable rather than interpreting the main effect alone.
+
+Exploratory interaction testing should be interpreted cautiously.
+
+#### 11. Multicollinearity
+
+<!-- generated-learning-note -->
+This subsection explains **11. Multicollinearity** and shows how it contributes to the overall Clinical Statistical Modeling SOP workflow.
+
+
+Assess strong correlation among predictors when relevant.
+
+Possible methods include:
+
+- correlation matrices,
+- variance inflation factors (VIF),
+- condition indices,
+- and clinical review of redundant variables.
+
+Highly correlated variables may lead to unstable coefficients even when overall prediction remains acceptable.
+
+#### 12. Fit the Prespecified Model
+
+<!-- generated-learning-note -->
+This section develops **12. Fit the Prespecified Model**. Read the model specification together with its assumptions and the scale of each reported effect.
+
+
+Fit the prespecified or final candidate model using the selected modeling approach.
+
+Example for a binary outcome:
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block specifies and fits the statistical model. Identify the outcome, predictors, reference levels, link or distribution, and any correlation structure before interpreting coefficients.
+
+```{r logistic-example, eval=FALSE}
+fit <- glm(
+  outcome ~ age + bmi + blood_pressure +
+    cholesterol + sex + smoking,
+  family = binomial(),
+  data = model_data
+)
+
+summary(fit)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Focus on coefficient direction and scale, uncertainty intervals, fit statistics, and diagnostics. Statistical significance alone does not establish practical importance or model adequacy.
+
+
+Model coefficients, standard errors, confidence intervals, and clinically relevant effect measures should be reported when inference is an objective.
+
+#### 13. Model Diagnostics
+
+<!-- generated-learning-note -->
+This section develops **13. Model Diagnostics**. Read the model specification together with its assumptions and the scale of each reported effect.
+
+
+Model diagnostics should be appropriate to the model type.
+
+Common checks include:
+
+- residual diagnostics,
+- influential observations,
+- model convergence,
+- sparse cells,
+- proportional hazards for Cox models,
+- distributional assumptions for linear models,
+- overdispersion for count models,
+- and random-effect assumptions for mixed models.
+
+Influential observations should be investigated rather than automatically removed.
+
+#### 14. Model Performance
+
+<!-- generated-learning-note -->
+This section develops **14. Model Performance**. Read the model specification together with its assumptions and the scale of each reported effect.
+
+
+For prediction models, performance should generally be evaluated across several dimensions.
+
+#### 14.1 Discrimination
+
+<!-- generated-learning-note -->
+This subsection explains **14.1 Discrimination** and shows how it contributes to the overall Clinical Statistical Modeling SOP workflow.
+
+
+For binary models, commonly use:
+
+- ROC curve,
+- AUC / C-statistic.
+
+For survival models, commonly use:
+
+- Harrell's C-index,
+- time-dependent AUC when appropriate.
+
+Discrimination evaluates how well the model separates individuals with different outcomes.
+
+#### 14.2 Calibration
+
+<!-- generated-learning-note -->
+This subsection explains **14.2 Calibration** and shows how it contributes to the overall Clinical Statistical Modeling SOP workflow.
+
+
+Assess agreement between predicted and observed outcomes.
+
+Common measures include:
+
+- calibration plot,
+- calibration intercept,
+- calibration slope,
+- observed versus predicted risk.
+
+Calibration is essential and should not be replaced by AUC alone.
+
+#### 14.3 Overall Prediction Error
+
+<!-- generated-learning-note -->
+This subsection explains **14.3 Overall Prediction Error** and shows how it contributes to the overall Clinical Statistical Modeling SOP workflow.
+
+
+For binary prediction models, the **Brier score** may be reported.
+
+A lower Brier score indicates better overall prediction accuracy.
+
+#### 15. Internal Validation
+
+<!-- generated-learning-note -->
+This subsection explains **15. Internal Validation** and shows how it contributes to the overall Clinical Statistical Modeling SOP workflow.
+
+
+Apparent performance calculated in the same data used to develop the model is usually optimistic.
+
+Internal validation should be performed when the model is intended for prediction.
+
+Preferred methods include:
+
+- bootstrap validation,
+- cross-validation.
+
+Bootstrap validation can be used to estimate optimism-corrected:
+
+- discrimination,
+- calibration,
+- and overall performance.
+
+If variable selection, imputation, or tuning is part of the modeling algorithm, these steps should ideally be repeated within each resampling iteration.
+
+#### 16. External or Temporal Validation
+
+<!-- generated-learning-note -->
+This subsection explains **16. External or Temporal Validation** and shows how it contributes to the overall Clinical Statistical Modeling SOP workflow.
+
+
+When independent data are available, evaluate the frozen model in:
+
+- a later time period,
+- another institution,
+- another geographic region,
+- or another relevant population.
+
+Assess at least:
+
+- discrimination,
+- calibration,
+- and overall prediction error.
+
+If discrimination remains acceptable but calibration has shifted, recalibration may be considered.
+
+#### 17. Clinical Utility
+
+<!-- generated-learning-note -->
+This subsection explains **17. Clinical Utility** and shows how it contributes to the overall Clinical Statistical Modeling SOP workflow.
+
+
+When the model is intended to support clinical decisions, evaluate whether predictions provide meaningful clinical benefit.
+
+Decision-curve analysis (DCA) may be used to evaluate **net benefit** across clinically relevant threshold probabilities.
+
+DCA should not be interpreted simply as an automatic method for choosing a cutoff.
+
+Threshold-based measures such as:
+
+- sensitivity,
+- specificity,
+- PPV,
+- and NPV
+
+should be reported only when the threshold is clinically justified.
+
+#### 18. Sensitivity Analyses
+
+<!-- generated-learning-note -->
+This subsection explains **18. Sensitivity Analyses** and shows how it contributes to the overall Clinical Statistical Modeling SOP workflow.
+
+
+Perform sensitivity analyses that address important modeling assumptions.
+
+Common examples include:
+
+1. complete-case versus multiple-imputation analysis;
+2. linear versus nonlinear functional forms;
+3. alternative predictor sets;
+4. exclusion versus inclusion of influential observations;
+5. alternative outcome definitions;
+6. penalized versus conventional regression;
+7. alternative modeling assumptions.
+
+Sensitivity analyses should evaluate whether conclusions are materially changed.
+
+#### 19. Subgroup Assessment
+
+<!-- generated-learning-note -->
+This subsection explains **19. Subgroup Assessment** and shows how it contributes to the overall Clinical Statistical Modeling SOP workflow.
+
+
+When clinically relevant, evaluate model performance or effects in prespecified subgroups.
+
+Examples include:
+
+- sex,
+- age group,
+- race/ethnicity when appropriate,
+- disease severity,
+- treatment group,
+- or major comorbidity groups.
+
+For prediction models, subgroup evaluation may include:
+
+- AUC,
+- calibration,
+- observed versus predicted risk,
+- and sample size/event counts.
+
+Small subgroup results should be interpreted cautiously.
+
+#### 20. Reporting
+
+<!-- generated-learning-note -->
+This subsection explains **20. Reporting** and shows how it contributes to the overall Clinical Statistical Modeling SOP workflow.
+
+
+The final report should clearly describe:
+
+- modeling objective,
+- study population,
+- outcome definition,
+- candidate variables,
+- missing-data handling,
+- model specification,
+- nonlinear terms,
+- interactions,
+- model-selection strategy,
+- diagnostics,
+- validation method,
+- performance measures,
+- sensitivity analyses,
+- and limitations.
+
+For prediction models, recommended performance reporting includes:
+
+| Domain | Common Measure |
+|---|---|
+| Discrimination | AUC / C-index |
+| Calibration | Calibration plot, intercept, slope |
+| Overall error | Brier score |
+| Clinical utility | Decision-curve analysis |
+| Validation | Bootstrap / external validation |
+
+#### 21. Reproducibility and Quality Control
+
+<!-- generated-learning-note -->
+This subsection explains **21. Reproducibility and Quality Control** and shows how it contributes to the overall Clinical Statistical Modeling SOP workflow.
+
+
+The analysis should be reproducible.
+
+Recommended practices include:
+
+- set and document random seeds when needed,
+- version-control analysis code,
+- retain the data dictionary,
+- document all derived variables,
+- independently review key model code and outputs,
+- retain model coefficients and model specification,
+- and record software/package versions.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r session-info, eval=FALSE}
+sessionInfo()
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+#### Appendix A. Minimal Modeling Workflow
+
+<!-- generated-learning-note -->
+This section develops **Appendix A. Minimal Modeling Workflow**. Read the model specification together with its assumptions and the scale of each reported effect.
+
+
+```text
+Research question
+        ↓
+Define target population and outcome
+        ↓
+Define candidate predictors / covariates
+        ↓
+Data quality checks
+        ↓
+Missing-data assessment
+        ↓
+Descriptive analysis / EDA
+        ↓
+Check outliers and multicollinearity
+        ↓
+Assess continuous-variable functional forms
+        ↓
+Handle missing data
+        ↓
+Fit prespecified model
+        ↓
+Assess nonlinear terms / interactions
+        ↓
+Model diagnostics
+        ↓
+Evaluate performance
+        ↓
+Internal validation
+        ↓
+Sensitivity analyses
+        ↓
+External / temporal validation if available
+        ↓
+Clinical interpretation and reporting
+```
+
+#### Appendix B. Pre-Modeling Checklist
+
+<!-- generated-learning-note -->
+This section develops **Appendix B. Pre-Modeling Checklist**. Read the model specification together with its assumptions and the scale of each reported effect.
+
+
+Before final modeling, confirm:
+
+- [ ] Research question is clearly defined
+- [ ] Modeling objective is defined: association, causal effect, or prediction
+- [ ] Target population is defined
+- [ ] Outcome is clearly defined
+- [ ] Candidate predictors/covariates are prespecified
+- [ ] Outcome leakage variables are excluded
+- [ ] Data quality checks are completed
+- [ ] Missing-data strategy is specified
+- [ ] Continuous-variable strategy is specified
+- [ ] Interaction terms are prespecified when relevant
+- [ ] Multicollinearity has been assessed
+- [ ] Primary model is specified
+- [ ] Model diagnostics are specified
+- [ ] Validation strategy is specified
+- [ ] Performance measures are specified
+- [ ] Sensitivity analyses are specified
+- [ ] Subgroup analyses are prespecified when relevant
+- [ ] Reporting outputs are defined
+- [ ] Analysis code is reproducible
+
+## Interpreting the Results
+
+Use the material as a checklist and adapt each element to the study design, estimands, data structure, and reporting requirements. Treat the output as evidence generated under the stated data, coding choices, and assumptions. Before using the workflow in practice, replace example inputs with validated data and confirm that the method targets the intended scientific question.
+
+## Key Takeaways
+
+- **Connect method to purpose.** Identify the question and target quantity before choosing code or a model.
+- **Read code and output together.** Confirm what each object, estimate, interval, table, or plot represents.
+- **Check assumptions and diagnostics.** A successful computation is not by itself evidence that the result is reliable.
+- **Adapt deliberately.** When applying the example elsewhere, document changes to data definitions, parameters, and analytical choices.

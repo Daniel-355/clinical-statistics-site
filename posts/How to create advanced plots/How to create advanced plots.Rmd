@@ -1,0 +1,266 @@
+---
+title: "How to create advanced plots"
+output: html_document
+date: '9-12-2022'
+author: Daniel
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## How to create advanced plots 
+### Animated chart
+```{r leaflet, warning=FALSE}
+# Get data:
+library(gapminder)
+
+# load libraries:
+library(ggplot2)
+library(gganimate)
+
+# create text label 
+gapminder$countrylabel <- ifelse(gapminder$country=="United States", 'US',
+                    ifelse(gapminder$country=="China", "CN", ""))
+
+# Make a ggplot, but add frame=year: one image per year
+# add text at top of specific points
+ggplot(gapminder, aes(gdpPercap, lifeExp, size = pop, color = continent)) +
+  geom_point() +
+  scale_x_log10() +
+  theme_bw() +
+  # gganimate specific bits:
+  labs(title = 'Year: {frame_time}', x = 'GDP per capita', y = 'life expectancy') +
+  transition_time(year) +
+  ease_aes('linear')+
+  geom_text(data=gapminder, aes(x=gdpPercap, y=lifeExp, label=gapminder$countrylabel, fill=1, vjust = -0.5 ))
+
+# Save at gif:
+# anim_save("C:\\Users\\hed2\\gganimate1.gif")
+
+```
+
+## Wordcloud  
+```{r , warning=FALSE}
+# load Packages
+require(RColorBrewer)
+require(tidyverse)
+require(magrittr)
+require(ggwordcloud)
+
+library(SnowballC)
+library(tm)
+
+# load text data using a filter() function from dplyr package
+# devtools::install_github("JohnCoene/sacred")
+scripture = sacred::king_james_version
+
+john = scripture %>% 
+  filter(book == "joh")%>% 
+  select(text)
+
+# transforming the text document into corpus
+john.corpus = john %>% 
+  tm::VectorSource() %>% 
+  tm::VCorpus()
+
+# replacing special characters to space
+toSpace = content_transformer(function (x , pattern ) 
+  gsub(pattern, " ", x))
+
+john.corpus = john.corpus %>% 
+  tm_map(toSpace, "/") %>%
+  tm_map(toSpace, " ") %>%
+  tm_map(toSpace, "\\|")
+
+# removing stopwords and change all words to small letters
+john.corpus =  john.corpus %>% 
+  tm_map(FUN = content_transformer(tolower)) %>% # Convert the text to lower case
+  tm_map(FUN = removeNumbers) %>% # Remove numbers
+  tm_map(removeWords, stopwords("english")) %>% # Remove english common stopwords
+  tm_map(removeWords, c("ye", "O", "unto", "yet", "thee", "wherein", "neither", "shall", 
+                        "saith", "host", "will", "offer", "say")) %>%   # Remove words
+  tm_map(removePunctuation) %>%   # Remove punctuations
+  tm_map(stripWhitespace)   #
+
+ 
+
+# compute the frequency of each word
+# changed from corpus format to matrix and to data.frame
+john.corpus.tb=  john.corpus %>% 
+  tm::TermDocumentMatrix(control = list(removeNumbers = TRUE,
+                                        stopwords = TRUE,
+                                        stemming = TRUE)) %>% 
+  as.matrix() %>% as.data.frame() %>% 
+  tibble::rownames_to_column() %>%
+  dplyr::rename(word = 1, freq = 2) %>%
+  dplyr::arrange(desc(freq))
+
+
+# make the word cloud 
+john.corpus.tb[1,1]="Yeshua"
+
+set.seed(42)
+ggplot(
+  john.corpus.tb,
+  aes(
+    label = word, size = freq,
+    color =  (freq)
+  )
+) +
+  geom_text_wordcloud_area(aes(angle = 45 * sample(-2:2, nrow(john.corpus.tb),
+                                                   replace = TRUE,
+                                                   prob = c(1, 1, 4, 1, 1)
+  )),
+  mask = png::readPNG("C:\\Users\\hed2\\Downloads\\mask.png"
+  ),
+  rm_outside = TRUE
+  ) +
+  scale_size_area(max_size = 20) +
+  theme_minimal() +
+  # scale_color_brewer(palette = "Paired", direction = -1)
+  scale_color_gradient(low = "blue", high = "darkred")
+ 
+```
+
+### Map using shinyapps.io  
+Map
+
+(click here)[https://pl8ev5-dian-he.shinyapps.io/map_x/]
+
+```{r,eval=FALSE, include=FALSE}
+library(shiny)
+library(leaflet)
+# customize the map levels 
+df <- data.frame(
+  location_name = c("点击放大+",
+                    "He",
+                    "使用我",
+                    "用这种方式",
+                    "跟你说话",
+                    "这也是我刚学会的",
+                    "（M 7:7）",
+                    "“Ask",
+                    "and it will be given to you;",
+                    "seek",
+                    "and you will find;",
+                    "knock",
+                    "and the door will be opened to you.",
+                    "He",
+                    "Still",
+                    "Love You",
+                    "因为他从来没有忘记，每天早上要叫醒你。",
+                    "Remember: ",
+                    "When He is going to do something amazing, He always starts with an impossibility."),
+  lng = c(-77.13120125000563),
+  lat = c(39.05904434957069), 
+  stringsAsFactors = FALSE
+)
+  
+ui <- shinyUI(
+  fluidPage(
+    leafletOutput(outputId = 'map')
+  )
+)
+
+server <- shinyServer(function(input, output, session) {
+  
+  output$map <- renderLeaflet({
+    leaflet() %>%
+      addTiles()
+  })
+  
+  observeEvent(
+    eventExpr = input$map_zoom, {
+      print(input$map_zoom)           # Display zoom level in the console
+      leafletProxy(
+        mapId = "map", 
+        session = session
+      ) %>% 
+        clearMarkers() %>%
+        addMarkers(
+          data = df, 
+          lng = ~lng,
+          lat = ~lat,
+          labelOptions = labelOptions(noHide = T,
+                                      textOnly = T,
+                                      style = list(
+                                        "color" = "blue",
+                                        "font-size" = "18px")   ),
+                                     
+          label = if(input$map_zoom == 0){
+            ~location_name[1]
+            }else if(input$map_zoom == 1){
+            ~location_name[2]
+            } 
+    else if(input$map_zoom == 2){
+      ~location_name[3]
+    } 
+    else if(input$map_zoom == 3){
+      ~location_name[4]
+    } 
+    else if(input$map_zoom == 4){
+      ~location_name[5]
+    } 
+    else if(input$map_zoom == 5){
+      ~location_name[6]
+    } 
+    else if(input$map_zoom == 6){
+      ~location_name[7]
+    } 
+    else if(input$map_zoom == 7){
+      ~location_name[8]
+    } 
+    else if(input$map_zoom == 8){
+      ~location_name[9]
+    } 
+    else if(input$map_zoom == 9){
+      ~location_name[10]
+    } 
+    else if(input$map_zoom == 10){
+      ~location_name[11]
+    } 
+    else if(input$map_zoom == 11){
+      ~location_name[12]
+    } 
+    else if(input$map_zoom == 12){
+      ~location_name[13]
+    } 
+    else if(input$map_zoom == 13){
+      ~location_name[14]
+    } 
+    else if(input$map_zoom == 14){
+      ~location_name[15]
+    } 
+    else if(input$map_zoom == 15){
+      ~location_name[16]
+    } 
+    else if(input$map_zoom == 16){
+      ~location_name[17]
+    } 
+    else if(input$map_zoom == 17){
+      ~location_name[18]
+    } 
+    else if(input$map_zoom == 18){
+      ~location_name[19]
+    } 
+ 
+        )
+    }
+  )
+  
+})
+
+shinyApp(
+  ui = ui, 
+  server = server
+)
+
+```
+
+### GIF using PPT
+Starry sky ![Starry sky](C:\\Users\\hed2\\Downloads\\starry_gif.gif) 
+
+
+Fish ![Fish](C:\\Users\\hed2\\Downloads\\fish_gif.gif) 
+ 

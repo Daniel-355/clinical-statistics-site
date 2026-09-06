@@ -1,0 +1,251 @@
+---
+title: "Nested mixed model"
+description: "A practical R learning guide to Nested mixed model, with concise explanations, reproducible examples, and interpretation guidance."
+date: 2026-08-31
+section: "Biostatistics"
+category: "Longitudinal & Repeated Measures"
+topic: "Nested mixed model"
+type: article
+tags: ["Longitudinal & Repeated Measures", "Biostatistics", "Nested", "mixed"]
+status: published
+featured: true
+youtube: []
+pdf: []
+downloads: []
+validate-yaml: false
+execute:
+  enabled: false
+  echo: true
+  warning: false
+  error: true
+---
+
+## Why This Topic Matters
+
+Repeated observations from the same unit are correlated, so longitudinal models must represent both mean change and within-unit dependence.
+
+## Learning Objectives
+
+After working through this material, you should be able to:
+
+- explain the main ideas behind **Nested mixed model**;
+- interpret the R workflow and its output; and
+- adapt the examples to a related analysis.
+
+## Lesson Roadmap
+
+The original material is organized around the following topics:
+
+1. Nested mixed model in R
+2. Nested mixed model in SAS
+
+## How to Use This Lesson
+
+Read the explanation before each workflow, then run the R chunks in sequence. Code and output are shown together so that each numerical or graphical result can be connected to the command that produced it. Some source examples require optional packages or external data. Those setup-dependent chunks remain visible for reference but are marked `eval: false` when they cannot be reproduced safely in a clean website build.
+
+## Reproducible Learning Check
+
+This short R chunk confirms the scope of the lesson and always produces a visible output.
+
+```{r}
+#| label: learning-overview
+learning_overview <- data.frame(
+  section = "Biostatistics",
+  category = "Longitudinal & Repeated Measures",
+  topic = "Nested mixed model"
+)
+learning_overview
+```
+
+## Learning Material
+
+The following material develops **Nested mixed model** from core ideas to practical implementation. Definitions and assumptions come first; worked code then shows how the ideas are represented computationally.
+
+### Conceptual Foundation
+
+The material below closely follows the original R Markdown source, with its examples retained for study and reuse.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#### Nested mixed model in R
+
+<!-- generated-learning-note -->
+This section develops **Nested mixed model in R**. Read the model specification together with its assumptions and the scale of each reported effect.
+
+
+[reference](https://biostatmatt.com/archives/2718)
+
+- Load package and data
+
+### R Workflow and Examples
+
+Run the examples in order because later blocks may reuse objects created earlier. Each block includes a short purpose statement and guidance for reading its output.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This source block depends on optional software, external data, or a machine-specific path. It is retained as a reference and is not executed during the website build.
+
+```{r}
+#| eval: false
+#| code-fold: true
+# load package
+library(nlme)
+# read in data
+setwd("C:\\Users\\hed2\\OneDrive - National Institutes of Health\\Mixed model by SAS and R")
+DF <- read.csv("Oxide.csv")
+# specific the reference group
+DF$Source=as.factor(DF$Source) 
+DF <- within(DF, Source<- relevel(Source, ref = 2))
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Because this block is not executed, it produces no website output. Enable it only after its dependencies and input paths have been validated.
+
+
+- Random intercept 
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r}
+# nested
+# using lme package
+model2 = lme(Thickness ~ Source  , 
+           random = (~ 1   |Lot/Wafer), data = DF, method= "REML")  #wafer nested into lot
+summary(model2)
+# using lme4 package
+library("lme4")
+model3 = lmer(Thickness ~ Source+(1   | Lot/Wafer), data=DF) #wafer nested into lot
+summary(model3)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+
+- Random slope
+
+<!-- generated-learning-note -->
+**Purpose.** This block specifies and fits the statistical model. Identify the outcome, predictors, reference levels, link or distribution, and any correlation structure before interpreting coefficients.
+
+```{r}
+# nested
+# using lme package
+model2 = lme(Thickness ~ Source  , 
+           random = (~ 1 +Source  |Lot/Wafer), data = DF, method= "REML")  #wafer nested into lot
+summary(model2)
+
+# using lme4 package
+model3 = lmer(Thickness ~ Source+(1 +Source  | Lot/Wafer), data=DF) #wafer nested into lot
+summary(model3)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Focus on coefficient direction and scale, uncertainty intervals, fit statistics, and diagnostics. Statistical significance alone does not establish practical importance or model adequacy.
+
+
+#### Nested mixed model in SAS
+
+<!-- generated-learning-note -->
+This section develops **Nested mixed model in SAS**. Read the model specification together with its assumptions and the scale of each reported effect.
+
+
+- Random intercept
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+# /*nested*/
+# PROC MIXED DATA=Oxide METHOD=REML;
+# CLASS Lot    Wafer    Source  ;
+# MODEL Thickness  = Source   /solution;
+# RANDOM   int  /subject=Lot;
+# RANDOM   int  / subject= Wafer(Lot)    type=un ;  /*wafer nested into lot*/
+# RUN; QUIT; 
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+output
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+# Solution for Fixed Effects 
+# Effect Source Estimate Standard
+# Error DF t Value Pr > |t| 
+# Intercept   2005.19 5.7716 6 347.43 <.0001 
+# Source 1 -10.0833 8.1622 48 -1.24 0.2227 
+# Source 2 0 . . . .
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+
+- Random slope
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+# /*nested*/
+# PROC MIXED DATA=Oxide METHOD=REML;
+# CLASS Lot    Wafer    Source  ;
+# MODEL Thickness  = Source   /solution;
+# RANDOM   int Source/subject=Lot;
+# RANDOM   int Source/ subject= Wafer(Lot)    type=un ;  /*wafer nested into lot*/
+# RUN; QUIT; 
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+output
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+# Solution for Fixed Effects 
+# Effect Source Estimate Standard
+# Error DF t Value Pr > |t| 
+# Intercept   2005.19 5.7596 0 348.15 . 
+# Source 1 -10.0833 8.1143 0 -1.24 . 
+# Source 2 0 . . . .
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+
+Summary:
+
+- Generally, when you know nothing else making very strong assumptions about the correlation structure over time (e.g. type=AR(1) or type=CS or just having a random subject effect on the intercept) is not advisable. If you have sufficient data, it is usually recommended to use an unstructured covariance [matrix](https://stats.stackexchange.com/questions/233475/mixed-model-for-multiple-measurements-in-a-crossover-study-sas). 
+
+- The values for any variable uniquely identify the levels of the physicians. Therefore, no nesting is [necessary](chrome-extension://efaidnbmnnnibpcajpcglclefindmkaj/https://support.sas.com/resources/papers/proceedings15/SAS1919-2015.pdf).
+
+
+- Nested designs arise when every level of one factor (B, say) is combined with (“nested inside”) only one level of another factor (A, say) in the design; this compares to the crossed design (or complete factorial designs) where all of the levels of factor A are combined with all of the levels of [factor B](chrome-extension://efaidnbmnnnibpcajpcglclefindmkaj/https://www.pnw.edu/wp-content/uploads/2020/03/Lecture-Notes-10-6.pdf).
+
+## Interpreting the Results
+
+Check fixed effects, random effects, covariance assumptions, and subject-specific versus population-level interpretation. Treat the output as evidence generated under the stated data, coding choices, and assumptions. Before using the workflow in practice, replace example inputs with validated data and confirm that the method targets the intended scientific question.
+
+## Key Takeaways
+
+- **Connect method to purpose.** Identify the question and target quantity before choosing code or a model.
+- **Read code and output together.** Confirm what each object, estimate, interval, table, or plot represents.
+- **Check assumptions and diagnostics.** A successful computation is not by itself evidence that the result is reliable.
+- **Adapt deliberately.** When applying the example elsewhere, document changes to data definitions, parameters, and analytical choices.

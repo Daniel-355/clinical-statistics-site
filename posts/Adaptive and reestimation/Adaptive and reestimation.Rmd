@@ -1,0 +1,171 @@
+---
+title: "Adaptive randomization probabilities and Interim Analysis"
+output: html_document
+date: "2025-10-28"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Adaptive randomization probabilities and Interim Analysis
+
+Adaptive randomization (favoring the better-performing arm).
+
+One interim analysis for sample size re-estimation. 
+
+Stopping rules based on per-arm maximum. 
+
+Final estimation of treatment effect and trial power. 
+
+```{r}
+# ==========================================================
+# FDA-style Adaptive Clinical Trial Simulation
+# Adaptive Randomization + Sample Size Re-estimation
+# ==========================================================
+
+# Adaptive randomization slightly favors the arm showing better outcomes (here, treatment arm).
+
+library(dplyr)
+library(ggplot2)
+
+set.seed(12345)
+
+# --------------------------
+# Step 1: Define trial parameters
+# --------------------------
+n_initial <- 50           # initial per arm
+n_max <- 200              # max total sample size per arm
+effect_true <- 1.5        # true treatment effect
+sd <- 4.0                 # standard deviation
+alpha <- 0.05             # significance level
+interim_frac <- 0.5       # interim fraction
+adapt_start <- 20         # start adaptive randomization after this many patients, allocation changes based on observed outcomes
+n_sim <- 500              # number of simulations
+
+# adapt_start = 20 specifies that adaptive randomization only begins after 20 patients in total have been enrolled (treatment + control).
+# 
+# Before 20 patients, randomization is fixed at 50% per arm (assign_prob = 0.5).
+# 
+# After 20 patients, the allocation probability can change based on observed outcomes:
+#   
+#   If treatment mean > control mean → probability of assigning new patients to treatment increases.
+# 
+# If treatment mean < control mean → probability of assigning new patients to treatment decreases.
+# 
+# Bounded between 0.3 and 0.7 to avoid extreme imbalance.
+
+# --------------------------
+# Step 2: Function to simulate one adaptive trial
+# --------------------------
+simulate_adaptive_trial <- function(n_initial, n_max, effect_true, sd, alpha, interim_frac, adapt_start) {
+  
+  control <- c()
+  treatment <- c()
+  
+  # initial randomization probability
+  assign_prob <- 0.5
+  final_n_per_arm <- n_initial
+  
+  # simulate patient-by-patient
+  for (i in 1:n_max) {
+    # adaptive randomization
+    arm <- sample(c("Treatment","Control"), 1, prob=c(assign_prob, 1-assign_prob))
+    
+    # generate outcome
+    outcome <- if(arm=="Treatment") rnorm(1, mean=effect_true, sd=sd) else rnorm(1, mean=0, sd=sd)
+    
+    # store outcome
+    if(arm=="Treatment") treatment <- c(treatment, outcome)
+    if(arm=="Control") control <- c(control, outcome)
+    
+    # update randomization probability after adapt_start patients
+    if(length(treatment)+length(control) >= adapt_start) {
+      mean_treat <- mean(treatment)
+      mean_ctrl <- mean(control)
+      assign_prob <- 0.5 + 0.2 * sign(mean_treat - mean_ctrl)
+      assign_prob <- min(max(assign_prob, 0.3), 0.7)
+    }
+    
+    # interim analysis for sample size re-estimation
+    total_n <- length(treatment) + length(control)
+    if(total_n >= floor(n_max*interim_frac)) {
+      t_test <- t.test(treatment, control)
+      # if p-value > 0.1 and we can still increase sample size, double the final per-arm n
+      if(t_test$p.value > 0.1 & final_n_per_arm < n_max) {
+        final_n_per_arm <- min(n_max, final_n_per_arm*2)
+      }
+    }
+#     p-value > 0.1 → stop for futility
+# p-value ≤ 0.1 → continue trial / possibly increase sample size
+
+    # stop if reached current adaptive max per-arm sample size
+    if(length(treatment) >= final_n_per_arm & length(control) >= final_n_per_arm) break
+  }
+  
+  # final t-test
+  t_test <- t.test(treatment, control)
+  
+  return(c(
+    n_treat = length(treatment),
+    n_control = length(control),
+    p_value = t_test$p.value,
+    est_diff = mean(treatment) - mean(control),
+    significant = as.numeric(t_test$p.value < alpha)
+  ))
+}
+
+# --------------------------
+# Step 3: Run multiple simulations
+# --------------------------
+results <- replicate(n_sim, simulate_adaptive_trial(n_initial, n_max, effect_true, sd, alpha, interim_frac, adapt_start))
+results_df <- as.data.frame(t(results))
+colnames(results_df) <- c("n_treat","n_control","p_value","est_diff","significant")
+head(results_df,20)
+
+# --------------------------
+# Step 4: Summarize results
+# --------------------------
+summary_df <- results_df %>%
+  summarise(
+    mean_n_treat = mean(n_treat),
+    mean_n_control = mean(n_control),
+    power = mean(significant),
+    mean_est_diff = mean(est_diff),
+    sd_est_diff = sd(est_diff)
+  )
+print(summary_df)
+# power
+# Proportion of trials that were statistically significant (p < 0.05).
+
+# mean_n_treat =
+# Some trials triggered sample size re-estimation at interim (p-value > 0.1), which doubled the per-arm N.
+# Some trials reached stopping criteria after treatment arm hit final_n_per_arm, leaving fewer patients in control.
+
+# --------------------------
+# Step 5: Visualizations
+# --------------------------
+# Estimated treatment effect distribution
+ggplot(results_df, aes(x=est_diff)) +
+  geom_histogram(binwidth=0.2, fill="steelblue", color="white") +
+  geom_vline(xintercept=effect_true, color="red", linetype="dashed") +
+  labs(title="Estimated Treatment Effect Across Simulations",
+       x="Estimated Treatment Effect", y="Frequency") +
+  theme_minimal()
+
+# Treatment allocation distribution
+ggplot(results_df, aes(x=n_treat)) +
+  geom_bar(fill="coral", color="white") +
+  labs(title="Treatment Arm Sample Size Distribution Across Simulations",
+       x="Number of Patients in Treatment Arm", y="Count") +
+  theme_minimal()
+
+# Control allocation distribution
+ggplot(results_df, aes(x=n_control)) +
+  geom_bar(fill="green", color="white") +
+  labs(title="Control Arm Sample Size Distribution Across Simulations",
+       x="Number of Patients in Control Arm", y="Count") +
+  theme_minimal()
+
+```
+

@@ -1,0 +1,1103 @@
+---
+title: "Standard Operating Procedure for Real-World Evidence Studies"
+description: "A practical R learning guide to Standard Operating Procedure for Real-World Evidence Studies, with concise explanations, reproducible examples, and interpretation guidance."
+date: 2026-08-31
+section: "Epidemiology & Real-World Evidence"
+category: "Real-World Data & Evidence"
+topic: "Standard Operating Procedure for Real-World Evidence Studies"
+type: article
+tags: ["Real-World Data & Evidence", "Epidemiology & Real-World Evidence", "Standard", "Operating", "Procedure"]
+status: published
+featured: true
+youtube: []
+pdf: []
+downloads: []
+validate-yaml: false
+execute:
+  echo: true
+  warning: false
+  error: true
+---
+
+## Why This Topic Matters
+
+Real-world evidence depends on whether routinely collected data can support a clearly specified causal or descriptive objective.
+
+## Learning Objectives
+
+After working through this material, you should be able to:
+
+- explain the main ideas behind **Standard Operating Procedure for Real-World Evidence Studies**;
+- interpret the R workflow and its output; and
+- adapt the examples to a related analysis.
+
+## Lesson Roadmap
+
+The original material is organized around the following topics:
+
+1. 1. Purpose
+2. 2. Research Question and Causal Objective
+3. 3. Target Trial Framework
+4. 4. Data Source and Data Provenance
+5. 5. Study Population and Cohort Definition
+6. 6. Index Date / Time Zero
+
+## How to Use This Lesson
+
+Read the explanation before each workflow, then run the R chunks in sequence. Code and output are shown together so that each numerical or graphical result can be connected to the command that produced it. Some source examples require optional packages or external data. Those setup-dependent chunks remain visible for reference but are marked `eval: false` when they cannot be reproduced safely in a clean website build.
+
+## Reproducible Learning Check
+
+This short R chunk confirms the scope of the lesson and always produces a visible output.
+
+```{r}
+#| label: learning-overview
+learning_overview <- data.frame(
+  section = "Epidemiology & Real-World Evidence",
+  category = "Real-World Data & Evidence",
+  topic = "Standard Operating Procedure for Real-World Evidence Studies"
+)
+learning_overview
+```
+
+## Learning Material
+
+The following material develops **Standard Operating Procedure for Real-World Evidence Studies** from core ideas to practical implementation. Definitions and assumptions come first; worked code then shows how the ideas are represented computationally.
+
+### Conceptual Foundation
+
+The material below closely follows the original R Markdown source, with its examples retained for study and reuse.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  warning = FALSE,
+  message = FALSE,
+  fig.width = 7,
+  fig.height = 5
+)
+```
+
+#### 1. Purpose
+
+<!-- generated-learning-note -->
+This subsection explains **1. Purpose** and shows how it contributes to the overall Standard Operating Procedure for Real-World Evidence Studies workflow.
+
+
+This SOP provides a standard framework for the design, conduct, analysis, and reporting of observational real-world evidence (RWE) studies using routinely collected data.
+
+It is intended for studies using:
+
+- electronic health records (EHR),
+- insurance claims,
+- pharmacy data,
+- registries,
+- laboratory databases,
+- administrative data,
+- population-based cohorts,
+- or linked real-world data sources.
+
+The primary objective is to estimate treatment, exposure, or comparative-effectiveness effects as validly as possible while addressing major sources of bias inherent in nonrandomized data.
+
+#### 2. Research Question and Causal Objective
+
+<!-- generated-learning-note -->
+This subsection explains **2. Research Question and Causal Objective** and shows how it contributes to the overall Standard Operating Procedure for Real-World Evidence Studies workflow.
+
+
+The research question should be specified before analysis.
+
+**General form:**
+
+> Among [target population], what is the effect of [treatment/exposure A] compared with [treatment/exposure B] on [outcome] during [follow-up period]?
+
+The study should define:
+
+- target population,
+- treatment/exposure strategies,
+- comparator,
+- outcome,
+- time zero / index date,
+- follow-up period,
+- censoring rules,
+- effect measure,
+- and target estimand.
+
+When causal interpretation is intended, the analysis should emulate the key elements of a hypothetical target trial as closely as possible.
+
+#### 3. Target Trial Framework
+
+<!-- generated-learning-note -->
+This subsection explains **3. Target Trial Framework** and shows how it contributes to the overall Standard Operating Procedure for Real-World Evidence Studies workflow.
+
+
+Whenever applicable, prespecify the following target-trial components:
+
+1. eligibility criteria;
+2. treatment strategies;
+3. treatment assignment procedure;
+4. time zero;
+5. follow-up;
+6. outcome;
+7. causal contrast / estimand;
+8. analysis method.
+
+The observational emulation should align eligibility, treatment assignment, and start of follow-up at the same time point to minimize time-related biases.
+
+#### 4. Data Source and Data Provenance
+
+<!-- generated-learning-note -->
+This section prepares the information needed for **4. Data Source and Data Provenance**. Check variable definitions, units, coding, and missing values before moving to analysis.
+
+
+Describe:
+
+- data source(s),
+- calendar period,
+- population coverage,
+- coding systems,
+- linkage procedures,
+- laboratory availability,
+- medication capture,
+- mortality capture,
+- and data refresh/cutoff date.
+
+Important limitations of each source should be documented.
+
+Examples include:
+
+- incomplete capture of outside care,
+- lack of over-the-counter medication use,
+- missing laboratory measurements,
+- changes in coding practices,
+- incomplete death information,
+- or limited medication adherence information.
+
+#### 5. Study Population and Cohort Definition
+
+<!-- generated-learning-note -->
+This section establishes the concepts and assumptions needed to understand **5. Study Population and Cohort Definition** in the context of Standard Operating Procedure for Real-World Evidence Studies.
+
+
+Define inclusion and exclusion criteria before outcome analysis.
+
+Typical criteria may include:
+
+- age range,
+- diagnosis or disease status,
+- minimum baseline observation period,
+- continuous enrollment when using claims data,
+- availability of treatment/exposure information,
+- no prior occurrence of an incident outcome if required,
+- and sufficient follow-up eligibility.
+
+A cohort flow diagram should document the number of individuals excluded at each step.
+
+#### 6. Index Date / Time Zero
+
+<!-- generated-learning-note -->
+This subsection explains **6. Index Date / Time Zero** and shows how it contributes to the overall Standard Operating Procedure for Real-World Evidence Studies workflow.
+
+
+The index date is the date on which:
+
+- eligibility is satisfied,
+- treatment/exposure strategy is assigned,
+- baseline covariates are defined,
+- and follow-up begins.
+
+These elements should be aligned as closely as possible.
+
+Incorrect alignment can produce:
+
+- immortal-time bias,
+- prevalent-user bias,
+- selection bias,
+- and temporal ambiguity.
+
+#### 7. Exposure or Treatment Strategy Definition
+
+<!-- generated-learning-note -->
+This section establishes the concepts and assumptions needed to understand **7. Exposure or Treatment Strategy Definition** in the context of Standard Operating Procedure for Real-World Evidence Studies.
+
+
+Specify:
+
+- exposure/treatment definition,
+- comparator,
+- coding algorithm,
+- washout or baseline period,
+- initiation date,
+- treatment switching rules,
+- discontinuation rules,
+- grace periods,
+- adherence definition if used,
+- and whether exposure is fixed or time-varying.
+
+For comparative-effectiveness studies, a **new-user active-comparator design** should be considered when feasible because it often improves comparability and temporal clarity.
+
+#### 8. Outcome Definition
+
+<!-- generated-learning-note -->
+This section establishes the concepts and assumptions needed to understand **8. Outcome Definition** in the context of Standard Operating Procedure for Real-World Evidence Studies.
+
+
+Specify:
+
+- primary outcome,
+- secondary outcomes,
+- coding algorithm,
+- event date,
+- validation status,
+- adjudication procedure if available,
+- and outcome ascertainment window.
+
+Outcome definitions should be based on clinically meaningful and reproducible algorithms.
+
+Where possible, use validated diagnosis/procedure algorithms.
+
+#### 9. Baseline Period and Covariates
+
+<!-- generated-learning-note -->
+This subsection explains **9. Baseline Period and Covariates** and shows how it contributes to the overall Standard Operating Procedure for Real-World Evidence Studies workflow.
+
+
+The baseline period should be prespecified, for example:
+
+- 180 days,
+- 365 days,
+- or another justified interval before index.
+
+Baseline covariates may include:
+
+- demographics,
+- disease severity,
+- prior diagnoses,
+- prior procedures,
+- prior medication use,
+- laboratory values,
+- vital signs,
+- healthcare utilization,
+- lifestyle factors,
+- socioeconomic characteristics,
+- and relevant comorbidities.
+
+Covariates should be defined using information available before or at time zero.
+
+#### 10. Confounding Control
+
+<!-- generated-learning-note -->
+This subsection explains **10. Confounding Control** and shows how it contributes to the overall Standard Operating Procedure for Real-World Evidence Studies workflow.
+
+
+Because treatment or exposure is not randomized, confounding must be explicitly addressed.
+
+#### 10.1 Confounder Selection
+
+<!-- generated-learning-note -->
+This subsection explains **10.1 Confounder Selection** and shows how it contributes to the overall Standard Operating Procedure for Real-World Evidence Studies workflow.
+
+
+Potential confounders should be selected using:
+
+- clinical knowledge,
+- prior literature,
+- temporal ordering,
+- causal diagrams / DAGs,
+- and known predictors of treatment and outcome.
+
+Variables should not be included solely because they are statistically significant or imbalanced.
+
+#### 10.2 Confounding by Indication
+
+<!-- generated-learning-note -->
+This subsection explains **10.2 Confounding by Indication** and shows how it contributes to the overall Standard Operating Procedure for Real-World Evidence Studies workflow.
+
+
+Special attention should be given to **confounding by indication**.
+
+For example, patients receiving a more intensive therapy may be systematically sicker than patients receiving the comparator treatment.
+
+Important markers of disease severity should therefore be identified and included when available.
+
+#### 10.3 Post-Exposure Variables
+
+<!-- generated-learning-note -->
+This section prepares the information needed for **10.3 Post-Exposure Variables**. Check variable definitions, units, coding, and missing values before moving to analysis.
+
+
+Post-exposure variables should not automatically be adjusted for.
+
+If the target estimand is the **total treatment effect**, variables affected by treatment should generally not be included in the baseline confounder set.
+
+If the objective instead concerns a direct or hypothetical effect, the estimand and analytic method should be explicitly defined.
+
+#### 11. Descriptive Analysis
+
+<!-- generated-learning-note -->
+This subsection explains **11. Descriptive Analysis** and shows how it contributes to the overall Standard Operating Procedure for Real-World Evidence Studies workflow.
+
+
+Baseline characteristics will be summarized by treatment/exposure group.
+
+Continuous variables:
+
+- mean and SD,
+- or median and IQR.
+
+Categorical variables:
+
+- frequency and percentage.
+
+Standardized mean differences (SMDs) should be used to assess baseline imbalance.
+
+An absolute SMD below approximately 0.10 is commonly used as a practical indicator of acceptable measured balance.
+
+Baseline imbalance alone does not determine whether a variable is a confounder.
+
+#### 12. Propensity Score Estimation
+
+<!-- generated-learning-note -->
+This subsection explains **12. Propensity Score Estimation** and shows how it contributes to the overall Standard Operating Procedure for Real-World Evidence Studies workflow.
+
+
+When propensity-score methods are used, estimate:
+
+\[
+PS(X) = P(A=1 \mid X)
+\]
+
+where \(A\) is treatment/exposure and \(X\) is the set of measured baseline covariates.
+
+Possible approaches include:
+
+- logistic regression,
+- generalized boosted models,
+- machine-learning propensity models,
+- high-dimensional propensity scores.
+
+Example:
+
+### R Workflow and Examples
+
+Run the examples in order because later blocks may reuse objects created earlier. Each block includes a short purpose statement and guidance for reading its output.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block specifies and fits the statistical model. Identify the outcome, predictors, reference levels, link or distribution, and any correlation structure before interpreting coefficients.
+
+```{r ps-example, eval=FALSE}
+ps_model <- glm(
+  treatment ~ age + sex + bmi + hba1c +
+    prior_cvd + ckd + smoking,
+  family = binomial(),
+  data = analysis_data
+)
+
+analysis_data$ps <- predict(
+  ps_model,
+  type = "response"
+)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Focus on coefficient direction and scale, uncertainty intervals, fit statistics, and diagnostics. Statistical significance alone does not establish practical importance or model adequacy.
+
+
+#### 13. Propensity Score Adjustment Strategies
+
+<!-- generated-learning-note -->
+This subsection explains **13. Propensity Score Adjustment Strategies** and shows how it contributes to the overall Standard Operating Procedure for Real-World Evidence Studies workflow.
+
+
+Common methods include:
+
+#### 13.1 Matching
+
+<!-- generated-learning-note -->
+This subsection explains **13.1 Matching** and shows how it contributes to the overall Standard Operating Procedure for Real-World Evidence Studies workflow.
+
+
+Examples:
+
+- 1:1 nearest-neighbor matching,
+- variable-ratio matching,
+- caliper matching.
+
+Balance should be assessed after matching.
+
+#### 13.2 IPTW
+
+<!-- generated-learning-note -->
+This subsection explains **13.2 IPTW** and shows how it contributes to the overall Standard Operating Procedure for Real-World Evidence Studies workflow.
+
+
+For estimation of the average treatment effect:
+
+\[
+w_i =
+\begin{cases}
+1/PS_i, & A_i=1 \\
+1/(1-PS_i), & A_i=0
+\end{cases}
+\]
+
+Stabilized weights may be preferred.
+
+Extreme weights should be evaluated and may be truncated or trimmed using prespecified rules.
+
+#### 13.3 Overlap Weighting
+
+<!-- generated-learning-note -->
+This subsection explains **13.3 Overlap Weighting** and shows how it contributes to the overall Standard Operating Procedure for Real-World Evidence Studies workflow.
+
+
+Overlap weighting may be considered when treatment groups have limited overlap or when the clinical target population is the region of common support.
+
+#### 14. Positivity and Overlap
+
+<!-- generated-learning-note -->
+This subsection explains **14. Positivity and Overlap** and shows how it contributes to the overall Standard Operating Procedure for Real-World Evidence Studies workflow.
+
+
+Assess whether patients in all covariate strata have a reasonable probability of receiving each treatment.
+
+Evaluate:
+
+- propensity-score distributions,
+- common support,
+- extreme PS values,
+- extreme weights,
+- effective sample size,
+- and overlap plots.
+
+Serious positivity violations should be reported and may require:
+
+- restriction,
+- trimming,
+- alternative weighting,
+- or redefining the target population.
+
+#### 15. Covariate Balance Assessment
+
+<!-- generated-learning-note -->
+This subsection explains **15. Covariate Balance Assessment** and shows how it contributes to the overall Standard Operating Procedure for Real-World Evidence Studies workflow.
+
+
+After matching or weighting, assess balance using:
+
+- standardized mean differences,
+- variance ratios when useful,
+- propensity-score overlap,
+- and love plots.
+
+Example:
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r balance-example, eval=FALSE}
+library(cobalt)
+
+bal.tab(
+  treatment ~ age + sex + bmi + hba1c +
+    prior_cvd + ckd + smoking,
+  data = analysis_data,
+  weights = analysis_data$weight,
+  un = TRUE,
+  thresholds = c(m = 0.10)
+)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+
+Good measured balance does not establish the absence of unmeasured confounding.
+
+#### 16. Primary Outcome Analysis
+
+<!-- generated-learning-note -->
+This subsection explains **16. Primary Outcome Analysis** and shows how it contributes to the overall Standard Operating Procedure for Real-World Evidence Studies workflow.
+
+
+The primary analysis method depends on outcome type.
+
+#### 16.1 Time-to-Event Outcome
+
+<!-- generated-learning-note -->
+This subsection explains **16.1 Time-to-Event Outcome** and shows how it contributes to the overall Standard Operating Procedure for Real-World Evidence Studies workflow.
+
+
+Use Cox proportional hazards regression or another prespecified survival model.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r cox-example, eval=FALSE}
+library(survival)
+
+fit <- coxph(
+  Surv(followup_time, event) ~ treatment,
+  data = analysis_data,
+  weights = weight,
+  robust = TRUE
+)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+
+Report:
+
+- HR,
+- 95% CI,
+- and P-value when appropriate.
+
+#### 16.2 Binary Outcome
+
+<!-- generated-learning-note -->
+This subsection explains **16.2 Binary Outcome** and shows how it contributes to the overall Standard Operating Procedure for Real-World Evidence Studies workflow.
+
+
+Possible methods:
+
+- logistic regression,
+- log-binomial regression,
+- modified Poisson regression.
+
+Report:
+
+- OR,
+- RR,
+- or RD,
+depending on the estimand.
+
+#### 16.3 Continuous Outcome
+
+<!-- generated-learning-note -->
+This subsection explains **16.3 Continuous Outcome** and shows how it contributes to the overall Standard Operating Procedure for Real-World Evidence Studies workflow.
+
+
+Possible methods:
+
+- linear regression,
+- weighted regression,
+- mixed models for repeated measurements.
+
+#### 16.4 Count Outcome
+
+<!-- generated-learning-note -->
+This subsection explains **16.4 Count Outcome** and shows how it contributes to the overall Standard Operating Procedure for Real-World Evidence Studies workflow.
+
+
+Possible methods:
+
+- Poisson regression,
+- negative binomial regression.
+
+#### 17. Conditional vs Marginal Effect
+
+<!-- generated-learning-note -->
+This subsection explains **17. Conditional vs Marginal Effect** and shows how it contributes to the overall Standard Operating Procedure for Real-World Evidence Studies workflow.
+
+
+The analysis should distinguish between:
+
+- **conditional effects**, typically obtained from multivariable regression,
+- and **marginal population-level effects**, often estimated using standardization or weighting.
+
+For example:
+
+- multivariable Cox regression usually estimates a conditional HR,
+- IPTW more naturally targets a marginal population-level effect.
+
+The estimand should be specified in advance.
+
+#### 18. Follow-up and Censoring
+
+<!-- generated-learning-note -->
+This subsection explains **18. Follow-up and Censoring** and shows how it contributes to the overall Standard Operating Procedure for Real-World Evidence Studies workflow.
+
+
+Follow-up should begin at the index date and end at the earliest of:
+
+- outcome,
+- death,
+- treatment discontinuation when required by estimand,
+- treatment switching,
+- loss to follow-up,
+- disenrollment,
+- end of data availability,
+- or administrative study end.
+
+Censoring rules depend on the target estimand.
+
+For example:
+
+- **intention-to-treat-like / treatment-policy-like analysis** may ignore later switching,
+- **as-treated / per-protocol-like analysis** may censor at switching or discontinuation.
+
+Potential informative censoring should be evaluated.
+
+Inverse probability of censoring weighting may be considered when appropriate.
+
+#### 19. Missing Data
+
+<!-- generated-learning-note -->
+This section prepares the information needed for **19. Missing Data**. Check variable definitions, units, coding, and missing values before moving to analysis.
+
+
+Summarize:
+
+- amount of missingness,
+- variables affected,
+- missingness by treatment group,
+- and likely missing-data mechanisms.
+
+Possible methods include:
+
+- complete-case analysis,
+- multiple imputation,
+- missing-indicator methods only when justified,
+- model-based approaches.
+
+The primary method should be prespecified.
+
+Sensitivity analyses should evaluate departures from missing-at-random assumptions when relevant.
+
+#### 20. Measurement Error and Misclassification
+
+<!-- generated-learning-note -->
+This subsection explains **20. Measurement Error and Misclassification** and shows how it contributes to the overall Standard Operating Procedure for Real-World Evidence Studies workflow.
+
+
+Evaluate the potential for:
+
+- exposure misclassification,
+- outcome misclassification,
+- inaccurate diagnosis codes,
+- incomplete medication capture,
+- imperfect adherence information,
+- laboratory measurement error,
+- and date uncertainty.
+
+When possible:
+
+- use validated coding algorithms,
+- require repeated codes,
+- use confirmation windows,
+- or perform quantitative bias analysis.
+
+#### 21. Model Diagnostics
+
+<!-- generated-learning-note -->
+This section develops **21. Model Diagnostics**. Read the model specification together with its assumptions and the scale of each reported effect.
+
+
+Depending on the primary model, assess:
+
+- proportional hazards,
+- linearity,
+- goodness-of-fit,
+- influential observations,
+- sparse cells,
+- multicollinearity,
+- and model convergence.
+
+For Cox models:
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r ph-example, eval=FALSE}
+ph_test <- cox.zph(fit)
+print(ph_test)
+plot(ph_test)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+#### 22. Competing Risks
+
+<!-- generated-learning-note -->
+This subsection explains **22. Competing Risks** and shows how it contributes to the overall Standard Operating Procedure for Real-World Evidence Studies workflow.
+
+
+When competing events are clinically important, consider:
+
+- cause-specific Cox regression,
+- Fine-Gray subdistribution hazards models,
+- and cumulative-incidence functions.
+
+Choice of method should reflect the scientific question.
+
+#### 23. Effect Modification and Subgroup Analyses
+
+<!-- generated-learning-note -->
+This subsection explains **23. Effect Modification and Subgroup Analyses** and shows how it contributes to the overall Standard Operating Procedure for Real-World Evidence Studies workflow.
+
+
+Prespecified subgroups may include:
+
+- age,
+- sex,
+- disease severity,
+- kidney function,
+- prior cardiovascular disease,
+- or other clinically justified factors.
+
+Effect modification should preferably be tested with interaction terms.
+
+Exploratory subgroup analyses should be labeled as such.
+
+#### 24. Sensitivity Analyses
+
+<!-- generated-learning-note -->
+This subsection explains **24. Sensitivity Analyses** and shows how it contributes to the overall Standard Operating Procedure for Real-World Evidence Studies workflow.
+
+
+Common RWE sensitivity analyses include:
+
+1. alternative exposure definitions;
+2. alternative outcome definitions;
+3. alternative baseline windows;
+4. alternative confounder sets;
+5. propensity-score matching;
+6. IPTW;
+7. overlap weighting;
+8. multivariable regression;
+9. weight trimming/truncation;
+10. alternative censoring rules;
+11. as-treated analysis;
+12. treatment-policy-like analysis;
+13. multiple imputation;
+14. negative-control outcomes or exposures;
+15. lagged exposure analyses;
+16. competing-risk analyses;
+17. inverse probability of censoring weighting;
+18. assessment of unmeasured confounding;
+19. quantitative bias analysis;
+20. E-value analysis when appropriate.
+
+Results should be compared across methods for:
+
+- direction,
+- magnitude,
+- precision,
+- and clinical interpretation.
+
+#### 25. Negative Controls and Falsification Analyses
+
+<!-- generated-learning-note -->
+This subsection explains **25. Negative Controls and Falsification Analyses** and shows how it contributes to the overall Standard Operating Procedure for Real-World Evidence Studies workflow.
+
+
+When feasible, use:
+
+- negative-control outcomes,
+- negative-control exposures,
+- falsification endpoints.
+
+These analyses can help detect residual confounding, surveillance bias, or systematic error.
+
+A null negative-control result does not prove that confounding is absent.
+
+#### 26. Unmeasured Confounding
+
+<!-- generated-learning-note -->
+This subsection explains **26. Unmeasured Confounding** and shows how it contributes to the overall Standard Operating Procedure for Real-World Evidence Studies workflow.
+
+
+Residual and unmeasured confounding should be explicitly acknowledged.
+
+Possible approaches include:
+
+- E-values,
+- quantitative bias analysis,
+- negative controls,
+- instrumental-variable analysis when assumptions are defensible,
+- external validation data.
+
+No single method can prove the absence of unmeasured confounding.
+
+#### 27. Generalizability and Transportability
+
+<!-- generated-learning-note -->
+This subsection explains **27. Generalizability and Transportability** and shows how it contributes to the overall Standard Operating Procedure for Real-World Evidence Studies workflow.
+
+
+Describe the population to which results apply.
+
+Assess:
+
+- demographic representation,
+- healthcare setting,
+- insurance status,
+- geography,
+- disease severity,
+- and calendar period.
+
+The analytic population after matching or weighting may differ from the original source population.
+
+#### 28. Statistical Inference
+
+<!-- generated-learning-note -->
+This subsection explains **28. Statistical Inference** and shows how it contributes to the overall Standard Operating Procedure for Real-World Evidence Studies workflow.
+
+
+Unless otherwise specified:
+
+- tests will be two-sided,
+- alpha = 0.05,
+- and 95% confidence intervals will be reported.
+
+The primary analysis should be distinguished from:
+
+- secondary analyses,
+- sensitivity analyses,
+- exploratory analyses.
+
+Multiplicity should be acknowledged when many outcomes or subgroup analyses are conducted.
+
+#### 29. Reporting of Results
+
+<!-- generated-learning-note -->
+This section focuses on **29. Reporting of Results**. Emphasize effect size, uncertainty, diagnostics, and scientific relevance rather than a single threshold.
+
+
+Recommended outputs include:
+
+#### Table 1
+
+<!-- generated-learning-note -->
+This subsection explains **Table 1** and shows how it contributes to the overall Standard Operating Procedure for Real-World Evidence Studies workflow.
+
+Baseline characteristics before adjustment.
+
+#### Table 2
+
+<!-- generated-learning-note -->
+This subsection explains **Table 2** and shows how it contributes to the overall Standard Operating Procedure for Real-World Evidence Studies workflow.
+
+Baseline characteristics after matching or weighting.
+
+#### Table 3
+
+<!-- generated-learning-note -->
+This subsection explains **Table 3** and shows how it contributes to the overall Standard Operating Procedure for Real-World Evidence Studies workflow.
+
+Primary and sensitivity treatment-effect estimates.
+
+| Method | Effect Estimate | 95% CI | P-value |
+|---|---:|---:|---:|
+| Primary analysis | | | |
+| Propensity-score matching | | | |
+| IPTW | | | |
+| Multivariable regression | | | |
+| Sensitivity analysis | | | |
+
+#### Figures
+
+<!-- generated-learning-note -->
+This section uses **Figures** to make patterns visible. Confirm what each axis, group, scale, and annotation represents.
+
+
+Recommended figures include:
+
+1. cohort flow diagram;
+2. propensity-score overlap plot;
+3. love plot;
+4. Kaplan-Meier or cumulative-incidence plot if relevant;
+5. forest plot comparing primary and sensitivity estimates.
+
+#### 30. Interpretation
+
+<!-- generated-learning-note -->
+This section focuses on **30. Interpretation**. Emphasize effect size, uncertainty, diagnostics, and scientific relevance rather than a single threshold.
+
+
+Interpretation should focus on:
+
+- effect size,
+- precision,
+- clinical relevance,
+- consistency across analyses,
+- and assumptions required for causal interpretation.
+
+Observational RWE findings should generally be described as adjusted associations unless sufficient design and causal assumptions support a causal interpretation.
+
+#### 31. Key Limitations
+
+<!-- generated-learning-note -->
+This subsection explains **31. Key Limitations** and shows how it contributes to the overall Standard Operating Procedure for Real-World Evidence Studies workflow.
+
+
+Common RWE limitations include:
+
+- confounding by indication,
+- unmeasured confounding,
+- residual confounding,
+- exposure misclassification,
+- outcome misclassification,
+- measurement error,
+- missing data,
+- incomplete medication adherence information,
+- selection bias,
+- immortal-time bias,
+- informative censoring,
+- positivity violations,
+- model misspecification,
+- data-source limitations,
+- and limited generalizability.
+
+#### 32. Quality Control and Reproducibility
+
+<!-- generated-learning-note -->
+This subsection explains **32. Quality Control and Reproducibility** and shows how it contributes to the overall Standard Operating Procedure for Real-World Evidence Studies workflow.
+
+
+All key analysis steps should be reproducible.
+
+Key variables requiring validation include:
+
+- patient identifier,
+- treatment/exposure,
+- index date,
+- baseline period,
+- outcome,
+- outcome date,
+- follow-up,
+- censoring,
+- and major confounders.
+
+Whenever feasible:
+
+- analysis code should be version controlled,
+- key outputs should be independently reviewed,
+- cohort counts should be reconciled,
+- and treatment/outcome algorithms should be validated.
+
+#### 33. Documentation of Deviations
+
+<!-- generated-learning-note -->
+This subsection explains **33. Documentation of Deviations** and shows how it contributes to the overall Standard Operating Procedure for Real-World Evidence Studies workflow.
+
+
+Any material deviation from the prespecified protocol or SAP should be documented with:
+
+- original plan,
+- revised method,
+- rationale,
+- timing,
+- and possible impact on interpretation.
+
+#### Appendix A. Minimal RWE Analysis Workflow
+
+<!-- generated-learning-note -->
+This subsection explains **Appendix A. Minimal RWE Analysis Workflow** and shows how it contributes to the overall Standard Operating Procedure for Real-World Evidence Studies workflow.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r minimal-workflow, eval=FALSE}
+library(dplyr)
+library(MatchIt)
+library(cobalt)
+library(survival)
+
+# 1. Define analytic cohort
+analysis_data <- raw_data %>%
+  filter(
+    eligible == 1
+  )
+
+# 2. Propensity score
+ps_model <- glm(
+  treatment ~ age + sex + bmi + hba1c +
+    prior_cvd + ckd + smoking,
+  family = binomial(),
+  data = analysis_data
+)
+
+analysis_data$ps <- predict(
+  ps_model,
+  type = "response"
+)
+
+# 3. IPTW
+analysis_data <- analysis_data %>%
+  mutate(
+    treat_num = as.integer(treatment == "TreatmentA"),
+    iptw = ifelse(
+      treat_num == 1,
+      1 / ps,
+      1 / (1 - ps)
+    )
+  )
+
+# 4. Weighted outcome model
+fit_iptw <- coxph(
+  Surv(followup_time, event) ~ treatment,
+  data = analysis_data,
+  weights = iptw,
+  robust = TRUE
+)
+
+summary(fit_iptw)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+
+#### Appendix B. Pre-Analysis Checklist
+
+<!-- generated-learning-note -->
+This subsection explains **Appendix B. Pre-Analysis Checklist** and shows how it contributes to the overall Standard Operating Procedure for Real-World Evidence Studies workflow.
+
+
+Before final analysis, confirm:
+
+- [ ] Research question is finalized
+- [ ] Target population is defined
+- [ ] Target trial elements are specified
+- [ ] Data source and study period are documented
+- [ ] Eligibility criteria are finalized
+- [ ] Index date is defined
+- [ ] Treatment/exposure strategies are defined
+- [ ] Comparator is defined
+- [ ] Baseline period is defined
+- [ ] Outcome algorithm is finalized
+- [ ] Follow-up and censoring rules are defined
+- [ ] Primary estimand is specified
+- [ ] Primary confounder set is prespecified
+- [ ] Post-exposure variables are classified
+- [ ] Propensity-score method is specified if used
+- [ ] Balance and positivity criteria are specified
+- [ ] Missing-data method is specified
+- [ ] Sensitivity analyses are prespecified
+- [ ] Negative controls are considered
+- [ ] Competing-risk strategy is specified if relevant
+- [ ] Subgroup analyses are prespecified
+- [ ] Data cutoff date is finalized
+- [ ] Final tables and figures are defined
+
+## Interpreting the Results
+
+Evaluate data provenance, eligibility, treatment assignment, follow-up, outcome ascertainment, confounding, and missingness. Treat the output as evidence generated under the stated data, coding choices, and assumptions. Before using the workflow in practice, replace example inputs with validated data and confirm that the method targets the intended scientific question.
+
+## Key Takeaways
+
+- **Connect method to purpose.** Identify the question and target quantity before choosing code or a model.
+- **Read code and output together.** Confirm what each object, estimate, interval, table, or plot represents.
+- **Check assumptions and diagnostics.** A successful computation is not by itself evidence that the result is reliable.
+- **Adapt deliberately.** When applying the example elsewhere, document changes to data definitions, parameters, and analytical choices.

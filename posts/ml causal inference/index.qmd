@@ -1,0 +1,339 @@
+---
+title: "Machine learning in Causal inference"
+description: "A practical R learning guide to Machine learning in Causal inference, with concise explanations, reproducible examples, and interpretation guidance."
+date: 2026-08-31
+section: "Epidemiology & Real-World Evidence"
+category: "Causal Methods"
+topic: "Machine learning in Causal inference"
+type: article
+tags: ["Causal Methods", "Epidemiology & Real-World Evidence", "Machine", "learning", "Causal"]
+status: published
+featured: true
+youtube: []
+pdf: []
+downloads: []
+validate-yaml: false
+execute:
+  enabled: false
+  echo: true
+  warning: false
+  error: true
+---
+
+## Why This Topic Matters
+
+Causal methods combine design assumptions and statistical adjustment to estimate well-defined treatment or exposure contrasts.
+
+## Learning Objectives
+
+After working through this material, you should be able to:
+
+- explain the main ideas behind **Machine learning in Causal inference**;
+- interpret the R workflow and its output; and
+- adapt the examples to a related analysis.
+
+## Lesson Roadmap
+
+The original material is organized around the following topics:
+
+1. Introduction
+2. Marginally Adjusted Parametric Regression, like g computation, is to weight the outcome
+3. Inverse Probability Weighting, propensity score, is to weight the exposure
+4. The Curse of Dimensionality, Machine Learning (non parameter estimation)
+
+## How to Use This Lesson
+
+Read the explanation before each workflow, then run the R chunks in sequence. Code and output are shown together so that each numerical or graphical result can be connected to the command that produced it. Some source examples require optional packages or external data. Those setup-dependent chunks remain visible for reference but are marked `eval: false` when they cannot be reproduced safely in a clean website build.
+
+## Reproducible Learning Check
+
+This short R chunk confirms the scope of the lesson and always produces a visible output.
+
+```{r}
+#| label: learning-overview
+learning_overview <- data.frame(
+  section = "Epidemiology & Real-World Evidence",
+  category = "Causal Methods",
+  topic = "Machine learning in Causal inference"
+)
+learning_overview
+```
+
+## Learning Material
+
+The following material develops **Machine learning in Causal inference** from core ideas to practical implementation. Definitions and assumptions come first; worked code then shows how the ideas are represented computationally.
+
+### Conceptual Foundation
+
+The material below closely follows the original R Markdown source, with its examples retained for study and reuse.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#### Introduction
+
+<!-- generated-learning-note -->
+This section establishes the concepts and assumptions needed to understand **Introduction** in the context of Machine learning in Causal inference.
+
+
+In detail please see the reference by [Ashley I Naimi](https://github.com/ainaimi/mlci_shortcourse).  
+
+Install packages from remote github
+
+### R Workflow and Examples
+
+Run the examples in order because later blocks may reuse objects created earlier. Each block includes a short purpose statement and guidance for reading its output.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This source block depends on optional software, external data, or a machine-specific path. It is retained as a reference and is not executed during the website build.
+
+```{r}
+#| eval: false
+#| code-fold: true
+# https://www.youtube.com/watch?v=c14aqVC-Szo
+
+# usethis::create_github_token()
+# get a token
+
+# usethis::edit_r_environ()
+# .Renviron
+# GITHUB_TOKEN = ghp_6... l
+# save and restart r studio
+
+# options(download.file.method = "wininet")
+# devtools::install_github("tlverse/tlverse")
+library(tlverse)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Because this block is not executed, it produces no website output. Enable it only after its dependencies and input paths have been validated.
+
+
+Datasets
+
+
+<!-- generated-learning-note -->
+**Purpose.** This source block depends on optional software, external data, or a machine-specific path. It is retained as a reference and is not executed during the website build.
+
+```{r}
+#| eval: false
+#| code-fold: true
+library(tidyverse)
+
+nhefs <- read.csv("C:\\Users\\hed2\\Downloads\\mybook2\\mybook2\\nhefs_an.csv") %>%
+select(seqn, qsmk, sex, age, income,
+sbp, dbp, price71, tax71, race, wt82_71) %>%
+na.omit()
+names(nhefs)
+
+nhefs <-  nhefs %>%
+mutate(wt_delta = as.numeric(wt82_71 >
+median(wt82_71)))
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Because this block is not executed, it produces no website output. Enable it only after its dependencies and input paths have been validated.
+
+
+Parametric regression,
+
+#### Marginally Adjusted Parametric Regression, like g computation, is to weight the outcome
+
+<!-- generated-learning-note -->
+This section develops **Marginally Adjusted Parametric Regression, like g computation, is to weight the outcome**. Read the model specification together with its assumptions and the scale of each reported effect.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block prepares the analysis data. Follow each transformation carefully because filtering, recoding, grouping, and reshaping determine the observations used downstream.
+
+```{r}
+# modelForm is a regression argument
+formulaVars <- "qsmk + sex + age + income + sbp + dbp + price71 + tax71 + race"
+modelForm <- as.formula(paste0("wt_delta ~",
+                               formulaVars))
+modelForm
+                               
+#' Regress the outcome against the confounders with interaction (no interaction)
+ms_model <- glm(modelForm, data = nhefs,family = binomial("logit"))
+
+##' Generate predictions for everyone in the sample 
+##' to obtain
+##' unexposed (mu0 predictions) and exposed (mu1 predictions) risks.
+mu1 <- predict(ms_model, newdata = transform(nhefs,
+qsmk = 1), type = "response")
+
+mu0 <- predict(ms_model, newdata = transform(nhefs,
+qsmk = 0), type = "response")
+
+#' Marginally adjusted odds ratio
+marg_stand_OR <- (mean(mu1)/mean(1 - mu1))/(mean(mu0)/mean(1 -
+mu0))
+#' Marginally adjusted risk ratio
+marg_stand_RR <- mean(mu1)/mean(mu0)
+#' Marginally adjusted risk difference
+marg_stand_RD <- mean(mu1) - mean(mu0)
+1/marg_stand_OR
+1/marg_stand_RR
+-1*marg_stand_RD
+
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the data before and after the transformation. Confirm that row counts, group sizes, missingness, and variable values changed as intended.
+
+
+Random forest (non parameter), modeling by the exposure, weighting on the outcome
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r}
+library(ranger)
+#' Marginal Standardization with Random Forest
+model0 <- ranger(modelForm, num.trees = 500,
+mtry = 3, min.node.size = 50, data = subset(nhefs,
+qsmk == 0))
+model1 <- ranger(modelForm, num.trees = 500,
+mtry = 3, min.node.size = 50, data = subset(nhefs,
+qsmk == 1))
+
+mu1 <- predict(model1, data = nhefs, type = "response")$pred
+mu0 <- predict(model0, data = nhefs, type = "response")$pred
+marg_stand_RDrf <- mean(mu1) - mean(mu0)
+
+marg_stand_RDrf
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+
+#### Inverse Probability Weighting, propensity score, is to weight the exposure
+
+<!-- generated-learning-note -->
+This subsection explains **Inverse Probability Weighting, propensity score, is to weight the exposure** and shows how it contributes to the overall Machine learning in Causal inference workflow.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block specifies and fits the statistical model. Identify the outcome, predictors, reference levels, link or distribution, and any correlation structure before interpreting coefficients.
+
+```{r}
+# create the propensity score in the
+# dataset
+
+nhefs$propensity_score <- glm(qsmk ~ sex +
+age + income + sbp + dbp + price71 +
+tax71 + race, data = nhefs, family = binomial("logit"))$fitted.values
+# stabilized inverse probability
+# weights
+nhefs$sw <- (mean(nhefs$qsmk)/nhefs$propensity_score) *
+nhefs$qsmk + ((1 - mean(nhefs$qsmk))/(1 -
+nhefs$propensity_score)) * (1 - nhefs$qsmk)
+summary(nhefs$sw)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Focus on coefficient direction and scale, uncertainty intervals, fit statistics, and diagnostics. Statistical significance alone does not establish practical importance or model adequacy.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block specifies and fits the statistical model. Identify the outcome, predictors, reference levels, link or distribution, and any correlation structure before interpreting coefficients.
+
+```{r}
+model_RD_weighted <- glm(wt_delta ~ qsmk,
+data = nhefs, weights = sw, family = quasibinomial("identity"))
+summary(model_RD_weighted)$coefficients
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Focus on coefficient direction and scale, uncertainty intervals, fit statistics, and diagnostics. Statistical significance alone does not establish practical importance or model adequacy.
+
+
+Estimate the standard errors
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r}
+# 
+library(lmtest)
+library(sandwich)
+coeftest(model_RD_weighted, vcov. = vcovHC)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+
+
+#### The Curse of Dimensionality, Machine Learning (non parameter estimation)
+
+<!-- generated-learning-note -->
+This subsection explains **The Curse of Dimensionality, Machine Learning (non parameter estimation)** and shows how it contributes to the overall Machine learning in Causal inference workflow.
+
+
+`design matrix` using model.matrix
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block prepares the analysis data. Follow each transformation carefully because filtering, recoding, grouping, and reshaping determine the observations used downstream.
+
+```{r}
+nhefs_test=nhefs %>% select(wt82_71,qsmk,age,income) %>% 
+  mutate(age_cat = cut(age, 4, labels = F))
+
+test=lm(wt82_71~qsmk+income+as.factor(age_cat),data=nhefs_test)
+summary(test)
+
+  aa=model.matrix(test) %*%test$coefficients
+  bb=predict(test)
+  
+  head(aa-bb)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the data before and after the transformation. Confirm that row counts, group sizes, missingness, and variable values changed as intended.
+
+ 
+
+<!-- generated-learning-note -->
+**Purpose.** This block generates controlled example data. Simulation makes the data-generating assumptions explicit and provides a known setting in which to study the method.
+
+```{r}
+set.seed(123)
+n = 250
+c1 <-  (round(rnorm(n), 2))
+c2 <-  (round(rnorm(n), 2))
+c3 <-  (round(rnorm(n), 2))
+c4 <- factor (round(rnorm(n), 2))
+x <- factor(rbinom(n, 1, 0.5))
+dat_ <- data.frame(x, c1, c2, c3, c4)
+
+mod_mat <- model.matrix(~., data = dat_)
+dim(mod_mat)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the generated sample with the parameters used to create it. Differences reflect random variation unless the code intentionally introduces bias or structure.
+
+
+
+Sample sizes (in machine learning) are exponentially larger than those required for (fast converging) parametric methods to maintain the same degree of accuracy. It is just the cost of making weaker assumptions:
+if a parametric model is misspecified, it will converge very quickly to the wrong answer.
+
+Doubly robust methods can mitigate or resolve problems caused by the curse of dimensionality from machine learning. However, misspecification resulting an incomplete confounder adjustment
+set, or incorrectly adjusting for a mediator, cannot be fixed with doubly robust machine learning methods
+
+## Interpreting the Results
+
+Check nuisance models, overlap, weights, balance, diagnostics, estimand alignment, and sensitivity to modeling choices. Treat the output as evidence generated under the stated data, coding choices, and assumptions. Before using the workflow in practice, replace example inputs with validated data and confirm that the method targets the intended scientific question.
+
+## Key Takeaways
+
+- **Connect method to purpose.** Identify the question and target quantity before choosing code or a model.
+- **Read code and output together.** Confirm what each object, estimate, interval, table, or plot represents.
+- **Check assumptions and diagnostics.** A successful computation is not by itself evidence that the result is reliable.
+- **Adapt deliberately.** When applying the example elsewhere, document changes to data definitions, parameters, and analytical choices.

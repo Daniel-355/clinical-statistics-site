@@ -1,0 +1,178 @@
+---
+title: "Machine learning in Causal inference"
+output: html_document
+date: '2023-05-08'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+
+In detail please see the reference by [Ashley I Naimi](https://github.com/ainaimi/mlci_shortcourse).  
+
+Install packages from remote github
+```{r}
+# https://www.youtube.com/watch?v=c14aqVC-Szo
+
+# usethis::create_github_token()
+# get a token
+
+# usethis::edit_r_environ()
+# .Renviron
+# GITHUB_TOKEN = ghp_6... l
+# save and restart r studio
+
+# options(download.file.method = "wininet")
+# devtools::install_github("tlverse/tlverse")
+library(tlverse)
+```
+
+Datasets
+
+```{r}
+library(tidyverse)
+
+nhefs <- read.csv("C:\\Users\\hed2\\Downloads\\mybook2\\mybook2\\nhefs_an.csv") %>%
+select(seqn, qsmk, sex, age, income,
+sbp, dbp, price71, tax71, race, wt82_71) %>%
+na.omit()
+names(nhefs)
+
+nhefs <-  nhefs %>%
+mutate(wt_delta = as.numeric(wt82_71 >
+median(wt82_71)))
+```
+
+Parametric regression,
+
+### Marginally Adjusted Parametric Regression, like g computation, is to weight the outcome
+```{r}
+# modelForm is a regression argument
+formulaVars <- "qsmk + sex + age + income + sbp + dbp + price71 + tax71 + race"
+modelForm <- as.formula(paste0("wt_delta ~",
+                               formulaVars))
+modelForm
+                               
+#' Regress the outcome against the confounders with interaction (no interaction)
+ms_model <- glm(modelForm, data = nhefs,family = binomial("logit"))
+
+##' Generate predictions for everyone in the sample 
+##' to obtain
+##' unexposed (mu0 predictions) and exposed (mu1 predictions) risks.
+mu1 <- predict(ms_model, newdata = transform(nhefs,
+qsmk = 1), type = "response")
+
+mu0 <- predict(ms_model, newdata = transform(nhefs,
+qsmk = 0), type = "response")
+
+#' Marginally adjusted odds ratio
+marg_stand_OR <- (mean(mu1)/mean(1 - mu1))/(mean(mu0)/mean(1 -
+mu0))
+#' Marginally adjusted risk ratio
+marg_stand_RR <- mean(mu1)/mean(mu0)
+#' Marginally adjusted risk difference
+marg_stand_RD <- mean(mu1) - mean(mu0)
+1/marg_stand_OR
+1/marg_stand_RR
+-1*marg_stand_RD
+
+```
+
+Random forest (non parameter), modeling by the exposure, weighting on the outcome
+```{r}
+library(ranger)
+#' Marginal Standardization with Random Forest
+model0 <- ranger(modelForm, num.trees = 500,
+mtry = 3, min.node.size = 50, data = subset(nhefs,
+qsmk == 0))
+model1 <- ranger(modelForm, num.trees = 500,
+mtry = 3, min.node.size = 50, data = subset(nhefs,
+qsmk == 1))
+
+mu1 <- predict(model1, data = nhefs, type = "response")$pred
+mu0 <- predict(model0, data = nhefs, type = "response")$pred
+marg_stand_RDrf <- mean(mu1) - mean(mu0)
+
+marg_stand_RDrf
+```
+
+### Inverse Probability Weighting, propensity score, is to weight the exposure
+```{r}
+# create the propensity score in the
+# dataset
+
+nhefs$propensity_score <- glm(qsmk ~ sex +
+age + income + sbp + dbp + price71 +
+tax71 + race, data = nhefs, family = binomial("logit"))$fitted.values
+# stabilized inverse probability
+# weights
+nhefs$sw <- (mean(nhefs$qsmk)/nhefs$propensity_score) *
+nhefs$qsmk + ((1 - mean(nhefs$qsmk))/(1 -
+nhefs$propensity_score)) * (1 - nhefs$qsmk)
+summary(nhefs$sw)
+```
+
+```{r}
+model_RD_weighted <- glm(wt_delta ~ qsmk,
+data = nhefs, weights = sw, family = quasibinomial("identity"))
+summary(model_RD_weighted)$coefficients
+```
+
+Estimate the standard errors
+```{r}
+# 
+library(lmtest)
+library(sandwich)
+coeftest(model_RD_weighted, vcov. = vcovHC)
+```
+
+
+### The Curse of Dimensionality, Machine Learning (non parameter estimation)
+
+`design matrix` using model.matrix
+
+```{r}
+nhefs_test=nhefs %>% select(wt82_71,qsmk,age,income) %>% 
+  mutate(age_cat = cut(age, 4, labels = F))
+
+test=lm(wt82_71~qsmk+income+as.factor(age_cat),data=nhefs_test)
+summary(test)
+
+  aa=model.matrix(test) %*%test$coefficients
+  bb=predict(test)
+  
+  head(aa-bb)
+```
+ 
+```{r}
+set.seed(123)
+n = 250
+c1 <-  (round(rnorm(n), 2))
+c2 <-  (round(rnorm(n), 2))
+c3 <-  (round(rnorm(n), 2))
+c4 <- factor (round(rnorm(n), 2))
+x <- factor(rbinom(n, 1, 0.5))
+dat_ <- data.frame(x, c1, c2, c3, c4)
+
+mod_mat <- model.matrix(~., data = dat_)
+dim(mod_mat)
+```
+
+
+Sample sizes (in machine learning) are exponentially larger than those required for (fast converging) parametric methods to maintain the same degree of accuracy. It is just the cost of making weaker assumptions:
+if a parametric model is misspecified, it will converge very quickly to the wrong answer.
+
+Doubly robust methods can mitigate or resolve problems caused by the curse of dimensionality from machine learning. However, misspecification resulting an incomplete confounder adjustment
+set, or incorrectly adjusting for a mediator, cannot be fixed with doubly robust machine learning methods
+
+
+
+
+
+
+
+
+
+

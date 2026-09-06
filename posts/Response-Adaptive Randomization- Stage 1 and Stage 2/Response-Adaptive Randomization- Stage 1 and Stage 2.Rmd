@@ -1,0 +1,400 @@
+---
+title: "Response-Adaptive Randomization: Stage 1 and Stage 2"
+author: ""
+date: "`r Sys.Date()`"
+output:
+html_document:
+toc: true
+toc_depth: 3
+number_sections: true
+---
+
+# Overview
+
+This example demonstrates a simple **response-adaptive randomization** design with two stages.
+
+* **Stage 1:** The first 100 patients are randomized 1:1 to Treatment or Control.
+* Observed response rates are calculated after Stage 1.
+* The Stage 2 allocation probability is updated according to the observed response rates.
+* **Stage 2:** The next 100 patients are randomized using the updated allocation probability.
+* A randomization dataset is created for possible use in an EDC or IRT/RTSM workflow.
+
+The adaptive allocation probability is defined as:
+
+$$
+P(\text{Treatment})
+=
+\frac{\hat p_{\text{Treatment}}}
+{\hat p_{\text{Treatment}}+\hat p_{\text{Control}}}
+$$
+
+To avoid extreme allocation, the probability is restricted to:
+
+$$
+0.30 \leq P(\text{Treatment}) \leq 0.70
+$$
+
+# 1. Set Seed
+
+```{r}
+set.seed(123)
+```
+
+# 2. Stage 1: First 100 Patients
+
+The first 100 patients are randomized equally between Treatment and Control.
+
+Treatment coding is:
+
+* `1 = Treatment`
+* `0 = Control`
+
+```{r}
+n_stage1 <- 100
+
+trt1 <- rbinom(
+  n_stage1,
+  1,
+  0.50
+)
+```
+
+# 3. Simulate Stage 1 Responses
+
+For illustration, assume the true response rates are:
+
+$$
+P(\text{Response}|\text{Treatment}) = 0.70
+$$
+
+and
+
+$$
+P(\text{Response}|\text{Control}) = 0.50
+$$
+
+```{r}
+response1 <- rbinom(
+  n_stage1,
+  1,
+  prob = ifelse(
+    trt1 == 1,
+    0.70,
+    0.50
+  )
+)
+```
+
+# 4. Calculate Observed Response Rates
+
+```{r}
+rate_trt <- mean(
+  response1[trt1 == 1]
+)
+
+rate_ctl <- mean(
+  response1[trt1 == 0]
+)
+
+cat(
+  "Observed Treatment response rate =",
+  round(rate_trt, 3),
+  "\n"
+)
+
+cat(
+  "Observed Control response rate =",
+  round(rate_ctl, 3),
+  "\n"
+)
+```
+
+# 5. Calculate Adaptive Allocation Probability
+
+The Stage 2 Treatment allocation probability is calculated as:
+
+$$
+P(\text{Treatment})
+=
+\frac{\hat p_T}
+{\hat p_T+\hat p_C}
+$$
+
+where:
+
+* (\hat p_T) is the observed Treatment response rate;
+* (\hat p_C) is the observed Control response rate.
+
+```{r}
+prob_trt_next <- rate_trt /
+  (rate_trt + rate_ctl)
+```
+
+To avoid extreme allocation, restrict the Treatment probability to the interval 0.30 to 0.70.
+
+```{r}
+prob_trt_next <- max(
+  0.30,
+  min(
+    0.70,
+    prob_trt_next
+  )
+)
+
+prob_ctl_next <- 1 -
+  prob_trt_next
+```
+
+Display the Stage 2 allocation probabilities.
+
+```{r}
+cat(
+  "Stage 2 Treatment allocation probability =",
+  round(prob_trt_next, 3),
+  "\n"
+)
+
+cat(
+  "Stage 2 Control allocation probability =",
+  round(prob_ctl_next, 3),
+  "\n"
+)
+```
+
+# 6. Stage 2: Randomize the Next 100 Patients
+
+```{r}
+n_stage2 <- 100
+```
+
+# 7. Create Subject IDs
+
+The next 100 patients are assigned Subject IDs from `SUBJ-101` through `SUBJ-200`.
+
+```{r}
+subject_id <- sprintf(
+  "SUBJ-%03d",
+  101:200
+)
+```
+
+# 8. Create Randomization Numbers
+
+```{r}
+randomization_number <- sprintf(
+  "R%04d",
+  101:200
+)
+```
+
+# 9. Generate Random Numbers
+
+For each Stage 2 patient, generate one random number from a Uniform(0,1) distribution.
+
+$$
+U_i \sim Uniform(0,1)
+$$
+
+```{r}
+u_random <- runif(
+  n_stage2
+)
+```
+
+# 10. Assign Treatment
+
+The randomization rule is:
+
+$$
+\text{Treatment}_i =
+\begin{cases}
+\text{Treatment}, & U_i \leq P(\text{Treatment}) \
+\text{Control}, & U_i > P(\text{Treatment})
+\end{cases}
+$$
+
+```{r}
+trt2 <- ifelse(
+  u_random <= prob_trt_next,
+  1,
+  0
+)
+```
+
+# 11. Create Treatment Labels
+
+```{r}
+treatment_assignment <- ifelse(
+  trt2 == 1,
+  "Treatment",
+  "Control"
+)
+```
+
+# 12. Create Blinded Treatment Codes
+
+For illustration:
+
+* `A = Treatment`
+* `B = Control`
+
+In a real double-blind trial, the actual mapping between blinded code and treatment would normally be restricted.
+
+```{r}
+treatment_code <- ifelse(
+  trt2 == 1,
+  "A",
+  "B"
+)
+```
+
+# 13. Create the Stage 2 Randomization Dataset
+
+```{r}
+stage2_randomization <- data.frame(
+  
+  Subject_ID =
+    subject_id,
+  
+  Randomization_Number =
+    randomization_number,
+  
+  Stage =
+    2,
+  
+  Allocation_Probability_Treatment =
+    rep(
+      prob_trt_next,
+      n_stage2
+    ),
+  
+  Allocation_Probability_Control =
+    rep(
+      prob_ctl_next,
+      n_stage2
+    ),
+  
+  Random_Number =
+    round(
+      u_random,
+      6
+    ),
+  
+  Treatment_Code =
+    treatment_code,
+  
+  Treatment_Assignment =
+    treatment_assignment,
+  
+  stringsAsFactors = FALSE
+)
+```
+
+# 14. Display the First 10 Randomized Patients
+
+```{r}
+head(
+  stage2_randomization,
+  10
+)
+```
+
+# 15. Check Stage 2 Treatment Allocation
+
+```{r}
+table(
+  stage2_randomization$
+    Treatment_Assignment
+)
+```
+
+# 16. Calculate Observed Stage 2 Allocation Proportions
+
+```{r}
+prop.table(
+  table(
+    stage2_randomization$
+      Treatment_Assignment
+  )
+)
+```
+
+# Interpretation
+
+The overall adaptive randomization process is:
+
+$$
+\text{Stage 1: 1:1 Randomization}
+$$
+
+$$
+\downarrow
+$$
+
+$$
+\text{Observe Stage 1 Responses}
+$$
+
+$$
+\downarrow
+$$
+
+$$
+\text{Calculate New Allocation Probability}
+$$
+
+$$
+\downarrow
+$$
+
+$$
+\text{Stage 2 Adaptive Randomization}
+$$
+
+For example, if the observed Stage 1 response rates are:
+
+$$
+\hat p_T = 0.70
+$$
+
+and
+
+$$
+\hat p_C = 0.50
+$$
+
+then:
+
+$$
+P(\text{Treatment})
+=
+ \frac{0.70}{0.70+0.50}
+=
+0.583
+$$
+
+Therefore, approximately 58.3% of Stage 2 patients would be randomized to Treatment and 41.7% to Control.
+
+Importantly, the exact number of patients assigned to each group will not necessarily equal these proportions because each patient is still randomized individually.
+
+# Practical Clinical Trial Note
+
+This example uses one adaptation after the first 100 patients.
+
+Therefore, all Stage 2 patients use the same updated allocation probability.
+
+The design is:
+
+$$
+100\text{ patients}
+\rightarrow
+\text{Interim Analysis}
+\rightarrow
+\text{Update Allocation Probability}
+\rightarrow
+100\text{ additional patients}
+$$
+
+This is operationally simpler than updating the allocation probability after every individual patient.
+
+In an actual clinical trial, the randomization algorithm, allocation restrictions, timing of adaptation, treatment-code mapping, and IRT/RTSM implementation should be prespecified and validated.

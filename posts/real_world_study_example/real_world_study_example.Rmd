@@ -1,0 +1,431 @@
+---
+title: "Real-World Evidence Study: Insulin vs Sulfonylurea After Metformin"
+author: "Daniel He"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    toc_depth: 3
+    number_sections: true
+---
+
+# 1. Background and Research Question
+
+This educational example mirrors the design of a published real-world retrospective cohort study among patients with type 2 diabetes who were initially treated with metformin and subsequently added either insulin or a sulfonylurea.
+
+**Research question:**  
+Among eligible patients with type 2 diabetes receiving metformin, is adding insulin associated with a different risk of myocardial infarction, stroke, or all-cause death compared with adding a sulfonylurea?
+
+Because treatment is not randomized, baseline confounding must be addressed.
+
+```{r setup, message=FALSE, warning=FALSE}
+library(dplyr)
+library(MatchIt)
+library(cobalt)
+library(survival)
+library(tableone)
+
+set.seed(2026)
+```
+
+# 2. Create / Import Real-World Data
+
+In a real study, this step would import EHR, claims, registry, pharmacy, laboratory, or linked administrative data.
+
+Here we simulate a dataset with the same basic structure.
+
+```{r simulate-data}
+n <- 5000
+
+rwd <- data.frame(
+  id = 1:n,
+  age = round(rnorm(n, 62, 9)),
+  male = rbinom(n, 1, 0.94),
+  bmi = round(rnorm(n, 31, 5), 1),
+  hba1c = round(rnorm(n, 8.1, 1.3), 1),
+  creatinine = round(pmax(rnorm(n, 1.1, 0.35), 0.4), 2),
+  systolic_bp = round(rnorm(n, 132, 15)),
+  smoking = rbinom(n, 1, 0.25),
+  prior_cvd = rbinom(n, 1, 0.25),
+  hypertension = rbinom(n, 1, 0.65),
+  ckd = rbinom(n, 1, 0.18)
+)
+
+# Treatment selection depends on baseline patient characteristics.
+# This intentionally creates confounding by indication.
+lp_treat <-
+  -3.0 +
+  0.02 * (rwd$age - 60) +
+  0.55 * (rwd$hba1c - 8) +
+  0.35 * rwd$prior_cvd +
+  0.45 * rwd$ckd +
+  0.02 * (rwd$bmi - 30)
+
+p_insulin <- plogis(lp_treat)
+
+rwd$treatment <- ifelse(
+  rbinom(n, 1, p_insulin) == 1,
+  "Insulin",
+  "Sulfonylurea"
+)
+
+rwd$treatment <- factor(
+  rwd$treatment,
+  levels = c("Sulfonylurea", "Insulin")
+)
+
+table(rwd$treatment)
+```
+
+# 3. Define the Study Cohort
+
+A real-world study should prespecify eligibility criteria, index date, baseline period, treatment strategy, follow-up, and outcome.
+
+For demonstration, we restrict the cohort to adults with plausible baseline values.
+
+```{r cohort-definition}
+cohort <- rwd %>%
+  filter(
+    age >= 40,
+    age <= 85,
+    hba1c >= 5,
+    hba1c <= 14,
+    creatinine > 0
+  )
+
+nrow(cohort)
+table(cohort$treatment)
+```
+
+# 4. Define Exposure, Outcome, and Baseline Covariates
+
+The exposure is treatment intensification:
+
+- Insulin
+- Sulfonylurea
+
+Potential baseline confounders include age, sex, BMI, HbA1c, creatinine, blood pressure, smoking, prior cardiovascular disease, hypertension, and chronic kidney disease.
+
+We now simulate a time-to-event outcome. In a real study, outcome events would be identified from diagnosis/procedure codes, death records, or adjudication.
+
+```{r outcome-generation}
+lp_event <-
+  -4.3 +
+  0.22 * (cohort$treatment == "Insulin") +
+  0.025 * (cohort$age - 60) +
+  0.30 * cohort$prior_cvd +
+  0.20 * cohort$ckd +
+  0.15 * cohort$smoking +
+  0.08 * (cohort$hba1c - 8)
+
+event_rate <- exp(lp_event)
+
+true_event_time <- rexp(
+  nrow(cohort),
+  rate = event_rate
+)
+
+censor_time <- runif(
+  nrow(cohort),
+  min = 1,
+  max = 5
+)
+
+cohort$followup_time <- pmin(true_event_time, censor_time)
+
+cohort$event <- as.integer(
+  true_event_time <= censor_time
+)
+
+table(cohort$event)
+```
+
+# 5. Data Quality Checks
+
+Before analysis, check missingness, implausible values, duplicates, coding consistency, and follow-up.
+
+```{r data-quality}
+# Duplicate patient IDs
+sum(duplicated(cohort$id))
+
+# Missingness
+colSums(is.na(cohort))
+
+# Basic distributions
+summary(
+  cohort[, c(
+    "age",
+    "bmi",
+    "hba1c",
+    "creatinine",
+    "systolic_bp",
+    "followup_time"
+  )]
+)
+```
+
+# 6. Examine Baseline Imbalance Before Adjustment
+
+Because treatment was not randomized, the treatment groups may differ substantially at baseline.
+
+```{r baseline-before}
+vars <- c(
+  "age",
+  "male",
+  "bmi",
+  "hba1c",
+  "creatinine",
+  "systolic_bp",
+  "smoking",
+  "prior_cvd",
+  "hypertension",
+  "ckd"
+)
+
+table1_before <- CreateTableOne(
+  vars = vars,
+  strata = "treatment",
+  data = cohort,
+  test = FALSE
+)
+
+print(
+  table1_before,
+  smd = TRUE
+)
+```
+
+# 7. Estimate the Propensity Score
+
+The propensity score estimates each patient's probability of receiving insulin conditional on measured baseline covariates.
+
+```{r propensity-score}
+ps_model <- glm(
+  I(treatment == "Insulin") ~
+    age +
+    male +
+    bmi +
+    hba1c +
+    creatinine +
+    systolic_bp +
+    smoking +
+    prior_cvd +
+    hypertension +
+    ckd,
+  family = binomial(),
+  data = cohort
+)
+
+cohort$ps <- predict(
+  ps_model,
+  type = "response"
+)
+
+summary(cohort$ps)
+```
+
+# 8. Propensity Score Matching
+
+Perform 1:1 nearest-neighbor propensity-score matching.
+
+```{r matching}
+m.out <- matchit(
+  treatment ~
+    age +
+    male +
+    bmi +
+    hba1c +
+    creatinine +
+    systolic_bp +
+    smoking +
+    prior_cvd +
+    hypertension +
+    ckd,
+  data = cohort,
+  method = "nearest",
+  distance = "glm",
+  ratio = 1,
+  caliper = 0.2
+)
+
+summary(m.out)
+
+matched <- match.data(m.out)
+
+table(matched$treatment)
+```
+
+# 9. Check Covariate Balance
+
+A common rule of thumb is an absolute standardized mean difference (SMD) below 0.10.
+
+```{r balance}
+bal.tab(
+  m.out,
+  un = TRUE,
+  thresholds = c(m = 0.10)
+)
+
+love.plot(
+  m.out,
+  threshold = 0.10,
+  abs = TRUE
+)
+```
+
+Good balance among measured covariates does **not** prove that unmeasured confounding has been eliminated.
+
+# 10. Primary Outcome Analysis
+
+Use a Cox proportional hazards model to compare time to the composite event between treatment groups.
+
+```{r primary-analysis}
+cox_fit <- coxph(
+  Surv(followup_time, event) ~ treatment,
+  data = matched,
+  weights = weights,
+  robust = TRUE
+)
+
+summary(cox_fit)
+
+exp(
+  cbind(
+    HR = coef(cox_fit),
+    confint(cox_fit)
+  )
+)
+```
+
+Interpretation:
+
+- HR > 1: higher event hazard in the insulin group.
+- HR < 1: lower event hazard in the insulin group.
+- A 95% confidence interval containing 1 indicates that the difference is not statistically significant at the conventional 0.05 level.
+
+Because this is an observational study, the estimate should be interpreted as an adjusted association / causal estimate under the required causal assumptions rather than proof of causality.
+
+# 11. Sensitivity Analysis 1: IPTW
+
+Instead of matching, estimate the average treatment effect using inverse probability of treatment weighting.
+
+```{r iptw}
+cohort <- cohort %>%
+  mutate(
+    treat_num = as.integer(treatment == "Insulin"),
+    weight_iptw = ifelse(
+      treat_num == 1,
+      1 / ps,
+      1 / (1 - ps)
+    )
+  )
+
+# Truncate extreme weights at the 1st and 99th percentiles
+limits <- quantile(
+  cohort$weight_iptw,
+  probs = c(0.01, 0.99)
+)
+
+cohort <- cohort %>%
+  mutate(
+    weight_trim = pmin(
+      pmax(weight_iptw, limits[1]),
+      limits[2]
+    )
+  )
+
+summary(cohort$weight_trim)
+```
+
+```{r iptw-outcome}
+cox_iptw <- coxph(
+  Surv(followup_time, event) ~ treatment,
+  data = cohort,
+  weights = weight_trim,
+  robust = TRUE
+)
+
+summary(cox_iptw)
+
+exp(
+  cbind(
+    HR = coef(cox_iptw),
+    confint(cox_iptw)
+  )
+)
+```
+
+# 12. Sensitivity Analysis 2: Conventional Multivariable Adjustment
+
+```{r regression-adjustment}
+cox_adjusted <- coxph(
+  Surv(followup_time, event) ~
+    treatment +
+    age +
+    male +
+    bmi +
+    hba1c +
+    creatinine +
+    systolic_bp +
+    smoking +
+    prior_cvd +
+    hypertension +
+    ckd,
+  data = cohort
+)
+
+summary(cox_adjusted)
+
+exp(
+  cbind(
+    HR = coef(cox_adjusted),
+    confint(cox_adjusted)
+  )
+)
+```
+
+# 13. Compare Results Across Methods
+
+```{r compare-results}
+extract_hr <- function(model, label) {
+  est <- coef(model)["treatmentInsulin"]
+  ci <- confint(model)["treatmentInsulin", ]
+
+  data.frame(
+    Method = label,
+    HR = exp(est),
+    Lower95 = exp(ci[1]),
+    Upper95 = exp(ci[2])
+  )
+}
+
+results <- bind_rows(
+  extract_hr(cox_fit, "Propensity-score matching"),
+  extract_hr(cox_iptw, "IPTW"),
+  extract_hr(cox_adjusted, "Multivariable Cox")
+)
+
+results
+```
+
+If the estimates are reasonably similar across multiple prespecified approaches, confidence in robustness is increased. However, agreement does not eliminate the possibility of unmeasured confounding or other biases.
+
+# 14. Interpretation and Limitations
+
+The real-world evidence workflow is:
+
+1. Define the causal question.
+2. Identify the real-world data source.
+3. Define eligibility criteria and the index date.
+4. Define treatment strategies.
+5. Define outcomes and follow-up.
+6. Prespecify baseline confounders using clinical knowledge and causal reasoning.
+7. Assess data quality.
+8. Evaluate baseline imbalance.
+9. Adjust measured confounding using matching, weighting, or regression.
+10. Check covariate balance and positivity.
+11. Estimate the treatment effect.
+12. Perform sensitivity analyses.
+13. Interpret the findings while acknowledging residual and unmeasured confounding.
+
+

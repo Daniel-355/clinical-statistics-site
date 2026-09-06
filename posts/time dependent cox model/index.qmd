@@ -1,0 +1,245 @@
+---
+title: "Time-Dependent Cox Regression Model"
+description: "A practical R learning guide to Time-Dependent Cox Regression Model, with concise explanations, reproducible examples, and interpretation guidance."
+date: 2026-08-31
+section: "Biostatistics"
+category: "Time-to-Event Analysis"
+topic: "Time-Dependent Cox Regression Model"
+type: article
+tags: ["Time-to-Event Analysis", "Biostatistics", "Time-Dependent", "Cox", "Regression"]
+status: published
+featured: true
+youtube: []
+pdf: []
+downloads: []
+validate-yaml: false
+execute:
+  enabled: false
+  echo: true
+  warning: false
+  error: true
+---
+
+## Why This Topic Matters
+
+Time-to-event methods use both event occurrence and follow-up time while accounting for censoring.
+
+## Learning Objectives
+
+After working through this material, you should be able to:
+
+- explain the main ideas behind **Time-Dependent Cox Regression Model**;
+- interpret the R workflow and its output; and
+- adapt the examples to a related analysis.
+
+## Lesson Roadmap
+
+The original material is organized around the following topics:
+
+1. Time-Dependent Cox Regression Model
+2. Read data
+3. Collinearity diagnosis
+4. Cox regression
+5. Proportional Risk test
+6. Survival function curves
+
+## How to Use This Lesson
+
+Read the explanation before each workflow, then run the R chunks in sequence. Code and output are shown together so that each numerical or graphical result can be connected to the command that produced it. Some source examples require optional packages or external data. Those setup-dependent chunks remain visible for reference but are marked `eval: false` when they cannot be reproduced safely in a clean website build.
+
+## Reproducible Learning Check
+
+This short R chunk confirms the scope of the lesson and always produces a visible output.
+
+```{r}
+#| label: learning-overview
+learning_overview <- data.frame(
+  section = "Biostatistics",
+  category = "Time-to-Event Analysis",
+  topic = "Time-Dependent Cox Regression Model"
+)
+learning_overview
+```
+
+## Learning Material
+
+The following material develops **Time-Dependent Cox Regression Model** from core ideas to practical implementation. Definitions and assumptions come first; worked code then shows how the ideas are represented computationally.
+
+### Conceptual Foundation
+
+The material below closely follows the original R Markdown source, with its examples retained for study and reuse.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#### Time-Dependent Cox Regression Model
+
+<!-- generated-learning-note -->
+This section develops **Time-Dependent Cox Regression Model**. Read the model specification together with its assumptions and the scale of each reported effect.
+
+
+[reference](https://mengte.online/archives/3900)
+
+When the proportional hazard (PH) assumption for age is not met in a Cox regression model, it means that the effect of age on the hazard rate is not constant over time. For example, the hazard rate might increase at a slower rate at younger ages and then accelerate at older ages. The PH assumption test can be judged by the following four methods:
+
+- There is no intersection between the Kaplan-Meier survival curves of categorical covariates.
+- Draw the log cumulative hazard curve. The parallelism of the curve is a sufficient and necessary condition to meet the PH assumption.
+- Use the Schoenfeld residual method to view the P value and residual graph corresponding to the continuous variable.
+- The interaction term between each covariate and the logarithmic survival time can be put into the model. If the interaction term is not statistically significant, the proportional hazard condition is met.
+
+The purpose of this case study is to explore the relationship between gender, age, and Karnofsky score and survival outcomes in patients with lung cancer.
+
+####### Read data
+
+### R Workflow and Examples
+
+Run the examples in order because later blocks may reuse objects created earlier. Each block includes a short purpose statement and guidance for reading its output.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This source block depends on optional software, external data, or a machine-specific path. It is retained as a reference and is not executed during the website build.
+
+```{r  }
+#| eval: false
+#| code-fold: true
+setwd("C:\\Users\\hed2\\Downloads\\dell\\code-storage\\code")
+mydata <- read.csv("Coxprop.csv")   
+View(mydata)   
+table(mydata$status)  
+prop.table(table(mydata$status))  
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Because this block is not executed, it produces no website output. Enable it only after its dependencies and input paths have been validated.
+
+
+####### Collinearity diagnosis
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r  }
+library(car)
+lm.reg<-lm(status~age+sex+ph.karno,data=mydata)  
+vif(lm.reg)  
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+
+####### Cox regression 
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r}
+library(survival) 
+fit<-coxph(Surv(time,status)~factor(sex)+age+ph.karno,data=mydata) 
+summary (fit)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+
+####### Proportional Risk test
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+ph.test<-cox.zph(fit)
+ph.test
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r, fig.height=15}
+# schoenfeld test
+library(survminer )
+ggcoxzph(ph.test)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+
+####### Survival function curves
+
+<!-- generated-learning-note -->
+**Purpose.** This block specifies and fits the statistical model. Identify the outcome, predictors, reference levels, link or distribution, and any correlation structure before interpreting coefficients.
+
+```{r}
+# Plot the baseline survival function
+ggsurvplot(survfit(fit,data=mydata), color = "#2E9FDF",
+           ggtheme = theme_minimal())
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Focus on coefficient direction and scale, uncertainty intervals, fit statistics, and diagnostics. Statistical significance alone does not establish practical importance or model adequacy.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block specifies and fits the statistical model. Identify the outcome, predictors, reference levels, link or distribution, and any correlation structure before interpreting coefficients.
+
+```{r}
+# Create the new data when age and  are are average
+sex_df <- with(mydata,
+               data.frame(sex = c(1, 2), 
+                          age = rep(mean(age, na.rm = TRUE), 2),
+                          ph.karno = rep(mean(ph.karno, na.rm = TRUE), 2)
+                          )
+               )
+sex_df
+
+# Survival curves by sex group
+fit2 <- survfit(fit, newdata = sex_df)
+ggsurvplot(fit2, data=mydata, conf.int = TRUE, legend.labs=c("Sex=1", "Sex=2"),
+           ggtheme = theme_minimal() )
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Focus on coefficient direction and scale, uncertainty intervals, fit statistics, and diagnostics. Statistical significance alone does not establish practical importance or model adequacy.
+
+
+####### Time-Dependent Cox Regression  
+
+Add a interaction term `x*log(t+20)`
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block specifies and fits the statistical model. Identify the outcome, predictors, reference levels, link or distribution, and any correlation structure before interpreting coefficients.
+
+```{r}
+fit.ph<-coxph(Surv(time,status)~sex+age+ph.karno+tt(ph.karno),
+              tt=function(x,t,...) x*log(t+20 ),data=mydata)
+summary(fit.ph)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Focus on coefficient direction and scale, uncertainty intervals, fit statistics, and diagnostics. Statistical significance alone does not establish practical importance or model adequacy.
+
+The time-dependent coefficient of Karnofsky score β(t)= -0.094+0.015×ln(t+20), and the effect value HR=exp(-0.094+0.015×ln(t+20)). For example, when the time is 200 days, the HR corresponding to the Karnofsky score is exp(-0.094+0.015×ln(200+20))= 0.987. `The "+20" is added to prevent the natural logarithm from becoming undefined when t = 0.`
+
+## Interpreting the Results
+
+Read survival probabilities, hazards, risk sets, and model contrasts with careful attention to time and censoring assumptions. Treat the output as evidence generated under the stated data, coding choices, and assumptions. Before using the workflow in practice, replace example inputs with validated data and confirm that the method targets the intended scientific question.
+
+## Key Takeaways
+
+- **Connect method to purpose.** Identify the question and target quantity before choosing code or a model.
+- **Read code and output together.** Confirm what each object, estimate, interval, table, or plot represents.
+- **Check assumptions and diagnostics.** A successful computation is not by itself evidence that the result is reliable.
+- **Adapt deliberately.** When applying the example elsewhere, document changes to data definitions, parameters, and analytical choices.

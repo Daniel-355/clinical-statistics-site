@@ -1,0 +1,129 @@
+---
+title: "Diagnostic test"
+output: html_document
+date: "2025-06-10"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Diagnostic test
+
+#### Basic concept
+##### Diagnostic test 2x2 contingency table  
+  
+![](https://upload.medbullets.com/topic/101006/images/sensitivity-specificity_corrected.jpg)  
+
+
+- A. True positives: those sick individuals with a positive test result.  
+- B. False positives: those healthy individuals with a positive test result.  
+- C. False negatives: those sick individuals with a negative test result.  
+- D. True negatives: those healthy individuals with a negative test result.  
+- Sensitivity is the probability that the sick individual will be positive  
+- Specificity  the probability that healthy individuals will have a negative result  
+- positive predictive values is the probability that the positive individual is actual sick  
+- negative predictive values is the probability that the negative individual is healthy. (Predictive values are conditioned by the a priori probability of the condition under study. When the a priori probability is low, negative predictive values will be high, and positive predictive values will be low.)   
+- The positive likelihood ratio is the probability of positive result when sick exist in relation to the probability of positive result when healthy exist.  
+- The negative likelihood ratio is the probability of negative result when sick exist in relation to the probability of negative result when healthy exist.  
+
+##### Posterior probability
+- Probability describes the chance of an event occurring, while likelihood refers to the strength of evidence for a hypothesis given observed data.
+- odd is  the ratio of the probability of sick happening to that of it not happening
+- the posterior probability of hypothesis H given data D is the likelihood of observing the data D given hypothesis H times the prior probability of hypothesis H
+- Post-test odds = Pre-test odds * Likelihood ratio
+![](https://miro.medium.com/v2/resize:fit:1100/format:webp/1*3qRK21B_BKBmGUp7yq74sA.jpeg)
+- Post-test probability is the updated probability of having a disease after a test result, while predictive values are a measure of the test's accuracy in correctly identifying the presence or absence of the disease within a population. 
+
+##### ROC
+- The ROC curve plots the True Positive Rate (TPR) against the False Positive Rate (FPR) at various threshold settings of a classifier.
+- AUC provides a single, concise summary of a model's performance
+
+#### Meausres of diagnostic test
+```{r}
+library(mltools)
+library(caret)
+library(pROC)
+library(epiR)
+set.seed(123)
+# 2x2 contingency table, two methods/ packages
+binomial_case <- data.frame(labels = sample(c(2,0), 100, 
+                                            replace = TRUE), predictions = sample(c(2,0), 100, replace = TRUE))
+############## have to pay attention the reference group very much #pay attention the order of two varialbes 
+confusionMatrix=confusionMatrix( relevel( as.factor(binomial_case$predictions), ref = "2"), relevel( as.factor(binomial_case$labels), ref = "2"))
+confusionMatrix
+
+## Generate a two-by-two table:
+tab <- table(binomial_case$predictions,binomial_case$labels)[2:1,2:1]
+rval <- epi.tests(tab, conf.level = 0.95)
+rval
+```
+
+#### One binary AUC comparison
+```{r}
+############### one-class auc comparison
+#generate df with random numbers
+df <- data.frame(disease_status = rbinom(n=100, size=1, prob=0.20),
+                 test1 = rnorm(100, mean=15, sd=4),
+                 test2 = rnorm(100, mean=30, sd=2))
+
+# Basic example with 2 roc objects
+roc1<-roc(df$disease_status, df$test1, plot=TRUE, smooth = FALSE)
+roc2<-roc(df$disease_status, df$test2, plot=TRUE, smooth = FALSE)
+result=roc.test(roc1, roc2)
+result
+
+# Comparison of partial AUC:
+roc3 <- roc(df$disease_status, df$test1, partial.auc=c(1, 0.8), partial.auc.focus="se")
+roc4 <- roc(df$disease_status, df$test2, partial.auc=c(1, 0.8), partial.auc.focus="se")
+roc.test(roc3, roc4)
+
+# Unpaired (unrelated) tests
+roc7 <- roc1
+# artificially create an roc8 unpaired with roc7
+roc8 <- roc(df$disease_status[1:70], df$test1[1:70])
+roc.test(roc7, roc8, paired=FALSE, method="bootstrap")
+
+```
+
+#### Comparison on specificity and sensitivity
+```{r}
+# related ROC
+# Comparison on specificity and sensitivity
+roc.test(roc1, roc2, method="specificity", specificity=0.9)  #true difference in sensitivity at 0.9 specificity is not equal to 0
+roc.test(roc1, roc2, method="sensitivity", sensitivity=0.9)  #true difference in specificity at 0.9 sensitivity is not equal to 0
+# unrelated ROC
+# Comparison on specificity and sensitivity
+roc.test(roc1, roc2, paired=FALSE,method="specificity", specificity=0.9)  #true difference in sensitivity at 0.9 specificity is not equal to 0
+roc.test(roc1, roc2, paired=FALSE,method="sensitivity", sensitivity=0.9)  #true difference in specificity at 0.9 sensitivity is not equal to 0
+
+```
+
+#### Two-class auc comparsion
+```{r}
+############### Two-class auc comparsion
+set.seed(123)
+library(metrica)
+library(mltools)
+binomial_case <- data.frame(labels = sample(c(2,0), 100, 
+                                            replace = TRUE), predictions = sample(c(2,0), 100, replace = TRUE))
+# Get AUC estimate for two-class case
+# three packages/methods generate very similar results
+AUC_roc(data = binomial_case, obs = labels, pred = predictions, tidy = TRUE)#pay attention the order of two varialbes 
+auc_roc( binomial_case$predictions,binomial_case$labels) 
+roc ( binomial_case$labels, binomial_case$predictions, plot=TRUE, smooth = FALSE)
+
+```
+
+#### Multi-class auc comparsion
+```{r}
+# Multi-class
+multinomial_case <- data.frame(labels = sample(c(2,1,0), 100, 
+                                               replace = TRUE), predictions = sample(c(2,1,0), 100, replace = TRUE) )
+# Get AUC estimate for multi-class case
+AUC_roc(data = multinomial_case, obs = labels, pred = predictions, tidy = TRUE)
+# https://r-packages.io/packages/metrica/AUC_roc
+```
+
+
+

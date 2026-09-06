@@ -1,0 +1,1262 @@
+---
+title: "Clinical Trial Statistical Analysis Plan (SAP) SOP"
+description: "A practical R learning guide to Clinical Trial Statistical Analysis Plan (SAP) SOP, with concise explanations, reproducible examples, and interpretation guidance."
+date: 2026-08-31
+section: "Resources"
+category: "SAP & Protocol Resources"
+topic: "Clinical Trial Statistical Analysis Plan (SAP) SOP"
+type: article
+tags: ["SAP & Protocol Resources", "Resources", "Clinical", "Trial", "Statistical"]
+status: published
+featured: true
+youtube: []
+pdf: []
+downloads: []
+validate-yaml: false
+execute:
+  echo: true
+  warning: false
+  error: true
+---
+
+## Why This Topic Matters
+
+A statistical analysis plan translates protocol objectives into pre-specified, reproducible analytical decisions.
+
+## Learning Objectives
+
+After working through this material, you should be able to:
+
+- explain the main ideas behind **Clinical Trial Statistical Analysis Plan (SAP) SOP**;
+- interpret the R workflow and its output; and
+- adapt the examples to a related analysis.
+
+## Lesson Roadmap
+
+The original material is organized around the following topics:
+
+1. Purpose
+2. SAP Development Process
+3. Review Study Documents
+4. Timing
+5. Study Background
+6. Study Objectives and Endpoints
+
+## How to Use This Lesson
+
+Read the explanation before each workflow, then run the R chunks in sequence. Code and output are shown together so that each numerical or graphical result can be connected to the command that produced it. Some source examples require optional packages or external data. Those setup-dependent chunks remain visible for reference but are marked `eval: false` when they cannot be reproduced safely in a clean website build.
+
+## Reproducible Learning Check
+
+This short R chunk confirms the scope of the lesson and always produces a visible output.
+
+```{r}
+#| label: learning-overview
+learning_overview <- data.frame(
+  section = "Resources",
+  category = "SAP & Protocol Resources",
+  topic = "Clinical Trial Statistical Analysis Plan (SAP) SOP"
+)
+learning_overview
+```
+
+## Learning Material
+
+The following material develops **Clinical Trial Statistical Analysis Plan (SAP) SOP** from core ideas to practical implementation. Definitions and assumptions come first; worked code then shows how the ideas are represented computationally.
+
+### Conceptual Foundation
+
+The material below closely follows the original R Markdown source, with its examples retained for study and reuse.
+
+#### Purpose
+
+<!-- generated-learning-note -->
+This subsection explains **Purpose** and shows how it contributes to the overall Clinical Trial Statistical Analysis Plan (SAP) SOP workflow.
+
+
+The Statistical Analysis Plan (SAP) provides detailed, pre-specified statistical methods for the analysis and reporting of a clinical trial.
+
+The SAP should:
+
+- Be consistent with the protocol and study objectives.
+- Define the primary statistical analyses before database lock and treatment unblinding.
+- Provide sufficient detail for reproducible statistical programming.
+- Minimize data-driven analytical decisions.
+- Describe primary, secondary, sensitivity, supportive, and safety analyses.
+
+#### SAP Development Process
+
+<!-- generated-learning-note -->
+This subsection explains **SAP Development Process** and shows how it contributes to the overall Clinical Trial Statistical Analysis Plan (SAP) SOP workflow.
+
+
+#### Review Study Documents
+
+<!-- generated-learning-note -->
+This subsection explains **Review Study Documents** and shows how it contributes to the overall Clinical Trial Statistical Analysis Plan (SAP) SOP workflow.
+
+
+Before developing the SAP, review:
+
+- Final or near-final protocol.
+- Protocol amendments.
+- Case Report Forms (CRFs/eCRFs).
+- Data Management Plan.
+- Randomization specifications.
+- Endpoint definitions.
+- Estimand framework.
+- Clinical and regulatory requirements.
+- Relevant statistical guidance.
+- Planned SDTM and ADaM specifications, when available.
+
+The SAP must remain consistent with the protocol. Any deviations from protocol-specified statistical analyses should be clearly documented and justified.
+
+#### Timing
+
+<!-- generated-learning-note -->
+This subsection explains **Timing** and shows how it contributes to the overall Clinical Trial Statistical Analysis Plan (SAP) SOP workflow.
+
+
+The SAP should normally be finalized and approved:
+
+**Before database lock and before treatment unblinding.**
+
+For studies with interim analyses, relevant statistical methods and decision rules should be finalized before the corresponding interim analysis.
+
+#### Study Background
+
+<!-- generated-learning-note -->
+This subsection explains **Study Background** and shows how it contributes to the overall Clinical Trial Statistical Analysis Plan (SAP) SOP workflow.
+
+
+Briefly describe:
+
+- Disease or condition.
+- Investigational treatment.
+- Study phase.
+- Study rationale.
+- Relevant clinical background.
+
+Keep this section concise because detailed clinical background belongs in the protocol.
+
+#### Study Objectives and Endpoints
+
+<!-- generated-learning-note -->
+This subsection explains **Study Objectives and Endpoints** and shows how it contributes to the overall Clinical Trial Statistical Analysis Plan (SAP) SOP workflow.
+
+
+Specify:
+
+#### Primary Objective
+
+<!-- generated-learning-note -->
+This subsection explains **Primary Objective** and shows how it contributes to the overall Clinical Trial Statistical Analysis Plan (SAP) SOP workflow.
+
+
+The main confirmatory objective of the study.
+
+#### Secondary Objectives
+
+<!-- generated-learning-note -->
+This subsection explains **Secondary Objectives** and shows how it contributes to the overall Clinical Trial Statistical Analysis Plan (SAP) SOP workflow.
+
+
+Important additional efficacy or safety objectives.
+
+#### Exploratory Objectives
+
+<!-- generated-learning-note -->
+This subsection explains **Exploratory Objectives** and shows how it contributes to the overall Clinical Trial Statistical Analysis Plan (SAP) SOP workflow.
+
+
+Hypothesis-generating objectives.
+
+For each objective, clearly identify the corresponding:
+
+- Primary endpoint.
+- Secondary endpoints.
+- Exploratory endpoints.
+- Safety endpoints.
+
+For each important endpoint define:
+
+- Variable.
+- Measurement method.
+- Analysis time point.
+- Baseline definition.
+- Change-from-baseline definition, if applicable.
+- Responder definition, if applicable.
+- Event definition and censoring rules for time-to-event endpoints.
+
+#### Estimand
+
+<!-- generated-learning-note -->
+This subsection explains **Estimand** and shows how it contributes to the overall Clinical Trial Statistical Analysis Plan (SAP) SOP workflow.
+
+
+For each primary endpoint, and important secondary endpoints when appropriate, define the estimand.
+
+Specify:
+
+1. **Population**
+2. **Treatment condition**
+3. **Variable / endpoint**
+4. **Intercurrent event strategy**
+5. **Population-level summary measure**
+
+Common intercurrent events include:
+
+- Treatment discontinuation.
+- Rescue medication.
+- Treatment switching.
+- Use of prohibited medication.
+- Death.
+- Withdrawal from study.
+- Major treatment noncompliance.
+
+Possible strategies include:
+
+- Treatment-policy.
+- Hypothetical.
+- Composite.
+- While-on-treatment.
+- Principal-stratum.
+
+The statistical estimator should be aligned with the estimand.
+
+#### Study Design
+
+<!-- generated-learning-note -->
+This subsection explains **Study Design** and shows how it contributes to the overall Clinical Trial Statistical Analysis Plan (SAP) SOP workflow.
+
+
+Summarize the design, including:
+
+- Phase.
+- Randomized or non-randomized.
+- Blinding.
+- Control type.
+- Parallel, crossover, factorial, or other design.
+- Number of treatment groups.
+- Randomization ratio.
+- Stratification factors.
+- Treatment duration.
+- Follow-up duration.
+- Scheduled visits.
+- Number of study centers.
+
+If applicable, describe:
+
+- Adaptive design.
+- Dose selection.
+- Enrichment.
+- Group sequential design.
+- Interim analyses.
+
+#### Statistical Hypotheses
+
+<!-- generated-learning-note -->
+This subsection explains **Statistical Hypotheses** and shows how it contributes to the overall Clinical Trial Statistical Analysis Plan (SAP) SOP workflow.
+
+
+For confirmatory endpoints, specify:
+
+- Null hypothesis.
+- Alternative hypothesis.
+- One-sided or two-sided test.
+- Overall Type I error.
+- Significance level.
+
+Example:
+
+$$
+H_0: \mu_T-\mu_C=0
+$$
+
+versus
+
+$$
+H_1: \mu_T-\mu_C\neq0
+$$
+
+For non-inferiority or equivalence trials, specify the pre-defined margin.
+
+#### Sample Size
+
+<!-- generated-learning-note -->
+This subsection explains **Sample Size** and shows how it contributes to the overall Clinical Trial Statistical Analysis Plan (SAP) SOP workflow.
+
+
+Describe:
+
+- Planned sample size.
+- Randomization ratio.
+- Statistical test or model used for sample-size calculation.
+- Assumed treatment effect.
+- Variability or event rate.
+- Type I error.
+- Power.
+- Dropout assumption.
+- Number of required events for event-driven trials.
+
+If applicable, describe:
+
+- Sample-size re-estimation.
+- Interim sample-size review.
+- Blinded or unblinded sample-size re-estimation.
+
+#### Analysis Populations
+
+<!-- generated-learning-note -->
+This subsection explains **Analysis Populations** and shows how it contributes to the overall Clinical Trial Statistical Analysis Plan (SAP) SOP workflow.
+
+
+Clearly define each analysis population.
+
+#### Intent-to-Treat / Full Analysis Set
+
+<!-- generated-learning-note -->
+This subsection explains **Intent-to-Treat / Full Analysis Set** and shows how it contributes to the overall Clinical Trial Statistical Analysis Plan (SAP) SOP workflow.
+
+
+Usually includes all randomized subjects and analyzes subjects according to randomized treatment.
+
+#### Modified Intent-to-Treat
+
+<!-- generated-learning-note -->
+This subsection explains **Modified Intent-to-Treat** and shows how it contributes to the overall Clinical Trial Statistical Analysis Plan (SAP) SOP workflow.
+
+
+Specify any additional criteria, for example:
+
+- Received at least one dose.
+- Has at least one post-baseline assessment.
+
+Any modification of ITT should be scientifically justified.
+
+#### Per-Protocol Population
+
+<!-- generated-learning-note -->
+This subsection explains **Per-Protocol Population** and shows how it contributes to the overall Clinical Trial Statistical Analysis Plan (SAP) SOP workflow.
+
+
+Usually excludes subjects with important protocol deviations that could materially affect efficacy assessment.
+
+#### Safety Population
+
+<!-- generated-learning-note -->
+This subsection explains **Safety Population** and shows how it contributes to the overall Clinical Trial Statistical Analysis Plan (SAP) SOP workflow.
+
+
+Usually includes subjects who received at least one dose of study treatment.
+
+Safety analyses are generally performed according to **actual treatment received**, when appropriate.
+
+Additional populations may include:
+
+- Pharmacokinetic population.
+- Pharmacodynamic population.
+- Immunogenicity population.
+- Biomarker population.
+
+#### Protocol Deviations
+
+<!-- generated-learning-note -->
+This subsection explains **Protocol Deviations** and shows how it contributes to the overall Clinical Trial Statistical Analysis Plan (SAP) SOP workflow.
+
+
+Define how protocol deviations will be classified.
+
+Common major deviations include:
+
+- Violation of important eligibility criteria.
+- Incorrect treatment or randomization.
+- Important prohibited medication use.
+- Major dosing noncompliance.
+- Missing primary endpoint assessment.
+- Important visit-window violation.
+- Unblinding.
+- Incorrect endpoint assessment.
+
+Specify whether deviations affect inclusion in:
+
+- ITT/FAS.
+- PP.
+- Safety.
+- Other analysis populations.
+
+Final classification should normally be completed before database lock and unblinding.
+
+#### General Statistical Considerations
+
+<!-- generated-learning-note -->
+This subsection explains **General Statistical Considerations** and shows how it contributes to the overall Clinical Trial Statistical Analysis Plan (SAP) SOP workflow.
+
+
+Specify general conventions such as:
+
+- Statistical software and version.
+- Two-sided or one-sided testing.
+- Alpha level.
+- Confidence interval level.
+- Decimal precision.
+
+Continuous variables will typically be summarized using:
+
+- n.
+- Mean.
+- Standard deviation.
+- Median.
+- First and third quartiles, when appropriate.
+- Minimum.
+- Maximum.
+
+Categorical variables will typically be summarized using:
+
+- Frequency.
+- Percentage.
+
+For inferential analyses, report when appropriate:
+
+- Treatment effect.
+- Standard error.
+- Confidence interval.
+- P-value.
+
+Clinical interpretation should not rely only on statistical significance.
+
+#### Baseline Definition
+
+<!-- generated-learning-note -->
+This section establishes the concepts and assumptions needed to understand **Baseline Definition** in the context of Clinical Trial Statistical Analysis Plan (SAP) SOP.
+
+
+Define baseline for each relevant endpoint.
+
+Typically:
+
+> The last non-missing assessment obtained before the first administration of randomized study treatment.
+
+Specify special rules when multiple pre-treatment assessments exist.
+
+#### Visit Windows
+
+<!-- generated-learning-note -->
+This subsection explains **Visit Windows** and shows how it contributes to the overall Clinical Trial Statistical Analysis Plan (SAP) SOP workflow.
+
+
+Define rules for assigning observations to analysis visits.
+
+Specify:
+
+- Target day.
+- Visit window.
+- Rules for unscheduled visits.
+- Rules when multiple observations occur within the same window.
+
+A common rule is to select the assessment closest to the target visit.
+
+Tie-breaking rules should also be pre-specified.
+
+#### Missing Data
+
+<!-- generated-learning-note -->
+This section prepares the information needed for **Missing Data**. Check variable definitions, units, coding, and missing values before moving to analysis.
+
+
+Describe the expected missing-data mechanism and primary handling strategy.
+
+Possible approaches include:
+
+- Mixed-effects Model for Repeated Measures (MMRM).
+- Multiple imputation.
+- Likelihood-based models.
+- Survival censoring rules.
+- Appropriate endpoint-specific imputation.
+
+Avoid relying routinely on simple methods such as Last Observation Carried Forward (LOCF) unless scientifically justified.
+
+Distinguish:
+
+- Missing baseline values.
+- Missing post-baseline values.
+- Missing outcome values due to intercurrent events.
+
+#### Sensitivity Analyses for Missing Data
+
+<!-- generated-learning-note -->
+This section prepares the information needed for **Sensitivity Analyses for Missing Data**. Check variable definitions, units, coding, and missing values before moving to analysis.
+
+
+Primary analyses should generally be supported by sensitivity analyses assessing robustness to missing-data assumptions.
+
+Possible methods include:
+
+- Multiple imputation.
+- Reference-based imputation.
+- Jump-to-reference.
+- Copy-reference.
+- Delta-adjusted imputation.
+- Pattern-mixture models.
+- Tipping-point analysis.
+
+The choice should reflect the estimand and clinical context.
+
+#### Multiplicity
+
+<!-- generated-learning-note -->
+This subsection explains **Multiplicity** and shows how it contributes to the overall Clinical Trial Statistical Analysis Plan (SAP) SOP workflow.
+
+
+Identify all confirmatory hypotheses contributing to Type I error.
+
+Potential sources include:
+
+- Multiple primary endpoints.
+- Multiple treatment groups.
+- Multiple doses.
+- Multiple time points.
+- Multiple comparisons.
+- Multiple confirmatory secondary endpoints.
+- Interim analyses.
+
+Possible methods include:
+
+- Hierarchical testing.
+- Bonferroni.
+- Holm.
+- Hochberg.
+- Fixed-sequence testing.
+- Graphical procedures.
+- Gatekeeping procedures.
+- Alpha-spending methods.
+
+Clearly distinguish:
+
+**Confirmatory analyses**
+
+from
+
+**Nominal or exploratory analyses.**
+
+#### Interim Analysis
+
+<!-- generated-learning-note -->
+This subsection explains **Interim Analysis** and shows how it contributes to the overall Clinical Trial Statistical Analysis Plan (SAP) SOP workflow.
+
+
+If applicable, specify:
+
+- Timing or information fraction.
+- Interim-analysis population.
+- Efficacy boundary.
+- Futility boundary.
+- Safety stopping rules.
+- Alpha-spending function.
+- Sample-size adaptation rules.
+- Decision-making process.
+- Independent statistician or DSMB responsibilities.
+- Blinding procedures.
+
+Possible outcomes include:
+
+- Stop for efficacy.
+- Stop for futility.
+- Stop for safety.
+- Continue unchanged.
+- Adapt according to pre-specified rules.
+
+#### Subject Disposition
+
+<!-- generated-learning-note -->
+This subsection explains **Subject Disposition** and shows how it contributes to the overall Clinical Trial Statistical Analysis Plan (SAP) SOP workflow.
+
+
+Summarize by treatment group:
+
+- Screened.
+- Randomized.
+- Treated.
+- Completed treatment.
+- Completed study.
+- Discontinued treatment.
+- Withdrawn from study.
+
+Summarize reasons for:
+
+- Treatment discontinuation.
+- Study withdrawal.
+
+A CONSORT-style subject disposition figure should be produced when appropriate.
+
+#### Demographic and Baseline Characteristics
+
+<!-- generated-learning-note -->
+This section uses **Demographic and Baseline Characteristics** to make patterns visible. Confirm what each axis, group, scale, and annotation represents.
+
+
+Summarize important baseline characteristics by treatment group.
+
+Typical variables include:
+
+- Age.
+- Sex.
+- Race or ethnicity when relevant.
+- Weight.
+- BMI.
+- Disease duration.
+- Disease severity.
+- Important medical history.
+- Baseline endpoint values.
+- Randomization stratification factors.
+
+In randomized trials, formal significance testing of baseline imbalance is generally not necessary; descriptive summaries are usually sufficient.
+
+#### Treatment Exposure and Compliance
+
+<!-- generated-learning-note -->
+This subsection explains **Treatment Exposure and Compliance** and shows how it contributes to the overall Clinical Trial Statistical Analysis Plan (SAP) SOP workflow.
+
+
+Summarize:
+
+- Duration of exposure.
+- Total dose.
+- Average daily dose.
+- Dose intensity.
+- Dose interruptions.
+- Dose reductions.
+- Treatment compliance.
+
+If relevant, summarize rescue medication and concomitant treatment use.
+
+#### Primary Efficacy Analysis
+
+<!-- generated-learning-note -->
+This subsection explains **Primary Efficacy Analysis** and shows how it contributes to the overall Clinical Trial Statistical Analysis Plan (SAP) SOP workflow.
+
+
+The primary analysis must be specified in sufficient detail to be reproducible.
+
+For each primary endpoint define:
+
+- Analysis population.
+- Endpoint.
+- Statistical model.
+- Covariates.
+- Stratification factors.
+- Treatment contrast.
+- Effect measure.
+- Confidence interval.
+- P-value.
+- Model assumptions.
+- Estimation method.
+
+#### Continuous Endpoint
+
+<!-- generated-learning-note -->
+This subsection explains **Continuous Endpoint** and shows how it contributes to the overall Clinical Trial Statistical Analysis Plan (SAP) SOP workflow.
+
+
+A common method is ANCOVA:
+
+$$
+Y_i = \beta_0 + \beta_1 Treatment_i + \beta_2 Baseline_i +
+\beta_3 Stratification_i + \epsilon_i
+$$
+
+The treatment effect may be reported as:
+
+- Adjusted mean difference.
+- Least-squares mean difference.
+- 95% confidence interval.
+- P-value.
+
+For repeated measurements, MMRM may be used.
+
+Typical fixed effects include:
+
+- Treatment.
+- Visit.
+- Treatment-by-visit interaction.
+- Baseline value.
+- Baseline-by-visit interaction.
+- Stratification factors, when appropriate.
+
+#### Binary Endpoint
+
+<!-- generated-learning-note -->
+This subsection explains **Binary Endpoint** and shows how it contributes to the overall Clinical Trial Statistical Analysis Plan (SAP) SOP workflow.
+
+
+Possible methods include:
+
+- Logistic regression.
+- Cochran-Mantel-Haenszel test.
+- Risk difference.
+- Risk ratio.
+- Odds ratio.
+
+#### Time-to-Event Endpoint
+
+<!-- generated-learning-note -->
+This subsection explains **Time-to-Event Endpoint** and shows how it contributes to the overall Clinical Trial Statistical Analysis Plan (SAP) SOP workflow.
+
+
+Possible methods include:
+
+- Kaplan-Meier method.
+- Log-rank test.
+- Cox proportional hazards model.
+
+Typical treatment effects include:
+
+- Hazard ratio.
+- Median survival time.
+- Survival probabilities at clinically important time points.
+
+#### Count Endpoint
+
+<!-- generated-learning-note -->
+This subsection explains **Count Endpoint** and shows how it contributes to the overall Clinical Trial Statistical Analysis Plan (SAP) SOP workflow.
+
+
+Possible methods include:
+
+- Poisson regression.
+- Negative-binomial regression.
+
+#### Model Diagnostics and Alternative Models
+
+<!-- generated-learning-note -->
+This section develops **Model Diagnostics and Alternative Models**. Read the model specification together with its assumptions and the scale of each reported effect.
+
+
+When appropriate, assess important model assumptions.
+
+#### ANCOVA / Linear Models
+
+<!-- generated-learning-note -->
+This section develops **ANCOVA / Linear Models**. Read the model specification together with its assumptions and the scale of each reported effect.
+
+
+Consider:
+
+- Residual distribution.
+- Variance assumptions.
+- Influential observations.
+
+#### MMRM
+
+<!-- generated-learning-note -->
+This subsection explains **MMRM** and shows how it contributes to the overall Clinical Trial Statistical Analysis Plan (SAP) SOP workflow.
+
+
+Consider:
+
+- Covariance structure.
+- Model convergence.
+
+A fallback covariance structure should be pre-specified if the primary covariance structure fails to converge.
+
+#### Cox Model
+
+<!-- generated-learning-note -->
+This section develops **Cox Model**. Read the model specification together with its assumptions and the scale of each reported effect.
+
+
+Assess the proportional-hazards assumption when appropriate.
+
+#### Logistic Regression
+
+<!-- generated-learning-note -->
+This section develops **Logistic Regression**. Read the model specification together with its assumptions and the scale of each reported effect.
+
+
+Assess:
+
+- Model convergence.
+- Sparse-data problems.
+- Separation.
+
+Reasonable fallback methods should be pre-specified when possible.
+
+#### Secondary Efficacy Analyses
+
+<!-- generated-learning-note -->
+This subsection explains **Secondary Efficacy Analyses** and shows how it contributes to the overall Clinical Trial Statistical Analysis Plan (SAP) SOP workflow.
+
+
+For each important secondary endpoint specify:
+
+- Analysis population.
+- Endpoint definition.
+- Statistical method.
+- Covariates.
+- Treatment comparison.
+- Confidence interval.
+- Multiplicity status.
+
+Clearly indicate whether the analysis is:
+
+- Confirmatory.
+- Supportive.
+- Exploratory.
+
+#### Supportive Analyses
+
+<!-- generated-learning-note -->
+This subsection explains **Supportive Analyses** and shows how it contributes to the overall Clinical Trial Statistical Analysis Plan (SAP) SOP workflow.
+
+
+Supportive analyses may include:
+
+- Alternative analysis populations.
+- Alternative endpoint definitions.
+- Alternative covariate specifications.
+- Observed-case analysis.
+- Alternative statistical models.
+
+They should support interpretation of the primary analysis rather than replace it.
+
+#### Sensitivity Analyses
+
+<!-- generated-learning-note -->
+This subsection explains **Sensitivity Analyses** and shows how it contributes to the overall Clinical Trial Statistical Analysis Plan (SAP) SOP workflow.
+
+
+Sensitivity analyses evaluate robustness of the primary result.
+
+Common analyses include:
+
+- Different missing-data assumptions.
+- Different intercurrent-event assumptions.
+- Alternative censoring rules.
+- Alternative statistical models.
+- Exclusion or inclusion of specific protocol deviations.
+
+Primary conclusions should consider consistency across these analyses.
+
+#### Subgroup Analyses
+
+<!-- generated-learning-note -->
+This subsection explains **Subgroup Analyses** and shows how it contributes to the overall Clinical Trial Statistical Analysis Plan (SAP) SOP workflow.
+
+
+Pre-specify clinically meaningful subgroups.
+
+Examples include:
+
+- Age.
+- Sex.
+- Geographic region.
+- Baseline disease severity.
+- Biomarker status.
+- Prior treatment.
+- Important stratification factors.
+
+For each subgroup report:
+
+- Treatment effect.
+- 95% confidence interval.
+
+When appropriate, evaluate the treatment-by-subgroup interaction:
+
+$$
+Outcome =
+Treatment +
+Subgroup +
+Treatment \times Subgroup
+$$
+
+Subgroup analyses are usually exploratory unless explicitly included in the confirmatory testing strategy.
+
+#### Safety Analyses
+
+<!-- generated-learning-note -->
+This subsection explains **Safety Analyses** and shows how it contributes to the overall Clinical Trial Statistical Analysis Plan (SAP) SOP workflow.
+
+
+Safety analyses are generally descriptive and based on the Safety Population.
+
+#### Exposure
+
+<!-- generated-learning-note -->
+This subsection explains **Exposure** and shows how it contributes to the overall Clinical Trial Statistical Analysis Plan (SAP) SOP workflow.
+
+
+Summarize:
+
+- Treatment duration.
+- Dose received.
+- Dose interruptions.
+- Dose reductions.
+
+#### Adverse Events
+
+<!-- generated-learning-note -->
+This subsection explains **Adverse Events** and shows how it contributes to the overall Clinical Trial Statistical Analysis Plan (SAP) SOP workflow.
+
+
+Summarize:
+
+- Treatment-emergent adverse events (TEAEs).
+- Serious adverse events (SAEs).
+- Severe adverse events.
+- Treatment-related adverse events.
+- Adverse events leading to dose interruption.
+- Adverse events leading to treatment discontinuation.
+- Deaths.
+- Adverse events of special interest (AESIs).
+
+Adverse events are usually summarized by:
+
+- System Organ Class (SOC).
+- Preferred Term (PT).
+- Treatment group.
+
+The applicable MedDRA version should be specified.
+
+#### Laboratory Tests
+
+<!-- generated-learning-note -->
+This subsection explains **Laboratory Tests** and shows how it contributes to the overall Clinical Trial Statistical Analysis Plan (SAP) SOP workflow.
+
+
+Summarize:
+
+- Observed values.
+- Change from baseline.
+- Shift tables.
+- Clinically significant abnormalities.
+- Liver-function abnormalities.
+- Hy's Law cases when relevant.
+
+#### Vital Signs
+
+<!-- generated-learning-note -->
+This subsection explains **Vital Signs** and shows how it contributes to the overall Clinical Trial Statistical Analysis Plan (SAP) SOP workflow.
+
+
+Summarize:
+
+- Observed values.
+- Change from baseline.
+- Clinically significant abnormalities.
+
+#### ECG
+
+<!-- generated-learning-note -->
+This subsection explains **ECG** and shows how it contributes to the overall Clinical Trial Statistical Analysis Plan (SAP) SOP workflow.
+
+
+When applicable, summarize:
+
+- Heart rate.
+- PR interval.
+- QRS interval.
+- QT interval.
+- QTc interval.
+- Clinically important categorical QTc abnormalities.
+
+Additional safety analyses may include:
+
+- Physical examinations.
+- Suicidality.
+- Immunogenicity.
+- Device events.
+- Disease-specific safety endpoints.
+
+#### Concomitant Medications
+
+<!-- generated-learning-note -->
+This subsection explains **Concomitant Medications** and shows how it contributes to the overall Clinical Trial Statistical Analysis Plan (SAP) SOP workflow.
+
+
+Specify:
+
+- Coding dictionary.
+- Treatment-emergent definitions when applicable.
+- Summary categories.
+- Prior medications.
+- Concomitant medications.
+- Rescue medications.
+
+#### PK, PD, and Biomarker Analyses
+
+<!-- generated-learning-note -->
+This subsection explains **PK, PD, and Biomarker Analyses** and shows how it contributes to the overall Clinical Trial Statistical Analysis Plan (SAP) SOP workflow.
+
+
+If applicable, describe:
+
+- PK population.
+- PK parameters.
+- Drug concentration summaries.
+- Exposure-response analyses.
+- PD endpoints.
+- Biomarker analyses.
+
+These analyses may also be described in a separate PK/PD SAP.
+
+#### Data Handling Conventions
+
+<!-- generated-learning-note -->
+This section prepares the information needed for **Data Handling Conventions**. Check variable definitions, units, coding, and missing values before moving to analysis.
+
+
+Pre-specify important data-handling rules including:
+
+- Partial dates.
+- Missing dates.
+- Imputation of adverse-event onset dates.
+- Treatment-emergent definitions.
+- Derived dates.
+- Study day.
+- Visit assignment.
+- Baseline selection.
+- Duplicate measurements.
+- Values below or above quantification limits.
+
+Rules should be implemented consistently in ADaM datasets and statistical programming.
+
+#### Tables, Listings, and Figures
+
+<!-- generated-learning-note -->
+This section uses **Tables, Listings, and Figures** to make patterns visible. Confirm what each axis, group, scale, and annotation represents.
+
+
+The SAP should include or reference planned TLF shells.
+
+#### Tables
+
+<!-- generated-learning-note -->
+This subsection explains **Tables** and shows how it contributes to the overall Clinical Trial Statistical Analysis Plan (SAP) SOP workflow.
+
+
+Typical tables include:
+
+- Analysis populations.
+- Subject disposition.
+- Protocol deviations.
+- Demographics and baseline characteristics.
+- Exposure and compliance.
+- Primary efficacy analysis.
+- Secondary efficacy analyses.
+- Sensitivity analyses.
+- Subgroup analyses.
+- Adverse event summaries.
+- Serious adverse event summaries.
+- Laboratory summaries.
+- Vital signs.
+- ECG.
+- Concomitant medications.
+
+#### Figures
+
+<!-- generated-learning-note -->
+This section uses **Figures** to make patterns visible. Confirm what each axis, group, scale, and annotation represents.
+
+
+Typical figures include:
+
+- Subject disposition figure.
+- Longitudinal treatment profiles.
+- Kaplan-Meier curves.
+- Forest plots.
+- Treatment-effect plots.
+
+#### Listings
+
+<!-- generated-learning-note -->
+This subsection explains **Listings** and shows how it contributes to the overall Clinical Trial Statistical Analysis Plan (SAP) SOP workflow.
+
+
+Typical listings include:
+
+- Deaths.
+- Serious adverse events.
+- Adverse events leading to discontinuation.
+- Important protocol deviations.
+- Clinically significant laboratory abnormalities.
+- Important individual subject data.
+
+#### Statistical Programming and Validation
+
+<!-- generated-learning-note -->
+This subsection explains **Statistical Programming and Validation** and shows how it contributes to the overall Clinical Trial Statistical Analysis Plan (SAP) SOP workflow.
+
+
+Statistical programming should follow validated procedures.
+
+Where applicable, use the workflow:
+
+$$
+SDTM \rightarrow ADaM \rightarrow TLF
+$$
+
+Analysis variables should be traceable to source data.
+
+Primary and important secondary analyses should undergo appropriate independent validation or quality control.
+
+Statistical outputs should be reproducible from the final analysis datasets.
+
+#### Changes From Protocol
+
+<!-- generated-learning-note -->
+This subsection explains **Changes From Protocol** and shows how it contributes to the overall Clinical Trial Statistical Analysis Plan (SAP) SOP workflow.
+
+
+Document any SAP analysis that differs from the protocol.
+
+For each change specify:
+
+- Protocol-specified method.
+- SAP-specified method.
+- Reason for change.
+- Potential impact on interpretation.
+
+Changes made after unblinding should be clearly identified as post hoc.
+
+#### Post Hoc Analyses
+
+<!-- generated-learning-note -->
+This subsection explains **Post Hoc Analyses** and shows how it contributes to the overall Clinical Trial Statistical Analysis Plan (SAP) SOP workflow.
+
+
+Analyses not pre-specified in the protocol or SAP should be clearly labeled:
+
+**Post hoc / exploratory analysis**
+
+and should not be presented as pre-specified confirmatory evidence.
+
+#### SAP Approval
+
+<!-- generated-learning-note -->
+This subsection explains **SAP Approval** and shows how it contributes to the overall Clinical Trial Statistical Analysis Plan (SAP) SOP workflow.
+
+
+The final SAP should be reviewed and approved by appropriate study-team members.
+
+These may include:
+
+- Lead statistician.
+- Statistical programming representative.
+- Clinical lead.
+- Medical representative.
+- Data management representative, when appropriate.
+
+The final approved SAP should be version-controlled and archived.
+
+#### Practical SAP Workflow
+
+<!-- generated-learning-note -->
+This subsection explains **Practical SAP Workflow** and shows how it contributes to the overall Clinical Trial Statistical Analysis Plan (SAP) SOP workflow.
+
+
+A practical clinical-trial SAP workflow is:
+
+1. Protocol and estimand.
+2. Objectives and endpoints.
+3. Statistical hypotheses.
+4. Multiplicity strategy.
+5. Sample size and randomization.
+6. Analysis populations.
+7. Protocol deviations.
+8. Baseline and visit-window rules.
+9. Primary statistical model.
+10. Missing-data strategy.
+11. Intercurrent-event strategy.
+12. Sensitivity analyses.
+13. Secondary analyses.
+14. Subgroup analyses.
+15. Safety analyses.
+16. TLF shells.
+17. ADaM and programming specifications.
+18. Statistical QC and validation.
+19. SAP review and approval.
+20. Finalization before database lock and unblinding.
+
+#### Minimum Critical SAP Checklist
+
+<!-- generated-learning-note -->
+This subsection explains **Minimum Critical SAP Checklist** and shows how it contributes to the overall Clinical Trial Statistical Analysis Plan (SAP) SOP workflow.
+
+
+Before SAP finalization, confirm that the following are unambiguously defined:
+
+- Study objectives.
+- Primary and secondary endpoints.
+- Estimand.
+- Intercurrent-event strategy.
+- Statistical hypotheses.
+- Alpha level.
+- Multiplicity control.
+- Sample size.
+- Randomization and stratification factors.
+- Analysis populations.
+- Protocol-deviation handling.
+- Baseline definition.
+- Visit windows.
+- Primary statistical model.
+- Covariates.
+- Treatment contrasts.
+- Effect measures.
+- Confidence intervals.
+- Missing-data handling.
+- Sensitivity analyses.
+- Secondary analyses.
+- Subgroup analyses.
+- Interim-analysis rules, if applicable.
+- Safety analyses.
+- Exposure and compliance.
+- AE, SAE, and AESI definitions.
+- Laboratory, vital-sign, and ECG analyses.
+- Data-handling conventions.
+- TLF shells.
+- Statistical programming and QC requirements.
+- Deviations from protocol.
+- SAP approval and version control.
+
+#### Core SAP Principle
+
+<!-- generated-learning-note -->
+This subsection explains **Core SAP Principle** and shows how it contributes to the overall Clinical Trial Statistical Analysis Plan (SAP) SOP workflow.
+
+
+A useful way to organize the statistical logic of a clinical trial SAP is:
+
+$$
+\text{Clinical Question}
+\rightarrow
+\text{Estimand}
+\rightarrow
+\text{Endpoint}
+\rightarrow
+\text{Analysis Population}
+\rightarrow
+\text{Statistical Model}
+\rightarrow
+\text{Treatment Contrast}
+\rightarrow
+\text{Estimate and CI}
+$$
+
+The critical components that should generally be determined before database lock are:
+
+**Estimand $\rightarrow$ Population $\rightarrow$ Endpoint $\rightarrow$ Intercurrent Events $\rightarrow$ Missing Data $\rightarrow$ Model $\rightarrow$ Contrast $\rightarrow$ Multiplicity $\rightarrow$ Sensitivity Analysis.**
+
+### Applying the Material
+
+This source is primarily conceptual or procedural. Use its definitions and decision points as a checklist, and document how each item is implemented in the intended study or analysis.
+
+## Interpreting the Results
+
+Use the material as a checklist and adapt each element to the study design, estimands, data structure, and reporting requirements. Treat the output as evidence generated under the stated data, coding choices, and assumptions. Before using the workflow in practice, replace example inputs with validated data and confirm that the method targets the intended scientific question.
+
+## Key Takeaways
+
+- **Connect method to purpose.** Identify the question and target quantity before choosing code or a model.
+- **Read code and output together.** Confirm what each object, estimate, interval, table, or plot represents.
+- **Check assumptions and diagnostics.** A successful computation is not by itself evidence that the result is reliable.
+- **Adapt deliberately.** When applying the example elsewhere, document changes to data definitions, parameters, and analytical choices.

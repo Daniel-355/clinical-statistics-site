@@ -1,0 +1,900 @@
+---
+title: "Multiple linear regression"
+description: "A practical R learning guide to Multiple linear regression, with concise explanations, reproducible examples, and interpretation guidance."
+date: 2026-08-31
+section: "Biostatistics"
+category: "Statistical Models"
+topic: "Multiple linear regression"
+type: article
+tags: ["Statistical Models", "Biostatistics", "Multiple", "linear", "regression"]
+status: published
+featured: true
+youtube: []
+pdf: []
+downloads: []
+validate-yaml: false
+execute:
+  echo: true
+  warning: false
+  error: true
+---
+
+## Why This Topic Matters
+
+A statistical model is a structured approximation that links observed data to an estimand or prediction target.
+
+## Learning Objectives
+
+After working through this material, you should be able to:
+
+- explain the main ideas behind **Multiple linear regression**;
+- interpret the R workflow and its output; and
+- adapt the examples to a related analysis.
+
+## Lesson Roadmap
+
+The original material is organized around the following topics:
+
+1. Multiple linear regression
+2. Loading and describing data
+3. Create table 1
+4. Missingness checking
+5. Exploratory data analysis
+6. Transformations
+
+## How to Use This Lesson
+
+Read the explanation before each workflow, then run the R chunks in sequence. Code and output are shown together so that each numerical or graphical result can be connected to the command that produced it. Some source examples require optional packages or external data. Those setup-dependent chunks remain visible for reference but are marked `eval: false` when they cannot be reproduced safely in a clean website build.
+
+## Reproducible Learning Check
+
+This short R chunk confirms the scope of the lesson and always produces a visible output.
+
+```{r}
+#| label: learning-overview
+learning_overview <- data.frame(
+  section = "Biostatistics",
+  category = "Statistical Models",
+  topic = "Multiple linear regression"
+)
+learning_overview
+```
+
+## Learning Material
+
+The following material develops **Multiple linear regression** from core ideas to practical implementation. Definitions and assumptions come first; worked code then shows how the ideas are represented computationally.
+
+### Conceptual Foundation
+
+The material below closely follows the original R Markdown source, with its examples retained for study and reuse.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#### Multiple linear regression
+
+<!-- generated-learning-note -->
+This section develops **Multiple linear regression**. Read the model specification together with its assumptions and the scale of each reported effect.
+
+### R Workflow and Examples
+
+Run the examples in order because later blocks may reuse objects created earlier. Each block includes a short purpose statement and guidance for reading its output.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r, message=FALSE}
+library(car)
+library(MASS)
+library(psych)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+ 
+#### Loading and describing data
+
+<!-- generated-learning-note -->
+This section prepares the information needed for **Loading and describing data**. Check variable definitions, units, coding, and missing values before moving to analysis.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block imports or selects the data used in the example. Verify the file location, column types, coding, and missing values when substituting your own data.
+
+```{r}
+
+data(Boston)
+data_ori <- Boston
+describe(data_ori)
+
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Inspect dimensions, names, types, and several rows of the imported data. Unexpected structure at this stage will propagate into every later result.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block extracts inferential or predictive results from fitted objects. Match each estimate, interval, contrast, or diagnostic to the quantity it represents.
+
+```{r}
+summary(data_ori)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Interpret estimates on the scale reported by the function, and use intervals or other uncertainty measures when drawing conclusions.
+
+
+#### Create table 1
+
+<!-- generated-learning-note -->
+This subsection explains **Create table 1** and shows how it contributes to the overall Multiple linear regression workflow.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r, message=FALSE}
+library(boot) 
+library(table1)
+table1(~ . , data=data_ori)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+
+#### Missingness checking
+
+<!-- generated-learning-note -->
+This subsection explains **Missingness checking** and shows how it contributes to the overall Multiple linear regression workflow.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r,message=FALSE}
+
+library(mice)
+md.pattern(data_ori)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+#### Exploratory data analysis
+
+<!-- generated-learning-note -->
+This section prepares the information needed for **Exploratory data analysis**. Check variable definitions, units, coding, and missing values before moving to analysis.
+
+
+-correlation matrix 
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r}
+library(psych)
+pairs.panels(data_ori)
+
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+
+- histogram
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r}
+library(DataExplorer)
+plot_histogram(data_ori)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+
+
+
+#### Transformations
+
+<!-- generated-learning-note -->
+This section prepares the information needed for **Transformations**. Check variable definitions, units, coding, and missing values before moving to analysis.
+
+- transformation (based on the following rule) then histogram
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r,message=FALSE}
+library(tidyverse)
+data_trans = data_ori %>%  mutate(age= sqrt(max(age)+1-age),
+                         black= log10(max(black)+1-black),
+                         crim= log10(crim),
+                         dis= sqrt(dis)   )
+plot_histogram(data_trans)
+# pairs.panels(data2)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+
+! [How to transform data for normality.](https://www.statisticssolutions.com/wp-content/uploads/2018/12/b2.png)
+
+
+- check linearity between `y and x`
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+attach(data_trans)
+plot(medv, rm)
+plot(medv,lstat)
+plot(medv,age)
+
+plot(medv, black)
+plot(medv,crim)
+ 
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+ 
+#### Data imputation  and normalization
+
+<!-- generated-learning-note -->
+This section prepares the information needed for **Data imputation  and normalization**. Check variable definitions, units, coding, and missing values before moving to analysis.
+
+#### For original"data"
+
+<!-- generated-learning-note -->
+This section prepares the information needed for **For original"data"**. Check variable definitions, units, coding, and missing values before moving to analysis.
+
+- compiling knnimpute model (see machine learning section)
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r,message=F}
+library(caret)
+# Create the knn imputation model on the training data
+y=data_ori$medv
+preProcess_missingdata_model <- preProcess(data_ori , method='knnImpute')
+preProcess_missingdata_model
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+- check missingness
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r}
+# Use the imputation model to predict the values of missing data points
+library(RANN)  # required for knnInpute
+data_ori  <- predict(preProcess_missingdata_model, newdata = data_ori )
+anyNA(data_ori )
+data_ori$medv <- y
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+
+#### For transformed "data2"
+
+<!-- generated-learning-note -->
+This section prepares the information needed for **For transformed "data2"**. Check variable definitions, units, coding, and missing values before moving to analysis.
+
+- compiling knnimpute model (see machine learning section)
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r,message=F}
+library(caret)
+y2=data_trans$medv
+# Create the knn imputation model on the training data
+preProcess_missingdata_model2 <- preProcess(data_trans , method='knnImpute')
+preProcess_missingdata_model2
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+- check missingness
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r}
+# Use the imputation model to predict the values of missing data points
+library(RANN)  # required for knnInpute
+data_trans  <- predict(preProcess_missingdata_model2, newdata = data_trans )
+anyNA(data_trans )
+data_trans$medv <- y2
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+
+#### Generate dummy variables
+
+<!-- generated-learning-note -->
+This section prepares the information needed for **Generate dummy variables**. Check variable definitions, units, coding, and missing values before moving to analysis.
+
+- also can do using `as.factor` function for predictors `x`
+
+#### Spliting data into trainning data and test data
+
+<!-- generated-learning-note -->
+This section prepares the information needed for **Spliting data into trainning data and test data**. Check variable definitions, units, coding, and missing values before moving to analysis.
+
+- by using `caret` package (test data for external validation)
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+# Create the training and test datasets
+set.seed(123)
+# for original data 
+# Step 1: Get row numbers for the training data
+trainRowNumbers <- createDataPartition(data_ori$medv, p=0.8, list=FALSE)
+
+# Step 2: Create the training  dataset
+data  <- data_ori[trainRowNumbers,]
+
+# Step 3: Create the test dataset
+testdata  <- data_ori[-trainRowNumbers,]
+
+# for transformed data
+# Step 1: Get row numbers for the training data
+trainRowNumbers2 <- createDataPartition(data_trans$medv, p=0.8, list=FALSE)
+
+# Step 2: Create the training  dataset
+data2 <- data_trans[trainRowNumbers2,]
+
+# Step 3: Create the test dataset
+testdata2 <- data_trans[-trainRowNumbers2,]
+``` 
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+ 
+#### Step regression
+
+<!-- generated-learning-note -->
+This section develops **Step regression**. Read the model specification together with its assumptions and the scale of each reported effect.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block specifies and fits the statistical model. Identify the outcome, predictors, reference levels, link or distribution, and any correlation structure before interpreting coefficients.
+
+```{r}
+model_o = lm(  medv ~.  , data=data2)
+step(model_o,direction = "both")
+
+# summary(step(model_o,direction = "both"))
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Focus on coefficient direction and scale, uncertainty intervals, fit statistics, and diagnostics. Statistical significance alone does not establish practical importance or model adequacy.
+
+#### Create a model after selecting variables
+
+<!-- generated-learning-note -->
+This section prepares the information needed for **Create a model after selecting variables**. Check variable definitions, units, coding, and missing values before moving to analysis.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block specifies and fits the statistical model. Identify the outcome, predictors, reference levels, link or distribution, and any correlation structure before interpreting coefficients.
+
+```{r}
+model_trasf <- lm(formula = medv ~ zn + chas + nox + rm + dis + rad + tax + 
+    ptratio + lstat, data = data2)
+summary(model_trasf)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Focus on coefficient direction and scale, uncertainty intervals, fit statistics, and diagnostics. Statistical significance alone does not establish practical importance or model adequacy.
+
+#### Multicollinearity checking
+
+<!-- generated-learning-note -->
+This subsection explains **Multicollinearity checking** and shows how it contributes to the overall Multiple linear regression workflow.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+vif(model_trasf)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+#### Plot model to check assumptions
+
+<!-- generated-learning-note -->
+This section establishes the concepts and assumptions needed to understand **Plot model to check assumptions** in the context of Multiple linear regression.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+plot(model_trasf)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+- histogram of residuals
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+resid<- model_trasf$residuals
+hist(resid)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+- F test of model
+
+<!-- generated-learning-note -->
+**Purpose.** This block extracts inferential or predictive results from fitted objects. Match each estimate, interval, contrast, or diagnostic to the quantity it represents.
+
+```{r}
+anova(model_trasf)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Interpret estimates on the scale reported by the function, and use intervals or other uncertainty measures when drawing conclusions.
+
+
+- coefficients 
+
+<!-- generated-learning-note -->
+**Purpose.** This block extracts inferential or predictive results from fitted objects. Match each estimate, interval, contrast, or diagnostic to the quantity it represents.
+
+```{r}
+coef(summary(model_trasf))
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Interpret estimates on the scale reported by the function, and use intervals or other uncertainty measures when drawing conclusions.
+
+- confidence interval
+
+<!-- generated-learning-note -->
+**Purpose.** This block extracts inferential or predictive results from fitted objects. Match each estimate, interval, contrast, or diagnostic to the quantity it represents.
+
+```{r}
+confint(model_trasf)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Interpret estimates on the scale reported by the function, and use intervals or other uncertainty measures when drawing conclusions.
+
+
+#### Add polynomial of quadratic term
+
+<!-- generated-learning-note -->
+This subsection explains **Add polynomial of quadratic term** and shows how it contributes to the overall Multiple linear regression workflow.
+
+- `rm and lstat` 
+
+<!-- generated-learning-note -->
+**Purpose.** This block specifies and fits the statistical model. Identify the outcome, predictors, reference levels, link or distribution, and any correlation structure before interpreting coefficients.
+
+```{r}
+model_trasf_poly <- lm(formula = medv ~ zn + chas + nox +  I(rm^2) + dis + rad + tax + 
+    ptratio +   I(lstat^2), data = data2)
+summary(model_trasf_poly)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Focus on coefficient direction and scale, uncertainty intervals, fit statistics, and diagnostics. Statistical significance alone does not establish practical importance or model adequacy.
+
+#### Add interaction terms
+
+<!-- generated-learning-note -->
+This subsection explains **Add interaction terms** and shows how it contributes to the overall Multiple linear regression workflow.
+
+- `rm and lstat` 
+- R2 >0.7 indicates a good fit of the model 
+
+<!-- generated-learning-note -->
+**Purpose.** This block specifies and fits the statistical model. Identify the outcome, predictors, reference levels, link or distribution, and any correlation structure before interpreting coefficients.
+
+```{r}
+model_trasf_term <- lm(formula = medv ~ zn + chas + nox +  (rm*  lstat) + dis + rad + tax + 
+    ptratio  , data = data2)
+summary(model_trasf_term)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Focus on coefficient direction and scale, uncertainty intervals, fit statistics, and diagnostics. Statistical significance alone does not establish practical importance or model adequacy.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block creates a graphical summary. The plot should be read together with its axes, scales, groups, and any representation of uncertainty.
+
+```{r}
+plot(model_trasf_term)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Look for the intended pattern, but also inspect sparse groups, outliers, scale choices, and uncertainty before generalizing from the figure.
+
+
+#### Robust regression
+
+<!-- generated-learning-note -->
+This section develops **Robust regression**. Read the model specification together with its assumptions and the scale of each reported effect.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block extracts inferential or predictive results from fitted objects. Match each estimate, interval, contrast, or diagnostic to the quantity it represents.
+
+```{r}
+robust_model_term <- rlm(medv ~ zn + chas + nox +  (rm*  lstat) + dis + rad + tax + 
+    ptratio  , data = data2)
+summary(robust_model_term)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Interpret estimates on the scale reported by the function, and use intervals or other uncertainty measures when drawing conclusions.
+
+
+#### Create a model before transforming data
+
+<!-- generated-learning-note -->
+This section prepares the information needed for **Create a model before transforming data**. Check variable definitions, units, coding, and missing values before moving to analysis.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block specifies and fits the statistical model. Identify the outcome, predictors, reference levels, link or distribution, and any correlation structure before interpreting coefficients.
+
+```{r}
+model_trasf_orig <- lm(formula = medv ~ zn + chas + nox + rm + dis + rad + tax + 
+    ptratio + lstat, data = data)
+summary(model_trasf_orig)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Focus on coefficient direction and scale, uncertainty intervals, fit statistics, and diagnostics. Statistical significance alone does not establish practical importance or model adequacy.
+
+
+- non nest models comparisons 
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+AIC(model_trasf,model_trasf_orig)
+
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+#### K-fold cross validation
+
+<!-- generated-learning-note -->
+This subsection explains **K-fold cross validation** and shows how it contributes to the overall Multiple linear regression workflow.
+
+- to make sure which model is better
+
+<!-- generated-learning-note -->
+**Purpose.** This source block depends on optional software, external data, or a machine-specific path. It is retained as a reference and is not executed during the website build.
+
+```{r,message=FALSE}
+#| eval: false
+#| code-fold: true
+# install.packages("DAAG")
+library(DAAG)
+ 
+set.seed(123)
+model_trasf_term_cv <- glm( medv ~ zn + chas + nox +  (rm*  lstat) + dis + rad + tax + 
+    ptratio  , data = data2)
+cv.err  <- cv.glm(data2, model_trasf_term_cv, K = 10)$delta
+cv.err 
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Because this block is not executed, it produces no website output. Enable it only after its dependencies and input paths have been validated.
+
+
+
+#### Nonnest models comparisons
+
+<!-- generated-learning-note -->
+This section develops **Nonnest models comparisons**. Read the model specification together with its assumptions and the scale of each reported effect.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+AIC(model_trasf_term,model_trasf,model_trasf_orig,model_trasf_poly)
+# interaction, transformation, original, polynomial by order (`data` has been normalized but not `data2`)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+- plot the final model and check the model assumption  
+
+`posterior predictive check, 
+linearity, 
+homogeneity of variance, 
+influential points, 
+colinearity, and 
+normality of residuals` 
+
+<!-- generated-learning-note -->
+**Purpose.** This source block depends on optional software, external data, or a machine-specific path. It is retained as a reference and is not executed during the website build.
+
+```{r}
+#| eval: false
+#| code-fold: true
+# install.packages("performance")
+library(performance)
+check_model(model_trasf_term)
+ 
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Because this block is not executed, it produces no website output. Enable it only after its dependencies and input paths have been validated.
+
+
+#### Create forest plot for coefficients
+
+<!-- generated-learning-note -->
+This section uses **Create forest plot for coefficients** to make patterns visible. Confirm what each axis, group, scale, and annotation represents.
+
+ 
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r}
+library(sjPlot) 
+plot_model(model_trasf_term, show.values = TRUE, value.offset = 0.4) 
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+
+
+#### Relative Importance
+
+<!-- generated-learning-note -->
+This subsection explains **Relative Importance** and shows how it contributes to the overall Multiple linear regression workflow.
+
+
+- provides measures of relative importance
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r, message=FALSE}
+library(relaimpo)
+# calc.relimp(fit,type=c("lmg","last","first","pratt"),
+#    rela=TRUE)
+# Bootstrap Measures of Relative Importance (1000 samples)
+boot <- boot.relimp(model_trasf_term, b = 10, type =c("lmg" ), rank = TRUE,
+                    # type =c("lmg","last","first","pratt")
+  diff = TRUE, rela = TRUE)
+booteval.relimp(boot) # print result
+plot(booteval.relimp(boot,sort=TRUE)) # plot result
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+
+
+
+
+#### Model prediction
+
+<!-- generated-learning-note -->
+This section develops **Model prediction**. Read the model specification together with its assumptions and the scale of each reported effect.
+
+- prediction `ci` and mean `ci`
+
+<!-- generated-learning-note -->
+**Purpose.** This block prepares the analysis data. Follow each transformation carefully because filtering, recoding, grouping, and reshaping determine the observations used downstream.
+
+```{r}
+data_pred <-  data2 %>% select(zn , chas , nox , rm , dis , rad , tax , 
+    ptratio , lstat)
+data_pred[1:10,]
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the data before and after the transformation. Confirm that row counts, group sizes, missingness, and variable values changed as intended.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block extracts inferential or predictive results from fitted objects. Match each estimate, interval, contrast, or diagnostic to the quantity it represents.
+
+```{r}
+predy <- predict(model_trasf_term, data_pred[1:10,], interval="predict")
+predy
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Interpret estimates on the scale reported by the function, and use intervals or other uncertainty measures when drawing conclusions.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block extracts inferential or predictive results from fitted objects. Match each estimate, interval, contrast, or diagnostic to the quantity it represents.
+
+```{r}
+confy <- predict(model_trasf_term, data_pred[1:10,], interval="confidence")
+confy
+
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Interpret estimates on the scale reported by the function, and use intervals or other uncertainty measures when drawing conclusions.
+
+
+- `ci` width (the lower and upper bonds)
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+confy %*% c(0, -1, 1)
+predy %*% c(0, -1, 1)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+- plot the differences of predictions and actual values
+
+<!-- generated-learning-note -->
+**Purpose.** This block specifies and fits the statistical model. Identify the outcome, predictors, reference levels, link or distribution, and any correlation structure before interpreting coefficients.
+
+```{r}
+plot(data2$medv,predict(model_trasf_term) )
+fit <- lm(predict(model_trasf_term)~data2$medv)
+abline(fit)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Focus on coefficient direction and scale, uncertainty intervals, fit statistics, and diagnostics. Statistical significance alone does not establish practical importance or model adequacy.
+
+
+- compute y hat and confidence interval 
+
+<!-- generated-learning-note -->
+**Purpose.** This block prepares the analysis data. Follow each transformation carefully because filtering, recoding, grouping, and reshaping determine the observations used downstream.
+
+```{r}
+data_ci <-  select(data2, zn ,chas ,tax , medv)
+model_ci <- lm(formula = medv ~ zn + chas +tax , data = data_ci)
+summary(model_ci)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the data before and after the transformation. Confirm that row counts, group sizes, missingness, and variable values changed as intended.
+
+
+`compute y hat and compare with y predict and actual y`
+
+<!-- generated-learning-note -->
+**Purpose.** This block extracts inferential or predictive results from fitted objects. Match each estimate, interval, contrast, or diagnostic to the quantity it represents.
+
+```{r}
+XCI <- data.frame(intercept=1, data_ci[,1:3])
+comp_y <- as.matrix(XCI)%*%as.numeric(model_ci$coefficients)
+
+head(cbind(comp_y,predict(model_ci, XCI), data_ci[,4]))
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Interpret estimates on the scale reported by the function, and use intervals or other uncertainty measures when drawing conclusions.
+
+
+`compute ci`
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r}
+library(matlib)
+var.yhat <- sigma(model_ci)**2* as.matrix(XCI[1 ,]) %*% inv(t(as.matrix(XCI)) %*% as.matrix (XCI))%*%t(as.matrix(XCI[1 ,]))
+# var.yhat
+cbind(
+(predict(model_ci, XCI[1 ,])-1.96 * sqrt(var.yhat)),
+(predict(model_ci, XCI[1 ,]) ),
+(predict(model_ci, XCI[1 ,])+1.96 * sqrt(var.yhat))
+)
+
+predict(model_ci, XCI[1 ,], interval="confidence")
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+
+
+$$
+E(\hat{Y}_0)=\sigma^2\mathbf{X_0\left( X'X\right)^{-1}X_0'}
+$$
+
+#### External data validation
+
+<!-- generated-learning-note -->
+This section prepares the information needed for **External data validation**. Check variable definitions, units, coding, and missing values before moving to analysis.
+
+- this is not ture external validation (just for demonstration)
+- Split the data randomly into a training set and a test set by using `caret` package.
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r}
+library(caret)
+testdata2_pred <-  testdata2 %>% select(zn , chas , nox , rm , dis , rad , tax , 
+    ptratio , lstat)
+
+R_sq <- R2(testdata2$medv,predict(model_trasf_term,testdata2_pred))
+RMSE <- RMSE(testdata2$medv,predict(model_trasf_term,testdata2_pred))
+MAE <- MAE(testdata2$medv,predict(model_trasf_term,testdata2_pred))
+print(c(R_sq, RMSE, MAE))
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+
+#### To do
+
+<!-- generated-learning-note -->
+This subsection explains **To do** and shows how it contributes to the overall Multiple linear regression workflow.
+
+- Models comparisons in further and adjusting the final model by a loop
+
+## Interpreting the Results
+
+Interpret coefficients with their coding and scale, examine uncertainty, and use diagnostics to evaluate assumptions. Treat the output as evidence generated under the stated data, coding choices, and assumptions. Before using the workflow in practice, replace example inputs with validated data and confirm that the method targets the intended scientific question.
+
+## Key Takeaways
+
+- **Connect method to purpose.** Identify the question and target quantity before choosing code or a model.
+- **Read code and output together.** Confirm what each object, estimate, interval, table, or plot represents.
+- **Check assumptions and diagnostics.** A successful computation is not by itself evidence that the result is reliable.
+- **Adapt deliberately.** When applying the example elsewhere, document changes to data definitions, parameters, and analytical choices.

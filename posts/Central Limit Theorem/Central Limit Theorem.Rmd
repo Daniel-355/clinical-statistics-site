@@ -1,0 +1,51 @@
+---
+title: "Central Limit Theorem"
+output: html_document
+date: '2024-02-02'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Central Limit Theorem
+
+The Central Limit Theorem1 says that for most distributions, linear combinations (e.g., the  sum or the mean) of a large enough number of independent random variables is approximately normal. 
+
+For example, adult human heights (at least if we restrict to one sex3) are the sum of many heights: the heights of the ankles, lower legs, upper legs, pelvis, many vertebrae, and head. Empirical evidence suggests that these heights vary roughly independently (e.g., the ratio of height of lower leg to that of upper leg varies considerably). Thus it is plausible by the Central Limit Theorem that human heights are approximately normal. This in fact is supported by empirical evidence.
+
+
+linear combinations of a number of independent random variables
+
+```{r}
+# numbers from  
+x=1000
+
+# calculate the distribution function
+# based on the parameters
+
+pdf1<- rnorm(1000,(2),(1))
+pdf2<- rchisq(x,1)
+pdf3<- rf(x,3,10)
+pdf4<- rexp(x,1)
+
+pdf=2*pdf1+3*pdf2+4*pdf3+2*pdf4
+ 
+# Plotting the PDF 
+hist(pdf1,probability = T,20)
+lines(density(pdf1),col=2)
+
+hist(pdf2,probability = T,20)
+lines(density(pdf2),col=2)
+
+hist(pdf3,probability = T,20)
+lines(density(pdf4),col=2)
+
+hist(pdf4,probability = T,20)
+lines(density(pdf4),col=2)
+
+hist(pdf,probability = T,20)
+lines(density(pdf),col=2)
+```
+
+

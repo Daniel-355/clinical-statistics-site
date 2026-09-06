@@ -1,0 +1,33 @@
+---
+title: "Combine estimates by pooling rules"
+output: html_document
+date: '2023-05-08'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+
+Rubin´s Rules (RR) are designed to pool parameter estimates, such as mean differences, regression coefficients, standard errors and to derive confidence intervals and p-values. The standard errors of the multiple imputation solution are slightly smaller than in the complete-case analysis. 
+
+```{r}
+# Examples
+# impute missing data, analyse and pool using the classic MICE workflow
+library(mice)
+
+imp <- mice(nhanes, maxit = 2, m = 2)
+fit <- with(data = imp, exp = lm(bmi ~ hyp + chl))
+
+summary(pool(fit))
+```
+
+```{r}
+fit2 <- ( lm(bmi ~ hyp + chl,data = nhanes ))
+
+summary( (fit2))
+
+# missing exist
+```
+

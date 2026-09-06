@@ -1,0 +1,202 @@
+---
+title: "Outcome regression and propensity scores"
+description: "A practical R learning guide to Outcome regression and propensity scores, with concise explanations, reproducible examples, and interpretation guidance."
+date: 2026-08-31
+section: "Epidemiology & Real-World Evidence"
+category: "Causal Methods"
+topic: "Outcome regression and propensity scores"
+type: article
+tags: ["Causal Methods", "Epidemiology & Real-World Evidence", "Outcome", "regression", "propensity"]
+status: published
+featured: true
+youtube: []
+pdf: []
+downloads: []
+validate-yaml: false
+execute:
+  enabled: false
+  echo: true
+  warning: false
+  error: true
+---
+
+## Why This Topic Matters
+
+Causal methods combine design assumptions and statistical adjustment to estimate well-defined treatment or exposure contrasts.
+
+## Learning Objectives
+
+After working through this material, you should be able to:
+
+- explain the main ideas behind **Outcome regression and propensity scores**;
+- interpret the R workflow and its output; and
+- adapt the examples to a related analysis.
+
+## Lesson Roadmap
+
+The original material is organized around the following topics:
+
+1. Outcome regression and propensity scores
+2. Outcome regression
+
+## How to Use This Lesson
+
+Read the explanation before each workflow, then run the R chunks in sequence. Code and output are shown together so that each numerical or graphical result can be connected to the command that produced it. Some source examples require optional packages or external data. Those setup-dependent chunks remain visible for reference but are marked `eval: false` when they cannot be reproduced safely in a clean website build.
+
+## Reproducible Learning Check
+
+This short R chunk confirms the scope of the lesson and always produces a visible output.
+
+```{r}
+#| label: learning-overview
+learning_overview <- data.frame(
+  section = "Epidemiology & Real-World Evidence",
+  category = "Causal Methods",
+  topic = "Outcome regression and propensity scores"
+)
+learning_overview
+```
+
+## Learning Material
+
+The following material develops **Outcome regression and propensity scores** from core ideas to practical implementation. Definitions and assumptions come first; worked code then shows how the ideas are represented computationally.
+
+### Conceptual Foundation
+
+The material below closely follows the original R Markdown source, with its examples retained for study and reuse.
+
+#### Outcome regression and propensity scores
+
+<!-- generated-learning-note -->
+This section develops **Outcome regression and propensity scores**. Read the model specification together with its assumptions and the scale of each reported effect.
+
+
+These two methods are only suitable in simpler situations. Keep in mind, these two methods are not suitable for complex longitudinal data.
+
+#### Outcome regression
+
+<!-- generated-learning-note -->
+This section develops **Outcome regression**. Read the model specification together with its assumptions and the scale of each reported effect.
+
+
+Load data
+
+### R Workflow and Examples
+
+Run the examples in order because later blocks may reuse objects created earlier. Each block includes a short purpose statement and guidance for reading its output.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This source block depends on optional software, external data, or a machine-specific path. It is retained as a reference and is not executed during the website build.
+
+```{r pressure, echo=FALSE}
+#| eval: false
+#| code-fold: true
+library("readxl")
+library(tidyverse)
+library(here)
+nhefs <- read.csv("C:\\Users\\hed2\\Downloads\\mybook2\\mybook2\\nhefs.csv")
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Because this block is not executed, it produces no website output. Enable it only after its dependencies and input paths have been validated.
+
+
+Regression on effect modification 
+
+<!-- generated-learning-note -->
+**Purpose.** This block specifies and fits the statistical model. Identify the outcome, predictors, reference levels, link or distribution, and any correlation structure before interpreting coefficients.
+
+```{r}
+# regression on covariates, allowing for some effect modification
+fit <- glm(wt82_71 ~ qsmk + sex + race + age + I(age*age) + as.factor(education)
+           + smokeintensity + I(smokeintensity*smokeintensity) + smokeyrs
+           + I(smokeyrs*smokeyrs) + as.factor(exercise) + as.factor(active)
+           + wt71 + I(wt71*wt71) + I(qsmk*smokeintensity), data=nhefs)
+summary(fit)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Focus on coefficient direction and scale, uncertainty intervals, fit statistics, and diagnostics. Statistical significance alone does not establish practical importance or model adequacy.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This source block depends on optional software, external data, or a machine-specific path. It is retained as a reference and is not executed during the website build.
+
+```{r}
+#| eval: false
+#| code-fold: true
+# (step 1) build the contrast matrix with all zeros
+# this function builds the blank matrix 
+# install.packages("multcomp") # install packages if necessary
+library("multcomp")
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Because this block is not executed, it produces no website output. Enable it only after its dependencies and input paths have been validated.
+
+
+- Using contrast matrix 
+
+<!-- generated-learning-note -->
+**Purpose.** This block defines a reusable function. Separate its inputs, calculations, and returned value before applying it to new data.
+
+```{r}
+makeContrastMatrix <- function(model, nrow, names) {
+  m <- matrix(0, nrow = nrow, ncol = length(coef(model)))
+  colnames(m) <- names(coef(model))
+  rownames(m) <- names
+  return(m)
+}
+
+K1 <- makeContrastMatrix(fit, 2, c('Effect of Quitting Smoking at Smokeintensity of 5',
+                                      'Effect of Quitting Smoking at Smokeintensity of 40'))
+
+# (step 2) fill in the relevant non-zero elements 
+K1[1:2, 'qsmk'] <- 1
+K1[1:2, 'I(qsmk * smokeintensity)'] <- c(5, 40)
+
+# (step 3) check the contrast matrix
+K1 
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Test the function with simple inputs whose expected answer is known before relying on it in a larger workflow.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block extracts inferential or predictive results from fitted objects. Match each estimate, interval, contrast, or diagnostic to the quantity it represents.
+
+```{r}
+# (step 4) estimate the contrasts, get tests and confidence intervals for them
+estimates1 <- glht(fit, K1)
+  summary(estimates1)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Interpret estimates on the scale reported by the function, and use intervals or other uncertainty measures when drawing conclusions.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block extracts inferential or predictive results from fitted objects. Match each estimate, interval, contrast, or diagnostic to the quantity it represents.
+
+```{r}
+confint(estimates1)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Interpret estimates on the scale reported by the function, and use intervals or other uncertainty measures when drawing conclusions.
+
+## Interpreting the Results
+
+Check nuisance models, overlap, weights, balance, diagnostics, estimand alignment, and sensitivity to modeling choices. Treat the output as evidence generated under the stated data, coding choices, and assumptions. Before using the workflow in practice, replace example inputs with validated data and confirm that the method targets the intended scientific question.
+
+## Key Takeaways
+
+- **Connect method to purpose.** Identify the question and target quantity before choosing code or a model.
+- **Read code and output together.** Confirm what each object, estimate, interval, table, or plot represents.
+- **Check assumptions and diagnostics.** A successful computation is not by itself evidence that the result is reliable.
+- **Adapt deliberately.** When applying the example elsewhere, document changes to data definitions, parameters, and analytical choices.

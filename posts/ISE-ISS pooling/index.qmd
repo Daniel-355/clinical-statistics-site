@@ -1,0 +1,230 @@
+---
+title: "ISE/ISS pooling"
+description: "A practical R learning guide to ISE/ISS pooling, with concise explanations, reproducible examples, and interpretation guidance."
+date: 2026-08-31
+section: "Biostatistics"
+category: "Safety Analysis"
+topic: "ISE/ISS pooling"
+type: article
+tags: ["Safety Analysis", "Biostatistics", "ISE", "ISS", "pooling"]
+status: published
+featured: true
+youtube: []
+pdf: []
+downloads: []
+validate-yaml: false
+execute:
+  echo: true
+  warning: false
+  error: true
+---
+
+## Why This Topic Matters
+
+Safety analysis summarizes adverse outcomes across studies, treatments, time periods, and clinically meaningful groupings.
+
+## Learning Objectives
+
+After working through this material, you should be able to:
+
+- explain the main ideas behind **ISE/ISS pooling**;
+- interpret the R workflow and its output; and
+- adapt the examples to a related analysis.
+
+## Lesson Roadmap
+
+The original material is organized around the following topics:
+
+1. ISE/ISS pooling
+
+## How to Use This Lesson
+
+Read the explanation before each workflow, then run the R chunks in sequence. Code and output are shown together so that each numerical or graphical result can be connected to the command that produced it. Some source examples require optional packages or external data. Those setup-dependent chunks remain visible for reference but are marked `eval: false` when they cannot be reproduced safely in a clean website build.
+
+## Reproducible Learning Check
+
+This short R chunk confirms the scope of the lesson and always produces a visible output.
+
+```{r}
+#| label: learning-overview
+learning_overview <- data.frame(
+  section = "Biostatistics",
+  category = "Safety Analysis",
+  topic = "ISE/ISS pooling"
+)
+learning_overview
+```
+
+## Learning Material
+
+The following material develops **ISE/ISS pooling** from core ideas to practical implementation. Definitions and assumptions come first; worked code then shows how the ideas are represented computationally.
+
+### Conceptual Foundation
+
+The material below closely follows the original R Markdown source, with its examples retained for study and reuse.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#### ISE/ISS pooling
+
+<!-- generated-learning-note -->
+This subsection explains **ISE/ISS pooling** and shows how it contributes to the overall ISE/ISS pooling workflow.
+
+
+Designed and executed an Integrated Summary of Efficacy and Safety (ISE/ISS) simulation to evaluate pooled treatment effects across multiple clinical trials.  
+
+Generated realistic patient-level datasets (treatment, study, demographic, efficacy, and adverse event data) to mimic multi-study integration scenarios.
+ 
+Built R-based simulation pipelines using dplyr, tidyr, and survival to automate data creation, merging, and summary analyses.
+
+Validated simulated outcomes through model-based verification and visualization of efficacy and safety profiles.
+
+### R Workflow and Examples
+
+Run the examples in order because later blocks may reuse objects created earlier. Each block includes a short purpose statement and guidance for reading its output.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r}
+# ====================================================
+# R CODE: Simulate ISE / ISS data + Meta-Analysis demo
+# ====================================================
+
+# Load required packages
+library(dplyr)
+library(tidyr)
+library(metafor)
+library(ggplot2)
+library(purrr)
+
+set.seed(12345)
+
+# --------------------------
+# Step 1. Define study design
+# --------------------------
+studies <- data.frame(
+  study_id = paste0("S", 1:5),
+  n_per_arm = c(120, 80, 150, 60, 100),
+  treat_effect = c(2.0, 1.5, 2.5, 0.8, 1.8),
+  sd = c(4.0, 3.5, 4.5, 3.0, 4.0),
+  p_safety_ctrl = c(0.03, 0.04, 0.02, 0.05, 0.025),
+  rd_safety = c(0.01, 0.02, 0.015, 0.0, 0.005)
+)
+
+# Function to simulate one study (efficacy + safety)
+simulate_study <- function(study_id, n_per_arm, treat_effect, sd, p_safety_ctrl, rd_safety) {
+  arms <- c("Control", "Treatment")
+  df_list <- list()
+  for (arm in arms) {
+    arm_mult <- ifelse(arm == "Treatment", 1, 0)
+    n <- n_per_arm
+    eff <- rnorm(n, mean = treat_effect * arm_mult, sd = sd)
+    p_safety <- p_safety_ctrl + ifelse(arm == "Treatment", rd_safety, 0)
+    safety_event <- rbinom(n, size = 1, prob = p_safety)
+    df_list[[arm]] <- data.frame(
+      study_id = study_id,
+      arm = arm,
+      efficacy = eff,
+      safety_event = safety_event
+    )
+  }
+  do.call(rbind, df_list)
+}
+
+# Simulate all studies
+patient_df <- purrr::pmap_dfr(studies, simulate_study)
+head( patient_df)
+# Write patient-level data
+ 
+
+# --------------------------
+# Step 2. Study-level summary
+# --------------------------
+study_summary <- patient_df %>%
+  group_by(study_id, arm) %>%
+  summarise(
+    n = n(),
+    mean_eff = mean(efficacy),
+    sd_eff = sd(efficacy),
+    safety_events = sum(safety_event),
+    .groups = "drop"
+  )
+
+study_summary
+
+# --------------------------
+# Step 3. Compute effect estimates
+# --------------------------
+study_est <- study_summary %>%
+  pivot_wider(
+    names_from = arm,
+    values_from = c(n, mean_eff, sd_eff, safety_events)
+  ) %>%
+  mutate(
+    yi = mean_eff_Treatment - mean_eff_Control,
+    vi = (sd_eff_Treatment^2 / n_Treatment) + (sd_eff_Control^2 / n_Control),
+    pT = safety_events_Treatment / n_Treatment,
+    pC = safety_events_Control / n_Control,
+    rd = pT - pC,
+    v_rd = (pT*(1 - pT) / n_Treatment) + (pC*(1 - pC) / n_Control)
+  )
+
+study_est
+
+# --------------------------
+# Step 4. Meta-analysis (Efficacy)
+# --------------------------
+res_eff <- rma(yi = yi, vi = vi, data = study_est, method = "REML")
+print(res_eff)
+
+# Forest plot for efficacy
+forest(res_eff,
+       slab = study_est$study_id,
+       xlab = "Mean Difference (Treatment - Control)",
+       main = "ISE / ISS Pooled Efficacy Effect")
+
+# --------------------------
+# Step 5. Meta-analysis (Safety Risk Difference)
+# --------------------------
+res_rd <- rma(yi = rd, vi = v_rd, data = study_est, method = "REML")
+print(res_rd)
+
+# Forest plot for safety
+forest(res_rd,
+       slab = study_est$study_id,
+       xlab = "Risk Difference (Treatment - Control)",
+       main = "ISE / ISS Pooled Safety Risk Difference")
+
+# --------------------------
+# Step 6. Optional: Simple ggplot summary
+# --------------------------
+ggplot(study_est, aes(x = study_id, y = yi)) +
+  geom_point(size = 3, color = "steelblue") +
+  geom_errorbar(aes(ymin = yi - 1.96*sqrt(vi), ymax = yi + 1.96*sqrt(vi)), width = 0.2) +
+  geom_hline(yintercept = res_eff$b[1], color = "red", linetype = "dashed") +
+  labs(title = "Study-wise and Pooled Efficacy Estimates",
+       y = "Mean Difference (Treatment - Control)",
+       x = "Study ID") +
+  theme_minimal()
+
+
+
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+## Interpreting the Results
+
+Review denominators, exposure, event definitions, heterogeneity, and uncertainty before drawing conclusions. Treat the output as evidence generated under the stated data, coding choices, and assumptions. Before using the workflow in practice, replace example inputs with validated data and confirm that the method targets the intended scientific question.
+
+## Key Takeaways
+
+- **Connect method to purpose.** Identify the question and target quantity before choosing code or a model.
+- **Read code and output together.** Confirm what each object, estimate, interval, table, or plot represents.
+- **Check assumptions and diagnostics.** A successful computation is not by itself evidence that the result is reliable.
+- **Adapt deliberately.** When applying the example elsewhere, document changes to data definitions, parameters, and analytical choices.

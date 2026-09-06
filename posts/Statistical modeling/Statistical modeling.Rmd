@@ -1,0 +1,104 @@
+---
+title: "Statistical modeling"
+output: html_document
+date: "2025-10-29"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Statistical modeling
+
+#### Summary
+
+•	Expert biostatistician with extensive experience in simulation-based study design, including adaptive clinical trials, power analysis, bioequivalence studies, and integrated meta-analyses. Proficient in advanced statistical modeling techniques such as mixed-effects models, joint models, survival analysis, and machine-learning–enhanced causal inference, leveraging R, SAS, and Monte Carlo/MCMC simulations for robust parameter estimation and predictive modeling. Skilled in developing reproducible pipelines, visualizations, and interactive tools to support data-driven decision-making and regulatory submissions. Proficient in from SAP to CDISC standards to regulatory submission. 
+
+#### Core Competencies
+
+•	Expert-level proficiency in mixed models, survival analysis, and the joint model.
+•	Deep knowledge of probability and statistical theory.
+•	Skilled in advanced statistical modeling and simulation techniques, data analysis, and data mining.
+•	Solid understanding of core statistical algorithms.
+•	Proficient in R and SAS programming and analysis.
+•	Strong data visualization and R Shiny application development skills.
+•	Experienced with machine learning methods and their implementation in R.
+•	Strong data management skills. 
+•	End-to-end clinical trial experience from design to Clinical study report. 
+
+
+#### Professional Experience
+
+1.	Adaptive Clinical Trial with Interim design Simulation 
+•	Designed an adaptive clinical trial simulation for exploring test power of compilated clinical trials. 
+•	Incorporated interim analyses for sample size re-estimation based on observed outcomes. 
+•	Simulated multiple trials to evaluate trial power, treatment effect estimation, and variability.
+•	Developed data visualizations of estimated treatment effects and treatment/control allocation distributions. 
+•	https://rpubs.com/Daniel_He/1361412 
+
+2.	Bioequivalence (BE) Simulation 
+•	Executed Monte Carlo simulations to generate virtual trials, compute AUC/Cmax, and perform BE statistical tests using defined PK parameters.
+•	Estimated BE pass probability (lay in a specific range) across 1000 simulated trials.
+•	Produced automated visual outputs- histograms, heatmaps, and sensitivity plots- to summarize BE simulation outcomes. 
+•	Propagated parameter uncertainty via simulation/ resampling to assess robustness.
+•	https://rpubs.com/Daniel_He/1360859 
+
+3.	Power Analysis of GDM treatment using Simulation
+•	Conducted simulation-based power analysis to determine optimal sample size for detecting differences in treatment response rates across multiple groups.
+•	Simulated data across a range of sample sizes for several treatment proportions.
+•	Performed repeated statistical tests to empirically estimate statistical power for each sample size.
+•	Determined the minimum sample size required to achieve desired power (e.g., 80%).
+•	https://danielbook.netlify.app/miscellaneous#sample-size-calculation 
+
+4.	The real-world study 
+•	Conducted baseline comparisons and applied propensity score matching (PSM) to adjust for confounding after collecting data.
+•	Modeled treatment effects using Cox proportional hazards regression.
+•	Assessed covariate balance with standardized mean differences and Love plots.
+•	Performed sensitivity analysis using inverse probability of treatment weighting (IPTW) to confirm robustness of findings.
+•	https://rpubs.com/Daniel_He/1360810 
+
+5.	Integrated Summary/ Meta-analysis 
+•	Designed and executed an Integrated Summary of Efficacy and Safety (ISE/ISS) simulation to evaluate pooled treatment effects across multiple clinical trials.
+•	Built R-based simulation pipelines to automate data creation, merging, and summary analyses. 
+•	Validated simulated outcomes through sensitivity analyses. 
+•	Delivered reproducible R code suitable for regulatory-style submissions.
+•	Rubin´s Rules (RR) were designed to pool parameter estimates, such as mean differences and standard errors, when the multiple imputation technique was used.  
+•	https://rpubs.com/Daniel_He/1361337 
+
+6.	Monte Carlo Method to Estimate Parameters of a Joint Model
+•	Developed a joint model to predict birth weight using longitudinal fetal weight measurements during pregnancy, integrating a mixed-effects model with linear regression.
+•	Implemented a Bayesian joint model by specifying prior distributions and parameter priors, and applied Markov chain Monte Carlo (MCMC) for parameter estimation and confidence interval computation.
+•	Used two MCMC chains with 1,000 burn-in and 10,000 sampling iterations to ensure convergence and stability of estimates.
+•	Reconstructed the components of the joint model and calculated birth weights on a test dataset and evaluated model performance via cross-validation, reporting RMSE and R².
+•	https://rpubs.com/Daniel_He/1315576 
+
+7.	Develop an online Fetal Growth Calculator 
+•	Developed a mixed-effects model with cubic splines in R to predict fetal weight using longitudinal data, incorporating gestational age and race/ethnicity as key predictors.
+•	Extracted all model parameters (fixed-effect coefficients, random-effect variances, covariance components, and residual variance) to ensure model portability across platforms.
+•	Manually reconstructed the predictive formula to enable fetal weight estimation from new gestational age and ethnicity inputs.
+•	Assumed a normal distribution to compute fetal weight percentiles based on estimated means and standard deviations.
+•	Collaborated with the IT department to develop an online Fetal Growth Calculator implementing this model.
+•	https://www.nichd.nih.gov/fetalgrowthcalculator 
+
+8.	Exploring the Impact of Fetal Growth Patterns on Birth Timing 
+•	Constructed a mixed-effects model using longitudinal fetal weight data across gestational ages.
+•	Simulated fetal weights from 15 to 40 weeks of gestation to generate complete 25-week growth profiles per subject.
+•	Performed cluster analysis on simulated trajectories to classify subjects into three distinct fetal growth pattern groups.
+•	Incorporated growth pattern clusters as a covariate in survival analysis to evaluate their association with birth timing.
+•	(Processing) 
+
+9.	Assessment of statistical robustness and quantify uncertainty 
+•	Utilized simulation and bootstrapping to assess statistical robustness and quantify uncertainty without strict distributional assumptions.
+•	Applied bootstrapping to repeatedly resample observed data, constructing empirical sampling distributions, calculating p-values, and estimating confidence intervals.
+•	Leveraged flexible or distribution-free methods for inference in complex or non-normal datasets.
+•	https://rpubs.com/Daniel_He/1128098 
+
+10.	Machine learning application in causal inference 
+•	Applied doubly robust targeted maximum likelihood estimation (TMLE) to estimate average treatment effects.
+•	Transformed outcomes to a bounded scale and fitted initial outcome (G-computation) and propensity score models.
+•	Computed clever covariates and adjusted predictions via maximum likelihood.
+•	Calculated and rescaled treatment effects using updated predictions.
+•	Derived confidence intervals from the efficient influence curve.
+•	Integrated machine learning with causal inference for robust effect estimation.
+•	https://rpubs.com/Daniel_He/1044972 
+

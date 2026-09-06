@@ -1,0 +1,584 @@
+---
+title: "Epidemiology"
+output: html_document
+date: '2024-01-09'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Epidemiology
+
+Brief summary from J. Craig Longenecker...  
+
+### What is epidemiology?
+
+"Epidemiology is the study of 
+the distribution and 
+determinants of health related 
+states or events in 
+specified populations, and 
+the application of this study 
+to control of health 
+problems."
+
+
+#### Framingham Heart Study
+
+
+Highlights: Some of the Most Significant Milestones Include:
+
+1960: Cigarette smoking found to increase the risk of heart disease
+
+1961: Cholesterol level, blood pressure, and electrocardiogram 
+abnormalities found to increase the risk of heart disease
+
+1967: Physical activity found to reduce the risk of heart disease and
+obesity to increase the risk of heart disease
+
+1970: High blood pressure found to increase the risk of stroke
+
+1978: Psychosocial factors found to affect heart disease
+
+1988: High levels of HDL cholesterol found to reduce risk of death
+
+1994: Enlarged left ventricle (one of two lower chambers of the heart)
+shown to increase the risk of stroke
+
+1996: Progression from hypertension to heart failure described
+
+####  Sources of Public Health Data
+
+Epidemiologic Followup Study  [(NHEFS)](https://wwwn.cdc.gov/Nchs/Nhanes/Nhefs/Default.aspx)
+
+National Health and Nutrition 
+Examination Survey [(NHANES)](https://www.cdc.gov/nchs/nhanes/index.htm)
+
+`Family questionnaire
+- Demographics, housing, smoking,
+income, food security
+
+Computer-assisted personal interview
+- Current health status
+- Alcohol use, drug use
+- Sexual history
+- Depression screener
+- Kidney function
+- Pesticide use
+- Physical activity
+24-hour dietary recall
+
+Examination Components
+- Arthritis
+- Audiometry
+- Bone Density Dual-Energy X-Ray
+Absorptiometry {DXA)
+
+Examination Components (cont.)
+- Body Measurements - Anthropometry
+- Oral Glucose Tolerance Test (OGTT)
+- Oral Health
+- Physician's Exam
+
+Laboratory Components:
+- Venipuncture
+Urine Collection
+- Bone Mineral Status Markers
+- Diabetes Proftle
+- Infectious Disease Profile (inc. STDs)
+- C-reactive Protein
+- Kidney Disease Profile
+- Pregnancy Test
+- Prostate Specific Antigen
+- Blood Lipids
+- Environmental Health Profile`
+
+### Measures of Association
+
+#### Confidence interval and p value
+
+In statistical estimate, this “confidence level” should not be confused with the 95% Confidence Interval, which is not based on hypothesis testing, but 
+on estimation (two different types of inferential statistics) based on CLT. 
+
+In hypothesis testing, assuming that no association exists IN THE TARGET 
+POPULATION (i.e. under the null hypothesis), The p-value is the probability that 
+THE STUDY found THIS observed (or greater) difference 
+(i.e., this specific estimate in my study) 
+by chance alone.
+
+For a statistic, confidence intervals are calculated from the same equations that generate p-values. 
+
+
+
+#### “Epidemiologic” Measures of Association
+
+• Differences in:
+– Means
+– Medians
+– Proportions
+
+• The slope of a regression line
+
+
+
+• Relative Risk (and Relative Rate)
+• Attributable Risk
+• Odds Ratio
+• Number Needed to Treat
+
+ 
+#### PECO
+
+Frame a research question into four parts: “Population of interest,
+Exposure, Comparison and Outcome” (PECO). 
+
+Everything in PH or clinical research flows from PECO
+– Which variables should be measured, and how
+– The population to generalize from
+– The research study design and research methods needed
+– The outcomes you are concerned about
+– The inferences that you can make from the study
+– Search terms you use in searching the literature
+
+you can frame the question into a PECO statement does not
+mean that a study has the right to make causal statements.
+
+#### Relative risks and relative rates
+
+• Relative risk
+• Relative rate
+• Attributable risk
+• Odds ratio
+
+The OR is always farther away from 1.0 than is the RR. The higher the incidence
+and the higher the RR, the less the OR can be used as an estimate of the RR. 
+
+The choice of statistical tests depends on the NATURE of the two variables. 
+
+
+### Measures of Disease Frequency
+
+#### 8 Basic measures of the burden of disease
+
+• How common is it?
+
+– Prevalence of disease/risk factors
+
+– Incidence of disease/comorbidity
+
+• How severe is it?
+
+– Mortality rates (incidence of death)
+
+– Median Survival
+
+– 5‐year (or other time‐) survival
+
+– Fatality
+
+– YPLL: “Years of Potential Life Lost” due to early death
+
+– DALY: “Disability‐Adjusted Life‐Years
+
+
+#### Proportion, rate and ratio
+
+The numerator: How do we define Health/Disease‐Related “Events". 
+
+
+
+In incidence rate, the denominator is the total disease-free observation time in
+each group. Person-time is only accrued while the subject is
+being followed.
+
+
+CRUDE, SPECIFIC, AND ADJUSTED RATES
+
+Direct adjustment: apply observed rate of disease/
+mortality in populations of interest to the population
+structure of a standard population to derive expected #
+cases. Then compare adjusted rates of the populations of
+interest.
+
+Median Survival
+
+Length of time to 
+which half the study 
+population survives. Not affected by extremes. 
+
+5‐year  survival
+Number of people alive 5 years after diagnosis. Note artifactual increase in survival due to 
+earlier detection.
+
+
+
+### Disease transmission
+
+What Factors Affect the Reproductive Number?
+
+Contacts per unit time X  Infections per contact X d Duration of infectivity X  Susceptible Fraction
+
+Re=R0XS
+
+Major unknowns preventing precise predictions
+1. Immunity/vaccine?
+2. Treatment?
+3. Mutation?
+4. Human behavior?
+5. Widespread testing availability?
+6. Testing accuracy?
+7. Asymptomatic cases?
+8. Seasonal pattern?
+
+
+
+
+
+ 
+### Observational Studies
+
+• Descriptive epidemiological studies investigate the
+distribution of diseases and risk factors (exposures) by
+frequency in terms of person, place, and time.
+
+• Analytical epidemiological studies are conducted to (attemptto)
+determine cause and, sometimes, prevention, of disease
+based upon comparison of populations in relation to their
+exposure status.
+
+NHANES is a cross sectional study. From these separate cross-sectional studies done between 1960 and 2000 we can see that prevalence of obesity in US adults is increasing. Different groups 
+were used for each study, but the samples are meant to be rep representative of the
+US population so we can look at trends over time. Cross section study can not determine the temporality. 
+
+#### Case control study
+The goal is to estimate the frequency of exposure in
+cases relative to controls.
+
+
+How to Combat Some of the Weaknesses in a Case-Control Study:Matching Multiple Controls
+Blinding of Investigators
+
+#### Cohort study
+Incidence of a disease (or outcome) is compared
+among exposed and unexposed individuals.
+
+#### Matched design
+The cases and controls are not independent of each other. This provides greater efficiency and statistical power. Choose the appropriate statistical test for the association of a paired (matched) binary outcome variable:
+
+- With a continuous, normal variable: Paired t-test (instead of t-test)
+- With a continuous, non-normal variable: Wilcoxon signed rank test (instead of
+Mann-Whitney-U)
+- With a binary variable: McNemar's test (instead of chi-square)
+
+
+### Experimental Studies
+ 
+
+In an experiment investigators apply
+treatments to experimental units
+(people, animals, plots of land, etc.)
+and then proceed to observe the effect
+of the treatments on the experimental
+units.
+
+Types of Trials
+
+• Devices (prosthesis, heart valve, joint replacement)
+• Procedure (surgery)
+• Behavioral change (smoking cessation, dietary change, exercise)
+• Pharmaceutical (prevention or treatment)
+
+
+Masking
+
+Placebo or fake procedure 
+
+Double blind 
+
+
+
+Random Assignment
+
+Therefore, any differences in outcome can be attributed to the treatment
+and not differences in:
+
+age;
+sex;
+smoking;
+alcohol;
+education;
+stage/severity of disease;
+hospital;
+physician;
+previous treatments;
+
+#### Phases of Clinical Trials
+
+
+- phase 1 (randomized placebo trial), 3.4m
+
+participants: 20-100 healthy volunteers 
+
+length: several months
+
+purpose: safety and dosage
+
+answer: 
+how drug works in the body;
+side effect
+
+
+70% of drugs move to the next phase.
+
+
+
+
+- phase 2 (randomized control trial), 8.6m
+
+participants: several hundred with disease  
+
+length: several months to  years 
+
+purpose: efficacy and side effects 
+
+answer: 
+efficacy- how well does treatment perform in idea condition;
+side effects
+
+33% of drugs move to the next phase.
+
+
+- phase 3 (randomized control trial), 21.4m
+
+participants: 300- 3000 with disease  
+
+length: 1-4 years 
+
+purpose: efficacy and monitor adverse reactions 
+
+answer: 
+efficacy- how well does treatment perform to a specific population;
+side effects- less common side effects are more likely to be detected in these 
+larger, longer studies. 
+
+25-33% of drugs move to the next phase.
+
+
+- phase 4 
+
+participants: several thousand with disease  
+
+time: after fda approval
+
+purpose: efficacy and monitor safety 
+
+
+#### Sample size, Errors, Power
+
+Need enough subjects to see the effect of treatment (if treatment is indeed effective); that is statistical power. Need to balance this with financial and time constraints. Also need to balance the chance of making Type I and II errors.
+
+Determining an Appropriate Sample Size
+
+- difference between groups;
+- level of sig;
+- desired power;
+- two side or one side;
+- response/ loss follow- up rate;
+
+#### Randomization
+
+Study participants are assigned to one of two ( or more)
+interventions using an explicit method that assures the
+assignment will be random, or by chance.
+
+Any differences in baseline
+characteristics of the study
+groups indicates breakdown
+in the randomization process.
+
+Blocked Randomization: blocks of 10 participants may be randomized at one time. 
+
+#### ITT, PPT
+An “intention‐to‐treat” analysis keeps the randomization
+assignment intact at all costs. In an ITT analysis, cross‐over will bias the RR toward the
+null, but will NOT bias the RR away from the null. 
+
+Per-protocol analysis is tempting to want to analyze cross‐overs with the
+actual treatment they received. Can bias the results toward the null OR away from the null. 
+
+#### Surrogate
+
+Measure change in a continuous outcome from baseline. Strength: Intuitive, and results expressed in absolute terms. Limitation: Can not calculate RR, RRR, ARR, NNT, K-M. 
+
+Surrogate: often occur earlier than the clinical outcomes, this:
+− reduces cost
+− reduces study duration
+− reduces study size
+
+### Bias and Confounding
+
+Measured value= true value+ bias+ random
+
+Bias (systematic error: selection+ information+ confounding)+ random= error 
+
+
+
+Bias can only be fixed by doing things in an unbiased manner (there is
+no other way). However, in some cases, you can estimate the magnitude of the
+effect of bias on the study estimates.
+
+#### Selection bias
+
+#### Misclassification- information bias
+Resulting from non-differential misclassification
+– Exposure is under- or over-estimated similarly in cases and controls.
+– Cases/non-cases are misclassified similarly in the exposed and
+unexposed.
+– In this case, associations tend to be biased towards the null.
+
+Resulting from differential misclassification
+– Exposure is under- or over-estimated in cases and the opposite in the
+in the controls.
+– Cases/non-cases are misclassified differently in the exposed and
+unexposed
+– In this case, associations can be biased towards or away from the null
+Slide
+
+#### Confounding
+Confounding: Distortion of an Association
+Confounding is not an error in selection or measurement (as
+selection and information bias are). Therefore some epidemiologists call confounding a bias, while
+others do not.
+
+How to control for confounding: 3 levels
+• In selection of participants
+– Matching (most commonly in a case-control study):
+– Restriction (any study design)
+• In assigning the exposure (intervention)
+– Randomization (only done in RCT’s)
+• In the analysis (can be used in ANY study design)
+– Stratification
+– Adjustment (multivariable regression)
+– Direct/Indirect Standardization
+  • When individual data on exposure and outcome are not available
+  
+  If the adjusted estimate (b) for a given X differs from the unadjusted
+estimate, then there was confounding by the other covariates in the
+model.
+
+#### Accuracy and precision
+Validity = Accuracy: How close is the result to the truth?
+
+Reliability= Precision: How close are repeated measures close to one
+another?
+
+
+
+### Regression model
+
+
+
+
+Regression coefficients in a regression model can be interpreted as “For a 1‐unit increase in X (the exposure variable), the outcome increases by b.”
+
+1. What type of regression model do I see?
+2. Are these crude or adjusted estimates, or both?
+3. Is this table showing:
+
+– Associations of many exposures (X’s) with the outcome (Y)?
+• Does each row represent a separate model with DIFFERENT X’s adjusted for the SAME covariates?
+• Does each row represent a separate model with the SAME X adjusted for DIFFERENT covariates?
+• The primary X of interest might be presented several different ways (continuous, binary, quartiles)
+
+4. Are the exposures (X’s) all categorical, or are any continuous?
+– It is usually quite easy to find the reference group for categorical X’s
+– If a continuous variable is there, figure out how it was put into the model
+• IF “per X units” is specified, then it is +X units increase
+5. How many models are there in the table??
+
+
+Causation 
+
+mycobacterium tuberculosis is the necessary
+cause of tuberculosis but often is not a sufficient cause without poverty,
+poor nutrition, overcrowding, etc. Smoking alone can cause lung cancer, but other factors can cause it as well, without smoking being present.
+
+
+### Diagnostic Tests
+
+Goal: to distinguish accurately between diseased
+and non‐diseased individuals
+
+ALL diagnostic tests suffer from some level of
+inaccuracy. We need a way to quantify the accuracy of a
+given test. Usually: overlap between healthy and diseased states
+ makes a “cut‐point” difficult to define.
+
+#### Bayes' theorem
+Does my trust of the same test result differ from
+patient to patient or setting to setting? If I receive a “negative” test result, how much can I
+trust it?Prevalence can affect PPV and NPV dramatically.Prevalence itself does NOT affect sensitivity and
+specificity.   
+
+$$
+P(B|A) = \frac{P(A|B)P(B)}{P(A)}
+$$
+
+#### Sensitivity and specificity 
+
+• PPV is maximized when re‐test probability is high
+
+• NPV is maximized when Pre‐test probability is low
+
+
+• Reliability (Relates to Precision)
+– Many measures (% Agreement, Kappa, Intraclass correlation
+coefficient, Crohnbach’s alpha)
+
+• Validity (Relates to Accuracy)
+– Many measures (Youden’s J‐statistic, construct validity,
+content validity, etc)
+– Sensitivity
+– Specificity
+– Positive Predictive Value
+– Negative Predictive Value
+
+Sensitivity is increased at the expense of specificity.
+
+Screening: Does finding and treating the disease EARLIER
+improve the OUTCOME? Screening tests tend to maximize Sensitivity at
+expense of PPV. diagnosis have post test probabilities near 0 or 1. Screening is only part of a preventive medicine and health
+maintenance program. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 

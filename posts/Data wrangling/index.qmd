@@ -1,0 +1,517 @@
+---
+title: "Data wrangling"
+description: "A practical R learning guide to Data wrangling, with concise explanations, reproducible examples, and interpretation guidance."
+date: 2026-08-31
+section: "Data Management & Programming"
+category: "Data Cleaning & Quality Control"
+topic: "Data wrangling"
+type: article
+tags: ["Data Cleaning & Quality Control", "Data Management & Programming", "Data", "wrangling"]
+status: published
+featured: true
+youtube: []
+pdf: []
+downloads: []
+validate-yaml: false
+execute:
+  echo: true
+  warning: false
+  error: true
+---
+
+## Why This Topic Matters
+
+Data cleaning and quality control make analytical results traceable and reduce errors caused by inconsistent or implausible values.
+
+## Learning Objectives
+
+After working through this material, you should be able to:
+
+- explain the main ideas behind **Data wrangling**;
+- interpret the R workflow and its output; and
+- adapt the examples to a related analysis.
+
+## Lesson Roadmap
+
+The original material is organized around the following topics:
+
+1. How to do data wrangling
+2. Load data and package
+3. Select certain rows
+4. Select certain columns
+5. Rename variables
+6. Sorting in ascending or descending order
+
+## How to Use This Lesson
+
+Read the explanation before each workflow, then run the R chunks in sequence. Code and output are shown together so that each numerical or graphical result can be connected to the command that produced it. Some source examples require optional packages or external data. Those setup-dependent chunks remain visible for reference but are marked `eval: false` when they cannot be reproduced safely in a clean website build.
+
+## Reproducible Learning Check
+
+This short R chunk confirms the scope of the lesson and always produces a visible output.
+
+```{r}
+#| label: learning-overview
+learning_overview <- data.frame(
+  section = "Data Management & Programming",
+  category = "Data Cleaning & Quality Control",
+  topic = "Data wrangling"
+)
+learning_overview
+```
+
+## Learning Material
+
+The following material develops **Data wrangling** from core ideas to practical implementation. Definitions and assumptions come first; worked code then shows how the ideas are represented computationally.
+
+### Conceptual Foundation
+
+The material below closely follows the original R Markdown source, with its examples retained for study and reuse.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#### How to do data wrangling
+
+<!-- generated-learning-note -->
+This section prepares the information needed for **How to do data wrangling**. Check variable definitions, units, coding, and missing values before moving to analysis.
+
+We will use `tidyverse` package to work with data.  
+
+#### Load data and package
+
+<!-- generated-learning-note -->
+This section prepares the information needed for **Load data and package**. Check variable definitions, units, coding, and missing values before moving to analysis.
+
+### R Workflow and Examples
+
+Run the examples in order because later blocks may reuse objects created earlier. Each block includes a short purpose statement and guidance for reading its output.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+head (iris)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block loads the packages and supporting tools used by the following analysis. Package versions can affect numerical results and printed output.
+
+```{r}
+library(tidyverse)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** A successful setup block is usually silent. Warnings about missing packages or version conflicts should be resolved before trusting later output.
+
+#### Select certain rows
+
+<!-- generated-learning-note -->
+This subsection explains **Select certain rows** and shows how it contributes to the overall Data wrangling workflow.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block prepares the analysis data. Follow each transformation carefully because filtering, recoding, grouping, and reshaping determine the observations used downstream.
+
+```{r}
+setosa <- filter(iris, Species == 'setosa')
+setosa
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the data before and after the transformation. Confirm that row counts, group sizes, missingness, and variable values changed as intended.
+
+#### Select certain columns
+
+<!-- generated-learning-note -->
+This subsection explains **Select certain columns** and shows how it contributes to the overall Data wrangling workflow.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block prepares the analysis data. Follow each transformation carefully because filtering, recoding, grouping, and reshaping determine the observations used downstream.
+
+```{r}
+select(iris, Sepal.Length, Species)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the data before and after the transformation. Confirm that row counts, group sizes, missingness, and variable values changed as intended.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block prepares the analysis data. Follow each transformation carefully because filtering, recoding, grouping, and reshaping determine the observations used downstream.
+
+```{r}
+select(iris, -Sepal.Length, -Species)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the data before and after the transformation. Confirm that row counts, group sizes, missingness, and variable values changed as intended.
+
+#### Rename variables
+
+<!-- generated-learning-note -->
+This section prepares the information needed for **Rename variables**. Check variable definitions, units, coding, and missing values before moving to analysis.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+rename(iris,  Sepal_Width= Sepal.Width,  Sepal_Length= Sepal.Length )
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+#### Sorting in ascending or descending order
+
+<!-- generated-learning-note -->
+This subsection explains **Sorting in ascending or descending order** and shows how it contributes to the overall Data wrangling workflow.
+
+- put a minus in front of a variable for descending order
+
+<!-- generated-learning-note -->
+**Purpose.** This block prepares the analysis data. Follow each transformation carefully because filtering, recoding, grouping, and reshaping determine the observations used downstream.
+
+```{r}
+arrange(iris, Petal.Length, -Petal.Width)
+ 
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the data before and after the transformation. Confirm that row counts, group sizes, missingness, and variable values changed as intended.
+
+#### Transform variables
+
+<!-- generated-learning-note -->
+This section prepares the information needed for **Transform variables**. Check variable definitions, units, coding, and missing values before moving to analysis.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block prepares the analysis data. Follow each transformation carefully because filtering, recoding, grouping, and reshaping determine the observations used downstream.
+
+```{r}
+mutate(iris,  newvar= Sepal.Width*10, Petal.Length=Petal.Length/100  )
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the data before and after the transformation. Confirm that row counts, group sizes, missingness, and variable values changed as intended.
+
+#### Working with pipes %>%
+
+<!-- generated-learning-note -->
+This subsection explains **Working with pipes %>%** and shows how it contributes to the overall Data wrangling workflow.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block prepares the analysis data. Follow each transformation carefully because filtering, recoding, grouping, and reshaping determine the observations used downstream.
+
+```{r}
+iris %>% 
+  filter(Species=="setosa") %>% 
+  mutate (newvar=Sepal.Width*10) %>% 
+  select (-Sepal.Width, -Petal.Width) %>% 
+  arrange(-Sepal.Length, newvar)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the data before and after the transformation. Confirm that row counts, group sizes, missingness, and variable values changed as intended.
+
+#### Pivot wider (long to wide)
+
+<!-- generated-learning-note -->
+This subsection explains **Pivot wider (long to wide)** and shows how it contributes to the overall Data wrangling workflow.
+
+- If no unique identifier row in each group **doesn't work**   
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+iris %>%
+pivot_wider(  names_from=Species, values_from= c(Sepal.Length))
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+- Create a unique identifier row for each name and then use pivot_wider 
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block prepares the analysis data. Follow each transformation carefully because filtering, recoding, grouping, and reshaping determine the observations used downstream.
+
+```{r}
+widedata <- iris %>%
+  # create groups then assign unique identifier row number in each group
+  group_by(Species) %>%
+  mutate(row = row_number()) %>%
+pivot_wider(names_from=Species, values_from= c(Petal.Length,Sepal.Length,Petal.Width,Sepal.Width))
+widedata
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the data before and after the transformation. Confirm that row counts, group sizes, missingness, and variable values changed as intended.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block prepares the analysis data. Follow each transformation carefully because filtering, recoding, grouping, and reshaping determine the observations used downstream.
+
+```{r}
+iris %>%
+  group_by(Species) %>%
+  mutate(row = row_number()) %>%
+pivot_wider( names_from=Species, values_from= c(Petal.Length, Petal.Width))
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the data before and after the transformation. Confirm that row counts, group sizes, missingness, and variable values changed as intended.
+
+#### Pivot longer (wide to long)
+
+<!-- generated-learning-note -->
+This subsection explains **Pivot longer (wide to long)** and shows how it contributes to the overall Data wrangling workflow.
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+longdata = pivot_longer(widedata, -
+                          c(  "row"   ,                  "Petal.Length_setosa" ,    "Petal.Length_versicolor",
+  "Petal.Length_virginica",  "Sepal.Length_setosa"  ,   "Sepal.Length_versicolor",
+  "Sepal.Length_virginica" , "Petal.Width_setosa"    ,  "Petal.Width_versicolor" ,
+  "Petal.Width_virginica"    )        , names_to="Sepal.Width", values_to="Sepal.Width.value")
+longdata
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+- Pivot wider again (long to wide)
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+pivot_wider(longdata, names_from=Sepal.Width, values_from= c(Sepal.Width.value))
+
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+#### Separate columns
+
+<!-- generated-learning-note -->
+This subsection explains **Separate columns** and shows how it contributes to the overall Data wrangling workflow.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+separate(iris, Species, into = c("integer","decimal","third"), sep="o")
+
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+#### Recode/relabel data
+
+<!-- generated-learning-note -->
+This section prepares the information needed for **Recode/relabel data**. Check variable definitions, units, coding, and missing values before moving to analysis.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block prepares the analysis data. Follow each transformation carefully because filtering, recoding, grouping, and reshaping determine the observations used downstream.
+
+```{r}
+mutate(iris, Species2 = recode(Species, "setosa"="seto", "versicolor"="versi"))
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the data before and after the transformation. Confirm that row counts, group sizes, missingness, and variable values changed as intended.
+
+#### Combine data sets
+
+<!-- generated-learning-note -->
+This section prepares the information needed for **Combine data sets**. Check variable definitions, units, coding, and missing values before moving to analysis.
+
+- prepare data sets 
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+data1 <- data.frame(ID = 1:4,                       
+                    X1 = c("a1", "a2","a3", "a4"),
+                    stringsAsFactors = FALSE)
+data2 <- data.frame(ID = 2:5,                       
+                    X2 = c("b1", "b2","b3", "b4"),
+                    stringsAsFactors = FALSE)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+- inner join   
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+inner_join(data1, data2, by = "ID")    
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+- left join   
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+left_join(data1, data2, by = "ID")   
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+- right join   
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+right_join(data1, data2, by = "ID")  
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+- full join   
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+full_join(data1, data2, by = "ID") 
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+- keep cases of left data table without in right data table 
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+anti_join(data1, data2, by = "ID")  
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+- keep cases of left data table in right data table 
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+semi_join(data1, data2, by = "ID")  
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+- multiple full join  
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+full_join(data1, data2, by = "ID") %>%              
+  full_join(., data2, by = "ID") 
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+- rbind **doesn't work** 
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+# df1 <- data.frame(col1 = LETTERS[1:6],
+#                   col2a = c(5:10),
+#                   col3a = TRUE)
+#   
+# df2 <- data.frame(col1 = LETTERS[4:8],
+#                   col2b= c(4:8),
+#                   col3b = FALSE)
+# rbind(df1,df2)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+- append two data tables by using join and merge       
+
+<!-- generated-learning-note -->
+**Purpose.** This block prepares the analysis data. Follow each transformation carefully because filtering, recoding, grouping, and reshaping determine the observations used downstream.
+
+```{r}
+data_frame1 <- data.frame(col1 = c(6:8),
+                         col2 = letters[1:3],
+                         col3 = c(1,4,NA))
+ 
+data_frame2 <- data.frame(col1 = c(5:6),
+                          col5 = letters[7:8])
+ 
+data_frame_merge <- merge(data_frame1, data_frame2,
+                          by = 'col1', all = TRUE)
+ 
+print (data_frame_merge)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the data before and after the transformation. Confirm that row counts, group sizes, missingness, and variable values changed as intended.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+full_join(data_frame1,data_frame2, by=c("col1"),)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+## Interpreting the Results
+
+Use summaries and visual checks to confirm ranges, distributions, duplicates, and missing-data patterns. Treat the output as evidence generated under the stated data, coding choices, and assumptions. Before using the workflow in practice, replace example inputs with validated data and confirm that the method targets the intended scientific question.
+
+## Key Takeaways
+
+- **Connect method to purpose.** Identify the question and target quantity before choosing code or a model.
+- **Read code and output together.** Confirm what each object, estimate, interval, table, or plot represents.
+- **Check assumptions and diagnostics.** A successful computation is not by itself evidence that the result is reliable.
+- **Adapt deliberately.** When applying the example elsewhere, document changes to data definitions, parameters, and analytical choices.

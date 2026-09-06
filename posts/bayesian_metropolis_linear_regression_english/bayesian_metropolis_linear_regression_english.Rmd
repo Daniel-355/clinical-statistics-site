@@ -1,0 +1,2236 @@
+---
+title: "Bayesian Linear Regression Using Metropolis–Hastings MCMC"
+author: "Daniel"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    number_sections: true
+    code_folding: show
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  message = FALSE,
+  warning = FALSE,
+  fig.width = 8,
+  fig.height = 5
+)
+```
+
+# 1. Objective
+
+This example first simulates a simple linear regression dataset and then uses a manually implemented Metropolis–Hastings Markov chain Monte Carlo (MCMC) algorithm to estimate three unknown parameters:
+
+- the slope $a$;
+- the intercept $b$;
+- the residual standard deviation $\sigma$.
+
+The assumed linear regression model is
+
+$$
+y_i = a x_i + b + \varepsilon_i,
+$$
+
+where
+
+$$
+\varepsilon_i \sim N(0,\sigma^2).
+$$
+
+Equivalently,
+
+$$
+y_i \mid a,b,\sigma \sim N(a x_i+b,\sigma^2).
+$$
+
+The true parameter values used to generate the simulated data are
+
+$$
+a=5,\qquad b=0,\qquad \sigma=10.
+$$
+
+In a real analysis, these parameters are unknown. They are specified here only to generate simulated data and to evaluate whether the Bayesian estimates recover values close to the truth.
+
+# 2. Set the Random Seed
+
+```{r, eval=FALSE}
+set.seed(123)
+```
+
+`set.seed(123)` fixes the random-number seed.
+
+This program uses random-number generators such as:
+
+- `rnorm()` for normal random variables;
+- `runif()` for uniform random variables.
+
+Without a fixed seed, the simulated data and MCMC results will change every time the code is run.
+
+Using the same seed makes the analysis reproducible and is useful for:
+
+- reproducing results;
+- debugging code;
+- comparing different methods;
+- teaching demonstrations;
+- documenting simulation studies.
+
+# 3. Generate Simulated Data
+
+## 3.1 Define the True Parameters
+
+```{r, eval=FALSE}
+trueA  <- 5
+trueB  <- 0
+trueSd <- 10
+```
+
+These values define the true data-generating parameters:
+
+$$
+a=5,
+$$
+
+$$
+b=0,
+$$
+
+and
+
+$$
+\sigma=10.
+$$
+
+Therefore, the true data-generating model is
+
+$$
+y_i = 5x_i + \varepsilon_i,
+$$
+
+where
+
+$$
+\varepsilon_i \sim N(0,10^2).
+$$
+
+The objects `trueA`, `trueB`, and `trueSd` are used only to simulate data. The Bayesian analysis below estimates the parameters from the simulated observations.
+
+## 3.2 Define the Sample Size
+
+```{r, eval=FALSE}
+sampleSize <- 31
+```
+
+The sample size is
+
+$$
+n=31.
+$$
+
+Therefore, the dataset contains 31 values of $x$ and 31 corresponding values of $y$.
+
+## 3.3 Generate the Predictor Values
+
+```{r, eval=FALSE}
+x <- (-(sampleSize - 1) / 2):
+      ((sampleSize - 1) / 2)
+
+x
+```
+
+Because
+
+$$
+\frac{31-1}{2}=15,
+$$
+
+the predictor values are
+
+$$
+-15,-14,-13,\ldots,-1,0,1,\ldots,13,14,15.
+$$
+
+These values are symmetric around zero, so
+
+$$
+\bar{x}=0.
+$$
+
+Centering the predictor around zero has two common advantages:
+
+1. The intercept $b$ represents the expected response when $x=0$.
+2. It often reduces posterior correlation between the slope and intercept.
+
+## 3.4 Generate the Outcome Values
+
+```{r, eval=FALSE}
+y <- trueA * x +
+     trueB +
+     rnorm(
+       n = sampleSize,
+       mean = 0,
+       sd = trueSd
+     )
+```
+
+This code generates the outcome according to
+
+$$
+y_i = a x_i+b+\varepsilon_i.
+$$
+
+Substituting the true parameter values gives
+
+$$
+y_i = 5x_i+0+\varepsilon_i,
+$$
+
+where
+
+$$
+\varepsilon_i\sim N(0,10^2).
+$$
+
+The following code generates 31 independent normal errors:
+
+```{r, eval=FALSE}
+rnorm(
+  n = sampleSize,
+  mean = 0,
+  sd = trueSd
+)
+```
+
+Each outcome therefore consists of a systematic component and a random component:
+
+$$
+y_i=\text{linear trend}+\text{random error}.
+$$
+
+In this example,
+
+$$
+y_i=5x_i+\varepsilon_i.
+$$
+
+## 3.5 Plot the Simulated Data
+
+```{r, eval=FALSE}
+plot(
+  x,
+  y,
+  main = "Simulated Data",
+  xlab = "x",
+  ylab = "y",
+  pch = 19
+)
+```
+
+Because the true slope is positive,
+
+$$
+a=5,
+$$
+
+the scatterplot should show a clear increasing trend.
+
+However, because the residual standard deviation is 10, the observations do not fall exactly on a straight line.
+
+# 4. Define the Log-Likelihood Function
+
+```{r, eval=FALSE}
+log_likelihood <- function(param) {
+
+  a     <- param[1]
+  b     <- param[2]
+  sigma <- param[3]
+
+  if (!is.finite(sigma) || sigma <= 0) {
+    return(-Inf)
+  }
+
+  predicted_mean <- a * x + b
+
+  log_density <- dnorm(
+    y,
+    mean = predicted_mean,
+    sd = sigma,
+    log = TRUE
+  )
+
+  return(sum(log_density))
+}
+```
+
+## 4.1 Input Parameters
+
+The input `param` is a vector containing three parameters:
+
+$$
+\text{param}=(a,b,\sigma).
+$$
+
+The following lines extract the parameters:
+
+```{r, eval=FALSE}
+a     <- param[1]
+b     <- param[2]
+sigma <- param[3]
+```
+
+Thus:
+
+- `param[1]` is the slope $a$;
+- `param[2]` is the intercept $b$;
+- `param[3]` is the residual standard deviation $\sigma$.
+
+For example,
+
+```{r, eval=FALSE}
+param <- c(5, 0, 10)
+```
+
+represents
+
+$$
+a=5,\qquad b=0,\qquad \sigma=10.
+$$
+
+## 4.2 Check Whether the Standard Deviation Is Valid
+
+```{r, eval=FALSE}
+if (!is.finite(sigma) || sigma <= 0) {
+  return(-Inf)
+}
+```
+
+A normal standard deviation must satisfy
+
+$$
+\sigma>0.
+$$
+
+The parameter is invalid if $\sigma$ is:
+
+- less than or equal to zero;
+- `NA`;
+- `NaN`;
+- `Inf`;
+- `-Inf`.
+
+In these cases, the function returns
+
+$$
+-\infty.
+$$
+
+Because
+
+$$
+\log(0)=-\infty,
+$$
+
+returning `-Inf` tells the MCMC algorithm that this parameter combination has zero probability and should be rejected.
+
+This check prevents `dnorm()` from receiving an invalid standard deviation.
+
+## 4.3 Calculate the Predicted Mean
+
+```{r, eval=FALSE}
+predicted_mean <- a * x + b
+```
+
+For each observation, the conditional mean is
+
+$$
+\mu_i=ax_i+b.
+$$
+
+Therefore,
+
+$$
+E(y_i\mid a,b,\sigma)=ax_i+b.
+$$
+
+`predicted_mean` is a vector of length 31. Its $i$th element is
+
+$$
+a x_i+b.
+$$
+
+## 4.4 Calculate the Log-Density for Each Observation
+
+```{r, eval=FALSE}
+log_density <- dnorm(
+  y,
+  mean = predicted_mean,
+  sd = sigma,
+  log = TRUE
+)
+```
+
+The model assumes
+
+$$
+y_i\mid a,b,\sigma\sim N(ax_i+b,\sigma^2).
+$$
+
+The normal density for a single observation is
+
+$$
+p(y_i\mid a,b,\sigma)
+=
+\frac{1}{\sqrt{2\pi}\sigma}
+\exp\left[
+-\frac{(y_i-ax_i-b)^2}{2\sigma^2}
+\right].
+$$
+
+Taking logarithms gives
+
+$$
+\log p(y_i\mid a,b,\sigma)
+=
+-\frac{1}{2}\log(2\pi)
+-\log(\sigma)
+-\frac{(y_i-ax_i-b)^2}{2\sigma^2}.
+$$
+
+The argument
+
+```{r, eval=FALSE}
+log = TRUE
+```
+
+instructs R to calculate the log-density directly.
+
+This is numerically more stable than multiplying many small probability densities.
+
+## 4.5 Calculate the Joint Log-Likelihood
+
+```{r, eval=FALSE}
+return(sum(log_density))
+```
+
+Assuming conditional independence of observations, the joint likelihood is
+
+$$
+L(a,b,\sigma)
+=
+\prod_{i=1}^{n}
+p(y_i\mid a,b,\sigma).
+$$
+
+Taking logarithms converts the product into a sum:
+
+$$
+\log L(a,b,\sigma)
+=
+\sum_{i=1}^{n}
+\log p(y_i\mid a,b,\sigma).
+$$
+
+Therefore, `log_likelihood()` returns the joint log-likelihood for the complete dataset.
+
+# 5. Define the Log-Prior Function
+
+```{r, eval=FALSE}
+log_prior <- function(param) {
+
+  a     <- param[1]
+  b     <- param[2]
+  sigma <- param[3]
+
+  if (
+    a < 0 ||
+    a > 10 ||
+    sigma <= 0 ||
+    sigma > 30
+  ) {
+    return(-Inf)
+  }
+
+  log_prior_a <- dunif(
+    a,
+    min = 0,
+    max = 10,
+    log = TRUE
+  )
+
+  log_prior_b <- dnorm(
+    b,
+    mean = 0,
+    sd = 5,
+    log = TRUE
+  )
+
+  log_prior_sigma <- dunif(
+    sigma,
+    min = 0,
+    max = 30,
+    log = TRUE
+  )
+
+  return(
+    log_prior_a +
+    log_prior_b +
+    log_prior_sigma
+  )
+}
+```
+
+## 5.1 Check the Prior Support
+
+```{r, eval=FALSE}
+if (
+  a < 0 ||
+  a > 10 ||
+  sigma <= 0 ||
+  sigma > 30
+) {
+  return(-Inf)
+}
+```
+
+Under the current prior specification, the slope must satisfy
+
+$$
+0\leq a\leq10,
+$$
+
+and the residual standard deviation must satisfy
+
+$$
+0<\sigma\leq30.
+$$
+
+A proposed parameter value outside these ranges has prior density zero and log-prior
+
+$$
+-\infty.
+$$
+
+For example, the following values are automatically rejected:
+
+$$
+a=-1,
+$$
+
+$$
+a=12,
+$$
+
+$$
+\sigma=-2,
+$$
+
+and
+
+$$
+\sigma=35.
+$$
+
+## 5.2 Prior Distribution for the Slope
+
+```{r, eval=FALSE}
+log_prior_a <- dunif(
+  a,
+  min = 0,
+  max = 10,
+  log = TRUE
+)
+```
+
+The slope prior is
+
+$$
+a\sim U(0,10).
+$$
+
+Its density is
+
+$$
+p(a)=
+\begin{cases}
+\frac{1}{10}, & 0\leq a\leq10,\\
+0, & \text{otherwise}.
+\end{cases}
+$$
+
+This prior means that:
+
+- the slope is restricted to values between 0 and 10;
+- every value in that interval has the same prior density;
+- negative slopes are excluded.
+
+Within the support,
+
+$$
+\log p(a)=\log\left(\frac{1}{10}\right).
+$$
+
+## 5.3 Prior Distribution for the Intercept
+
+```{r, eval=FALSE}
+log_prior_b <- dnorm(
+  b,
+  mean = 0,
+  sd = 5,
+  log = TRUE
+)
+```
+
+The intercept prior is
+
+$$
+b\sim N(0,5^2).
+$$
+
+This means that:
+
+- values of $b$ close to zero are considered more likely;
+- both positive and negative intercepts are allowed;
+- values far from zero receive lower prior density.
+
+Approximately 95% of the prior probability lies within
+
+$$
+0\pm1.96\times5,
+$$
+
+or approximately
+
+$$
+(-9.8,9.8).
+$$
+
+## 5.4 Prior Distribution for the Standard Deviation
+
+```{r, eval=FALSE}
+log_prior_sigma <- dunif(
+  sigma,
+  min = 0,
+  max = 30,
+  log = TRUE
+)
+```
+
+The prior for the residual standard deviation is
+
+$$
+\sigma\sim U(0,30).
+$$
+
+This assigns equal prior density to values between 0 and 30.
+
+Because a standard deviation must be strictly positive, the code separately excludes
+
+```{r, eval=FALSE}
+sigma <= 0
+```
+
+Uniform priors are convenient for teaching. In formal Bayesian analyses, alternatives may include:
+
+- half-normal priors;
+- half-$t$ priors;
+- half-Cauchy priors;
+- inverse-gamma priors.
+
+## 5.5 Joint Prior Distribution
+
+```{r, eval=FALSE}
+return(
+  log_prior_a +
+  log_prior_b +
+  log_prior_sigma
+)
+```
+
+The code assumes prior independence:
+
+$$
+p(a,b,\sigma)
+=
+p(a)p(b)p(\sigma).
+$$
+
+Taking logarithms gives
+
+$$
+\log p(a,b,\sigma)
+=
+\log p(a)
++
+\log p(b)
++
+\log p(\sigma).
+$$
+
+Therefore, the three log-prior contributions can be added.
+
+# 6. Define the Log-Posterior Function
+
+```{r, eval=FALSE}
+log_posterior <- function(param) {
+
+  lp <- log_prior(param)
+
+  if (!is.finite(lp)) {
+    return(-Inf)
+  }
+
+  return(
+    log_likelihood(param) + lp
+  )
+}
+```
+
+## 6.1 Bayes' Theorem
+
+Bayes' theorem is
+
+$$
+p(a,b,\sigma\mid y)
+=
+\frac{
+p(y\mid a,b,\sigma)p(a,b,\sigma)
+}{
+p(y)
+}.
+$$
+
+Because the denominator $p(y)$ does not depend on the parameters,
+
+$$
+p(a,b,\sigma\mid y)
+\propto
+p(y\mid a,b,\sigma)p(a,b,\sigma).
+$$
+
+Taking logarithms gives
+
+$$
+\log p(a,b,\sigma\mid y)
+=
+\log p(y\mid a,b,\sigma)
++
+\log p(a,b,\sigma)
++
+C,
+$$
+
+where $C$ does not depend on the parameters.
+
+Therefore, the MCMC algorithm only needs
+
+$$
+\log p(y\mid a,b,\sigma)
++
+\log p(a,b,\sigma).
+$$
+
+## 6.2 Check the Prior First
+
+```{r, eval=FALSE}
+lp <- log_prior(param)
+```
+
+The function first calculates the log-prior.
+
+If the parameter vector lies outside the prior support, `log_prior()` returns `-Inf`.
+
+```{r, eval=FALSE}
+if (!is.finite(lp)) {
+  return(-Inf)
+}
+```
+
+In that situation, there is no need to calculate the likelihood.
+
+This:
+
+- avoids unnecessary computation;
+- prevents invalid values from entering the likelihood;
+- ensures invalid proposals are rejected.
+
+## 6.3 Calculate the Unnormalized Log-Posterior
+
+```{r, eval=FALSE}
+return(
+  log_likelihood(param) + lp
+)
+```
+
+The function returns
+
+$$
+\text{log-likelihood}+\text{log-prior}.
+$$
+
+That is,
+
+$$
+\log \widetilde{p}(a,b,\sigma\mid y),
+$$
+
+the unnormalized log-posterior density.
+
+Metropolis–Hastings only requires posterior-density ratios, so the normalizing constant does not need to be calculated.
+
+# 7. Define the Proposal Distribution
+
+```{r, eval=FALSE}
+proposal_function <- function(param) {
+
+  rnorm(
+    n = 3,
+    mean = param,
+    sd = c(0.1, 0.5, 0.3)
+  )
+}
+```
+
+At each MCMC iteration, a new candidate parameter vector is generated near the current parameter vector.
+
+Let the current state be
+
+$$
+\theta^{(t)}
+=
+\left(
+a^{(t)},b^{(t)},\sigma^{(t)}
+\right).
+$$
+
+The proposal distribution is
+
+$$
+a^*\sim N(a^{(t)},0.1^2),
+$$
+
+$$
+b^*\sim N(b^{(t)},0.5^2),
+$$
+
+and
+
+$$
+\sigma^*\sim N(\sigma^{(t)},0.3^2).
+$$
+
+Equivalently,
+
+$$
+a^*=a^{(t)}+\varepsilon_a,
+$$
+
+$$
+b^*=b^{(t)}+\varepsilon_b,
+$$
+
+and
+
+$$
+\sigma^*=\sigma^{(t)}+\varepsilon_\sigma,
+$$
+
+where
+
+$$
+\varepsilon_a\sim N(0,0.1^2),
+$$
+
+$$
+\varepsilon_b\sim N(0,0.5^2),
+$$
+
+and
+
+$$
+\varepsilon_\sigma\sim N(0,0.3^2).
+$$
+
+This is called a random-walk proposal distribution.
+
+## 7.1 Proposal Step Sizes
+
+The code
+
+```{r, eval=FALSE}
+sd = c(0.1, 0.5, 0.3)
+```
+
+specifies:
+
+- a proposal standard deviation of 0.1 for the slope;
+- a proposal standard deviation of 0.5 for the intercept;
+- a proposal standard deviation of 0.3 for the residual standard deviation.
+
+If the proposal step sizes are too small:
+
+- the acceptance rate may be high;
+- each move will be short;
+- autocorrelation may be high;
+- exploration of the posterior may be slow.
+
+If the proposal step sizes are too large:
+
+- proposals may frequently fall in low-posterior-density regions;
+- the acceptance rate may be low;
+- the chain may remain at the same value for many iterations.
+
+Proposal scales should therefore be assessed using acceptance rates, trace plots, autocorrelation, and effective sample sizes.
+
+# 8. Define the Metropolis MCMC Function
+
+```{r, eval=FALSE}
+run_metropolis_MCMC <- function(
+  start_value,
+  iterations
+) {
+
+  chain <- matrix(
+    NA_real_,
+    nrow = iterations + 1,
+    ncol = 3
+  )
+
+  colnames(chain) <- c(
+    "slope",
+    "intercept",
+    "sigma"
+  )
+
+  chain[1, ] <- start_value
+
+  accepted <- 0
+
+  for (i in seq_len(iterations)) {
+
+    current <- chain[i, ]
+
+    proposal <- proposal_function(current)
+
+    log_acceptance_ratio <-
+      log_posterior(proposal) -
+      log_posterior(current)
+
+    if (
+      is.finite(log_acceptance_ratio) &&
+      log(runif(1)) < min(0, log_acceptance_ratio)
+    ) {
+
+      chain[i + 1, ] <- proposal
+      accepted <- accepted + 1
+
+    } else {
+
+      chain[i + 1, ] <- current
+    }
+  }
+
+  return(
+    list(
+      chain = chain,
+      acceptance_rate = accepted / iterations
+    )
+  )
+}
+```
+
+## 8.1 Function Inputs
+
+The function has two inputs:
+
+```{r, eval=FALSE}
+start_value
+```
+
+which specifies the initial parameter vector, and
+
+```{r, eval=FALSE}
+iterations
+```
+
+which specifies the number of Metropolis iterations.
+
+## 8.2 Create the MCMC Storage Matrix
+
+```{r, eval=FALSE}
+chain <- matrix(
+  NA_real_,
+  nrow = iterations + 1,
+  ncol = 3
+)
+```
+
+The matrix `chain` stores the parameter values at every iteration.
+
+The three columns correspond to
+
+$$
+a,\quad b,\quad \sigma.
+$$
+
+The number of rows is
+
+$$
+\text{iterations}+1,
+$$
+
+because the first row stores the initial value.
+
+For example, if
+
+```{r, eval=FALSE}
+iterations <- 10000
+```
+
+then the matrix has dimension
+
+$$
+10001\times3.
+$$
+
+The first row stores the initial parameter vector, and the final row stores the result after 10,000 updates.
+
+`NA_real_` initializes the matrix as a numeric matrix.
+
+## 8.3 Assign Column Names
+
+```{r, eval=FALSE}
+colnames(chain) <- c(
+  "slope",
+  "intercept",
+  "sigma"
+)
+```
+
+The three columns are named:
+
+- `slope`;
+- `intercept`;
+- `sigma`.
+
+The slope can then be extracted using
+
+```{r, eval=FALSE}
+chain[, "slope"]
+```
+
+rather than only
+
+```{r, eval=FALSE}
+chain[, 1]
+```
+
+## 8.4 Store the Initial Value
+
+```{r, eval=FALSE}
+chain[1, ] <- start_value
+```
+
+The initial parameter vector is stored in the first row.
+
+## 8.5 Initialize the Acceptance Counter
+
+```{r, eval=FALSE}
+accepted <- 0
+```
+
+`accepted` records the number of accepted proposals.
+
+Each accepted proposal increases the counter:
+
+```{r, eval=FALSE}
+accepted <- accepted + 1
+```
+
+The acceptance rate is
+
+$$
+\text{Acceptance rate}
+=
+\frac{\text{number of accepted proposals}}
+{\text{total number of iterations}}.
+$$
+
+## 8.6 Begin the Iterations
+
+```{r, eval=FALSE}
+for (i in seq_len(iterations)) {
+```
+
+`seq_len(iterations)` generates
+
+$$
+1,2,\ldots,\text{iterations}.
+$$
+
+Therefore, the loop runs the specified number of times.
+
+## 8.7 Extract the Current State
+
+```{r, eval=FALSE}
+current <- chain[i, ]
+```
+
+At iteration $i$, the current state is
+
+$$
+\theta^{(t)}
+=
+\left(
+a^{(t)},b^{(t)},\sigma^{(t)}
+\right).
+$$
+
+## 8.8 Generate a Proposal
+
+```{r, eval=FALSE}
+proposal <- proposal_function(current)
+```
+
+A candidate parameter vector is generated:
+
+$$
+\theta^*
+=
+(a^*,b^*,\sigma^*).
+$$
+
+## 8.9 Calculate the Log Acceptance Ratio
+
+```{r, eval=FALSE}
+log_acceptance_ratio <-
+  log_posterior(proposal) -
+  log_posterior(current)
+```
+
+The general Metropolis–Hastings acceptance probability is
+
+$$
+\alpha
+=
+\min\left[
+1,
+\frac{
+p(\theta^*\mid y)
+q(\theta^{(t)}\mid\theta^*)
+}{
+p(\theta^{(t)}\mid y)
+q(\theta^*\mid\theta^{(t)})
+}
+\right].
+$$
+
+Because the proposal distribution is a symmetric normal random walk,
+
+$$
+q(\theta^*\mid\theta^{(t)})
+=
+q(\theta^{(t)}\mid\theta^*).
+$$
+
+The proposal-density ratio cancels, leaving
+
+$$
+\alpha
+=
+\min\left[
+1,
+\frac{
+p(\theta^*\mid y)
+}{
+p(\theta^{(t)}\mid y)
+}
+\right].
+$$
+
+Define
+
+$$
+r=
+\frac{
+p(\theta^*\mid y)
+}{
+p(\theta^{(t)}\mid y)
+}.
+$$
+
+Then
+
+$$
+\log r
+=
+\log p(\theta^*\mid y)
+-
+\log p(\theta^{(t)}\mid y).
+$$
+
+This is exactly what `log_acceptance_ratio` calculates.
+
+## 8.10 Why Use the Log Scale?
+
+A less stable implementation might calculate
+
+```{r, eval=FALSE}
+exp(
+  log_posterior(proposal) -
+  log_posterior(current)
+)
+```
+
+However, large differences can produce numerical overflow or underflow:
+
+- `exp(1000)` becomes `Inf`;
+- `exp(-1000)` becomes 0.
+
+The revised implementation performs the comparison directly on the log scale and avoids this problem.
+
+## 8.11 Accept or Reject the Proposal
+
+```{r, eval=FALSE}
+if (
+  is.finite(log_acceptance_ratio) &&
+  log(runif(1)) < min(0, log_acceptance_ratio)
+)
+```
+
+The standard Metropolis rule generates
+
+$$
+u\sim U(0,1)
+$$
+
+and accepts the proposal if
+
+$$
+u<\alpha.
+$$
+
+Because
+
+$$
+\alpha=\min(1,r),
+$$
+
+we have
+
+$$
+\log\alpha=\min(0,\log r).
+$$
+
+Therefore, the acceptance rule can be written as
+
+$$
+\log u<\min(0,\log r).
+$$
+
+This corresponds to
+
+```{r, eval=FALSE}
+log(runif(1)) < min(0, log_acceptance_ratio)
+```
+
+### When the Proposal Has Higher Posterior Density
+
+If
+
+$$
+\log r>0,
+$$
+
+then
+
+$$
+r>1.
+$$
+
+The proposal has higher posterior density than the current state, so
+
+$$
+\alpha=1.
+$$
+
+The proposal is always accepted.
+
+### When the Proposal Has Lower Posterior Density
+
+If
+
+$$
+\log r<0,
+$$
+
+then
+
+$$
+0<r<1.
+$$
+
+The proposal is still accepted with probability $r$.
+
+For example, if
+
+$$
+\log r=-1.609,
+$$
+
+then
+
+$$
+r=\exp(-1.609)\approx0.20.
+$$
+
+The proposal is accepted approximately 20% of the time.
+
+Allowing occasional moves to lower-posterior-density states helps the chain explore the full posterior distribution rather than becoming trapped near one high-density location.
+
+## 8.12 Accept the Proposal
+
+```{r, eval=FALSE}
+chain[i + 1, ] <- proposal
+accepted <- accepted + 1
+```
+
+If the proposal is accepted,
+
+$$
+\theta^{(t+1)}=\theta^*.
+$$
+
+The acceptance counter is increased by one.
+
+## 8.13 Reject the Proposal
+
+```{r, eval=FALSE}
+chain[i + 1, ] <- current
+```
+
+If the proposal is rejected,
+
+$$
+\theta^{(t+1)}=\theta^{(t)}.
+$$
+
+Therefore, consecutive rows of the MCMC chain may be identical. This is expected and indicates that a proposal was rejected.
+
+## 8.14 Return the Results
+
+```{r, eval=FALSE}
+return(
+  list(
+    chain = chain,
+    acceptance_rate = accepted / iterations
+  )
+)
+```
+
+The function returns a list containing:
+
+1. `chain`: the complete MCMC parameter chain;
+2. `acceptance_rate`: the proportion of accepted proposals.
+
+# 9. Run the Metropolis MCMC Algorithm
+
+## 9.1 Set the Initial Values
+
+```{r, eval=FALSE}
+start_value <- c(
+  slope = 4,
+  intercept = 0,
+  sigma = 10
+)
+```
+
+The initial values are
+
+$$
+a^{(0)}=4,
+$$
+
+$$
+b^{(0)}=0,
+$$
+
+and
+
+$$
+\sigma^{(0)}=10.
+$$
+
+The initial values must lie within the prior support:
+
+$$
+0\leq a\leq10
+$$
+
+and
+
+$$
+0<\sigma\leq30.
+$$
+
+Otherwise, the initial log-posterior may be `-Inf`, and the algorithm may not start properly.
+
+## 9.2 Run the Algorithm
+
+```{r, eval=FALSE}
+fit <- run_metropolis_MCMC(
+  start_value = start_value,
+  iterations = 10000
+)
+```
+
+The algorithm performs 10,000 Metropolis updates.
+
+The returned object is stored in `fit`.
+
+## 9.3 Extract the Parameter Chain
+
+```{r, eval=FALSE}
+chain <- fit$chain
+
+dim(chain)
+head(chain)
+```
+
+`chain` is a $10001\times3$ matrix.
+
+The columns represent:
+
+- the slope;
+- the intercept;
+- the residual standard deviation.
+
+The first row contains the initial values, and the following 10,000 rows contain the updated parameter values.
+
+## 9.4 Examine the Acceptance Rate
+
+```{r, eval=FALSE}
+fit$acceptance_rate
+```
+
+The acceptance rate is
+
+$$
+\text{Acceptance rate}
+=
+\frac{
+\text{number of accepted proposals}
+}{
+\text{total number of iterations}
+}.
+$$
+
+For a low-dimensional random-walk Metropolis algorithm, an acceptance rate around 20% to 50% may sometimes be reasonable, but this is only a rough guideline.
+
+Acceptance rate alone cannot determine whether an MCMC chain is efficient.
+
+For example:
+
+- a very high acceptance rate may indicate proposal steps that are too small;
+- a very low acceptance rate may indicate proposal steps that are too large;
+- a seemingly reasonable acceptance rate can still occur with highly autocorrelated samples.
+
+The acceptance rate should be considered together with:
+
+- trace plots;
+- autocorrelation plots;
+- effective sample size;
+- multiple-chain convergence diagnostics.
+
+# 10. Remove the Burn-In Period
+
+```{r, eval=FALSE}
+burn_in <- 5000
+
+post_chain <- chain[
+  (burn_in + 1):nrow(chain),
+  ,
+  drop = FALSE
+]
+
+dim(post_chain)
+```
+
+The early part of an MCMC chain may be influenced by the initial values.
+
+Samples generated before the chain reaches a stable region are often called burn-in or warm-up samples.
+
+This code removes the first 5,000 rows and retains rows
+
+$$
+5001,5002,\ldots,10001.
+$$
+
+The argument
+
+```{r, eval=FALSE}
+drop = FALSE
+```
+
+ensures that the result remains a matrix.
+
+Because the first row stores the initial value, the current code removes the first 5,000 rows of the stored chain.
+
+To remove both the initial value and the first 5,000 updates explicitly, one could instead use
+
+```{r, eval=FALSE}
+post_chain <- chain[
+  (burn_in + 2):nrow(chain),
+  ,
+  drop = FALSE
+]
+```   
+
+The two approaches differ by only one sample and usually produce nearly identical summaries.
+
+
+
+# 11. Calculate Posterior Means
+
+```{r, eval=FALSE}
+posterior_mean <- colMeans(post_chain)
+
+posterior_mean
+```
+
+`colMeans()` calculates the mean of the MCMC draws for each parameter.
+
+The posterior mean of the slope is approximated by
+
+$$
+E(a\mid y)
+\approx
+\frac{1}{M}
+\sum_{m=1}^{M}a^{(m)}.
+$$
+
+The posterior mean of the intercept is approximated by
+
+$$
+E(b\mid y)
+\approx
+\frac{1}{M}
+\sum_{m=1}^{M}b^{(m)}.
+$$
+
+The posterior mean of the standard deviation is approximated by
+
+$$
+E(\sigma\mid y)
+\approx
+\frac{1}{M}
+\sum_{m=1}^{M}\sigma^{(m)}.
+$$
+
+Because the true values are
+
+$$
+a=5,\qquad b=0,\qquad \sigma=10,
+$$
+
+the posterior means should generally be close to these values, although they will not be exactly equal.
+
+Differences may arise because of:
+
+- finite sample size;
+- random sampling variation;
+- prior information;
+- finite Monte Carlo error.    
+
+
+
+# 12. Calculate Posterior Credible Intervals 
+
+```{r, eval=FALSE}
+posterior_interval <- apply(
+  post_chain,
+  2,
+  quantile,
+  probs = c(0.025, 0.5, 0.975)
+)
+
+posterior_interval
+```
+
+For each parameter, the code calculates:
+
+- the 2.5th percentile;
+- the 50th percentile;
+- the 97.5th percentile.
+
+The 50th percentile is the posterior median.
+
+The 2.5th and 97.5th percentiles form an equal-tailed 95% Bayesian credible interval:
+
+$$
+\left[
+q_{0.025},q_{0.975}
+\right].
+$$
+
+For example, if the 95% credible interval for the slope is
+
+$$
+(4.6,5.4),
+$$
+
+the Bayesian interpretation is:
+
+> Given the model, prior distributions, and observed data, the posterior probability that the slope lies between 4.6 and 5.4 is 95%.
+
+This differs from the interpretation of a frequentist confidence interval.
+
+
+
+# 13. Create a Posterior Summary Table
+
+```{r, eval=FALSE}
+posterior_summary <- data.frame(
+  Parameter = colnames(post_chain),
+  Mean = colMeans(post_chain),
+  Median = apply(post_chain, 2, median),
+  SD = apply(post_chain, 2, sd),
+  Lower_95 = apply(
+    post_chain,
+    2,
+    quantile,
+    probs = 0.025
+  ),
+  Upper_95 = apply(
+    post_chain,
+    2,
+    quantile,
+    probs = 0.975
+  )
+)
+
+posterior_summary
+```
+
+The summary table includes:
+
+- posterior mean;
+- posterior median;
+- posterior standard deviation;
+- lower limit of the 95% credible interval;
+- upper limit of the 95% credible interval.
+
+
+
+# 14. Compare Posterior Estimates with the True Values
+
+```{r, eval=FALSE}
+comparison <- data.frame(
+  Parameter = c(
+    "slope",
+    "intercept",
+    "sigma"
+  ),
+  True_value = c(
+    trueA,
+    trueB,
+    trueSd
+  ),
+  Posterior_mean = posterior_mean
+)
+
+comparison
+```
+
+Because this is a simulation study, the true parameter values are known.
+
+The table compares
+
+$$
+\text{true parameter values}
+$$
+
+with
+
+$$
+\text{posterior means}.
+$$
+
+In real applications, the true parameter values are unknown, so this direct comparison is not available.
+ 
+
+
+# 15. Plot the MCMC Trace Plots
+
+```{r, eval=FALSE}
+par(mfrow = c(3, 1))
+
+plot(
+  chain[, "slope"],
+  type = "l",
+  main = "Trace Plot: Slope",
+  xlab = "Iteration",
+  ylab = "Slope"
+)
+
+abline(
+  h = trueA,
+  lty = 2
+)
+
+plot(
+  chain[, "intercept"],
+  type = "l",
+  main = "Trace Plot: Intercept",
+  xlab = "Iteration",
+  ylab = "Intercept"
+)
+
+abline(
+  h = trueB,
+  lty = 2
+)
+
+plot(
+  chain[, "sigma"],
+  type = "l",
+  main = "Trace Plot: Sigma",
+  xlab = "Iteration",
+  ylab = "Sigma"
+)
+
+abline(
+  h = trueSd,
+  lty = 2
+)
+
+par(mfrow = c(1, 1))
+```
+
+A trace plot displays parameter values across MCMC iterations.
+
+A well-behaved chain generally:
+
+- fluctuates around a stable level;
+- does not show a persistent upward or downward trend;
+- does not show major structural changes;
+- does not remain trapped in one narrow region for a long time;
+- resembles stable random variation.
+
+The horizontal dashed lines show the true parameter values.
+
+In a real analysis, the true parameter values are unknown, so these reference lines would not be available.
+``` 
+```
+
+# 16. Plot the Posterior Distributions
+
+```{r, eval=FALSE}
+par(mfrow = c(3, 1))
+
+hist(
+  post_chain[, "slope"],
+  breaks = 30,
+  main = "Posterior Distribution of Slope",
+  xlab = "Slope",
+  probability = TRUE
+)
+
+lines(
+  density(post_chain[, "slope"]),
+  lwd = 2
+)
+
+abline(
+  v = trueA,
+  lty = 2
+)
+
+hist(
+  post_chain[, "intercept"],
+  breaks = 30,
+  main = "Posterior Distribution of Intercept",
+  xlab = "Intercept",
+  probability = TRUE
+)
+
+lines(
+  density(post_chain[, "intercept"]),
+  lwd = 2
+)
+
+abline(
+  v = trueB,
+  lty = 2
+)
+
+hist(
+  post_chain[, "sigma"],
+  breaks = 30,
+  main = "Posterior Distribution of Sigma",
+  xlab = "Sigma",
+  probability = TRUE
+)
+
+lines(
+  density(post_chain[, "sigma"]),
+  lwd = 2
+)
+
+abline(
+  v = trueSd,
+  lty = 2
+)
+
+par(mfrow = c(1, 1))
+```
+
+The posterior histograms show the posterior distributions of the three parameters.
+
+They can be used to examine:
+
+- the center of each posterior distribution;
+- posterior uncertainty;
+- symmetry or skewness;
+- whether the true value lies in a high-density region.
+```  
+``` 
+
+
+# 17. Examine Autocorrelation
+
+```{r, eval=FALSE}
+par(mfrow = c(3, 1))
+
+acf(
+  post_chain[, "slope"],
+  main = "Autocorrelation: Slope"
+)
+
+acf(
+  post_chain[, "intercept"],
+  main = "Autocorrelation: Intercept"
+)
+
+acf(
+  post_chain[, "sigma"],
+  main = "Autocorrelation: Sigma"
+)
+
+par(mfrow = c(1, 1))
+```
+
+MCMC samples are generally not independent.
+
+Autocorrelation plots measure the dependence between a draw and earlier draws in the chain.
+
+If autocorrelation decreases slowly, this may indicate that:
+
+- neighboring samples are highly correlated;
+- the chain moves slowly;
+- the effective sample size is much smaller than the number of iterations;
+- proposal standard deviations may need adjustment;
+- more iterations may be required.
+```
+```
+# 18. Complete Runnable Code
+
+The following section contains the complete analysis without the detailed explanation.
+
+```{r complete-analysis}
+set.seed(123)
+
+#-----------------------------
+# 1. Generate simulated data
+#-----------------------------
+
+trueA  <- 5
+trueB  <- 0
+trueSd <- 10
+
+sampleSize <- 31
+
+x <- (-(sampleSize - 1) / 2):
+      ((sampleSize - 1) / 2)
+
+y <- trueA * x +
+     trueB +
+     rnorm(
+       n = sampleSize,
+       mean = 0,
+       sd = trueSd
+     )
+
+plot(
+  x,
+  y,
+  main = "Simulated Data",
+  xlab = "x",
+  ylab = "y",
+  pch = 19
+)
+
+#-----------------------------
+# 2. Log-likelihood
+#-----------------------------
+
+log_likelihood <- function(param) {
+
+  a     <- param[1]
+  b     <- param[2]
+  sigma <- param[3]
+
+  if (!is.finite(sigma) || sigma <= 0) {
+    return(-Inf)
+  }
+
+  predicted_mean <- a * x + b
+
+  log_density <- dnorm(
+    y,
+    mean = predicted_mean,
+    sd = sigma,
+    log = TRUE
+  )
+
+  return(sum(log_density))
+}
+
+#-----------------------------
+# 3. Log-prior
+#-----------------------------
+
+log_prior <- function(param) {
+
+  a     <- param[1]
+  b     <- param[2]
+  sigma <- param[3]
+
+  if (
+    a < 0 ||
+    a > 10 ||
+    sigma <= 0 ||
+    sigma > 30
+  ) {
+    return(-Inf)
+  }
+
+  log_prior_a <- dunif(
+    a,
+    min = 0,
+    max = 10,
+    log = TRUE
+  )
+
+  log_prior_b <- dnorm(
+    b,
+    mean = 0,
+    sd = 5,
+    log = TRUE
+  )
+
+  log_prior_sigma <- dunif(
+    sigma,
+    min = 0,
+    max = 30,
+    log = TRUE
+  )
+
+  return(
+    log_prior_a +
+    log_prior_b +
+    log_prior_sigma
+  )
+}
+
+#-----------------------------
+# 4. Log-posterior
+#-----------------------------
+
+log_posterior <- function(param) {
+
+  lp <- log_prior(param)
+
+  if (!is.finite(lp)) {
+    return(-Inf)
+  }
+
+  return(
+    log_likelihood(param) + lp
+  )
+}
+
+#-----------------------------
+# 5. Proposal distribution
+#-----------------------------
+
+proposal_function <- function(param) {
+
+  rnorm(
+    n = 3,
+    mean = param,
+    sd = c(0.1, 0.5, 0.3)
+  )
+}
+
+#-----------------------------
+# 6. Metropolis algorithm
+#-----------------------------
+
+run_metropolis_MCMC <- function(
+  start_value,
+  iterations
+) {
+
+  chain <- matrix(
+    NA_real_,
+    nrow = iterations + 1,
+    ncol = 3
+  )
+
+  colnames(chain) <- c(
+    "slope",
+    "intercept",
+    "sigma"
+  )
+
+  chain[1, ] <- start_value
+
+  accepted <- 0
+
+  for (i in seq_len(iterations)) {
+
+    current <- chain[i, ]
+
+    proposal <- proposal_function(current)
+
+    log_acceptance_ratio <-
+      log_posterior(proposal) -
+      log_posterior(current)
+
+    if (
+      is.finite(log_acceptance_ratio) &&
+      log(runif(1)) < min(0, log_acceptance_ratio)
+    ) {
+
+      chain[i + 1, ] <- proposal
+      accepted <- accepted + 1
+
+    } else {
+
+      chain[i + 1, ] <- current
+    }
+  }
+
+  return(
+    list(
+      chain = chain,
+      acceptance_rate = accepted / iterations
+    )
+  )
+}
+
+#-----------------------------
+# 7. Run MCMC
+#-----------------------------
+
+start_value <- c(
+  slope = 4,
+  intercept = 0,
+  sigma = 10
+)
+
+fit <- run_metropolis_MCMC(
+  start_value = start_value,
+  iterations = 10000
+)
+
+chain <- fit$chain
+
+fit$acceptance_rate
+
+#-----------------------------
+# 8. Remove burn-in
+#-----------------------------
+
+burn_in <- 5000
+
+post_chain <- chain[
+  (burn_in + 1):nrow(chain),
+  ,
+  drop = FALSE
+]
+
+#-----------------------------
+# 9. Posterior summaries
+#-----------------------------
+
+posterior_mean <- colMeans(post_chain)
+
+posterior_interval <- apply(
+  post_chain,
+  2,
+  quantile,
+  probs = c(0.025, 0.5, 0.975)
+)
+
+posterior_mean
+posterior_interval
+
+#-----------------------------
+# 10. Summary table
+#-----------------------------
+
+posterior_summary <- data.frame(
+  Parameter = colnames(post_chain),
+  Mean = colMeans(post_chain),
+  Median = apply(post_chain, 2, median),
+  SD = apply(post_chain, 2, sd),
+  Lower_95 = apply(
+    post_chain,
+    2,
+    quantile,
+    probs = 0.025
+  ),
+  Upper_95 = apply(
+    post_chain,
+    2,
+    quantile,
+    probs = 0.975
+  )
+)
+
+posterior_summary
+
+#-----------------------------
+# 11. Trace plots
+#-----------------------------
+
+par(mfrow = c(3, 1))
+
+plot(
+  chain[, "slope"],
+  type = "l",
+  main = "Trace Plot: Slope",
+  xlab = "Iteration",
+  ylab = "Slope"
+)
+
+plot(
+  chain[, "intercept"],
+  type = "l",
+  main = "Trace Plot: Intercept",
+  xlab = "Iteration",
+  ylab = "Intercept"
+)
+
+plot(
+  chain[, "sigma"],
+  type = "l",
+  main = "Trace Plot: Sigma",
+  xlab = "Iteration",
+  ylab = "Sigma"
+)
+
+par(mfrow = c(1, 1))
+
+#-----------------------------
+# 12. Posterior distributions
+#-----------------------------
+
+par(mfrow = c(3, 1))
+
+hist(
+  post_chain[, "slope"],
+  breaks = 30,
+  probability = TRUE,
+  main = "Posterior Distribution of Slope",
+  xlab = "Slope"
+)
+
+lines(
+  density(post_chain[, "slope"]),
+  lwd = 2
+)
+
+hist(
+  post_chain[, "intercept"],
+  breaks = 30,
+  probability = TRUE,
+  main = "Posterior Distribution of Intercept",
+  xlab = "Intercept"
+)
+
+lines(
+  density(post_chain[, "intercept"]),
+  lwd = 2
+)
+
+hist(
+  post_chain[, "sigma"],
+  breaks = 30,
+  probability = TRUE,
+  main = "Posterior Distribution of Sigma",
+  xlab = "Sigma"
+)
+
+lines(
+  density(post_chain[, "sigma"]),
+  lwd = 2
+)
+
+par(mfrow = c(1, 1))
+```
+
+
+
+# 19. Summary
+
+This program uses the Metropolis–Hastings algorithm to fit the Bayesian linear regression model
+
+$$
+y_i\mid a,b,\sigma
+\sim
+N(ax_i+b,\sigma^2).
+$$
+
+The main steps are:
+
+1. Generate a candidate parameter vector near the current parameter vector.
+2. Calculate the posterior density of the candidate and current states.
+3. Use the posterior-density ratio to accept or reject the proposal.
+4. Move to the proposal if it is accepted.
+5. Remain at the current state if it is rejected.
+6. Repeat the procedure for many iterations.
+7. Remove the burn-in period.
+8. Use the remaining samples to approximate the posterior distribution.
+
+After sufficiently many iterations, the MCMC samples approximate
+
+$$
+p(a,b,\sigma\mid y).
+$$
+
+These samples can then be used to estimate:
+
+- posterior means;
+- posterior medians;
+- posterior standard deviations;
+- Bayesian credible intervals;
+- posterior correlations;
+- any posterior probability of interest.
+
+For example, the posterior probability that the slope is greater than zero can be estimated by
+
+```{r posterior-probability}
+mean(post_chain[, "slope"] > 0)
+```
+
+This approximates
+
+$$
+P(a>0\mid y).
+$$
+
+In this example, the prior already restricts the slope to the interval from 0 to 10, so this probability will be equal or very close to 1.

@@ -1,0 +1,107 @@
+---
+title: "Real-World Study"
+output: html_document
+date: "2025-10-27"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Real-World Study
+
+```{r}
+set.seed(20251006)
+# setwd("C:\\Users\\hed2\\Downloads\\rws")
+
+# Load packages
+pkgs <- c("data.table", "dplyr", "tableone", "MatchIt", "cobalt",
+          "survey", "survival", "survminer", "ggplot2", "broom", "sandwich", "lmtest")
+# for (p in pkgs) if(!requireNamespace(p, quietly = TRUE)) install.packages(p)
+lapply(pkgs, library, character.only = TRUE)
+
+# ------------------------------------------------------
+# 1. Simulate Real-World Dataset
+# ------------------------------------------------------
+n <- 1000
+dat <- data.frame(
+  patient_id = 1:n,
+  exposure_group = sample(c(0, 1), n, replace = TRUE, prob = c(0.4, 0.6)),
+  age_at_index = round(rnorm(n, 60, 10)),
+  sex = sample(c("Male", "Female"), n, replace = TRUE),
+  baseline_hba1c = round(rnorm(n, 7.5, 1.2), 1),
+  comorbidity_score = pmax(0, round(rnorm(n, 2, 1))),
+  region = sample(c("North", "South", "East", "West"), n, replace = TRUE)
+)
+
+# Simulate follow-up time and event
+# treatment A Slightly reduce risk
+dat <- dat %>%
+  mutate(
+    lambda = 0.03 + 0.002 * (age_at_index - 60) + 0.01 * comorbidity_score + ifelse(exposure_group=="A", -0.01, 0),
+    follow_up_time = rexp(n, rate = lambda),
+    event_flag = rbinom(n, 1, 1 - exp(-lambda * follow_up_time))
+  )
+
+# fwrite(dat, "analysis_dataset.csv")
+
+
+
+# ------------------------------------------------------
+# 2. Baseline Summary
+# ------------------------------------------------------
+vars <- c("age_at_index", "sex", "baseline_hba1c", "comorbidity_score", "region")
+catVars <- c("sex", "region")
+table1 <- CreateTableOne(vars = vars, strata = "exposure_group", data = dat, factorVars = catVars)
+print(table1, smd = TRUE)
+
+
+
+# ------------------------------------------------------
+# 3. Propensity Score Modeling
+# ------------------------------------------------------
+ps_formula <- as.formula("exposure_group ~ age_at_index + sex + baseline_hba1c + comorbidity_score + region")
+m.out <- matchit(ps_formula, data = dat, method = "nearest", ratio = 1, caliper = 0.2)
+summary(m.out)
+
+# Extract matched dataset
+matched <- match.data(m.out)
+cat("Matched sample size:", nrow(matched), "\n")
+
+# Balance Visualization
+love.plot(m.out, stats = "mean.diffs", threshold = 0.1, var.order = "unadjusted")
+
+
+
+# ------------------------------------------------------
+# 4. Cox Model on Matched Data
+# ------------------------------------------------------
+cox_mod <- coxph(Surv(follow_up_time, event_flag) ~ exposure_group + age_at_index + sex + comorbidity_score, data = matched)
+summary(cox_mod)
+
+# Kaplan-Meier Plot
+fit_km <- survfit(Surv(follow_up_time, event_flag) ~ exposure_group, data = matched)
+# summary(fit_km)
+ggsurvplot(fit_km, data = matched, pval = T, risk.table = F, 
+           title = "Kaplan-Meier Curve by Treatment Group")
+
+
+# ------------------------------------------------------
+# 5. Sensitivity Analysis: IPTW Inverse Probability Treatment Weighting
+# ------------------------------------------------------
+ps_model <- glm(exposure_group ~ age_at_index + sex + baseline_hba1c + comorbidity_score + region,
+                data = dat, family = binomial)
+dat$ps <- predict(ps_model, type = "response")
+dat <- dat %>% mutate(iptw = ifelse(exposure_group == "A", 1/ps, 1/(1-ps)))   #Inverse Probability Treatment Weighting
+
+# Cut off extreme weights
+q <- quantile(dat$iptw, probs = c(0.01, 0.99))   #weight between q1 and q2
+dat$iptw_trunc <- pmin(pmax(dat$iptw, q[1]), q[2])
+
+# weight Cox
+cox_ipw <- coxph(Surv(follow_up_time, event_flag) ~ exposure_group + age_at_index + sex + comorbidity_score,
+                 data = dat,         weights = iptw_trunc)      
+summary(cox_ipw)
+
+```
+

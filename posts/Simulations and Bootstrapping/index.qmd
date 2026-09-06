@@ -1,0 +1,275 @@
+---
+title: "Simulations and Bootstrapping"
+description: "A practical R learning guide to Simulations and Bootstrapping, with concise explanations, reproducible examples, and interpretation guidance."
+date: 2026-08-31
+section: "Biostatistics"
+category: "Statistical Principles & Estimands"
+topic: "Simulations and Bootstrapping"
+type: article
+tags: ["Statistical Principles & Estimands", "Biostatistics", "Simulations", "Bootstrapping"]
+status: published
+featured: true
+youtube: []
+pdf: []
+downloads: []
+validate-yaml: false
+execute:
+  echo: true
+  warning: false
+  error: true
+---
+
+## Why This Topic Matters
+
+Statistical principles define what is being estimated, under which assumptions, and how uncertainty should be represented.
+
+## Learning Objectives
+
+After working through this material, you should be able to:
+
+- explain the main ideas behind **Simulations and Bootstrapping**;
+- interpret the R workflow and its output; and
+- adapt the examples to a related analysis.
+
+## Lesson Roadmap
+
+The original material is organized around the following topics:
+
+1. Simulations and Bootstrapping
+
+## How to Use This Lesson
+
+Read the explanation before each workflow, then run the R chunks in sequence. Code and output are shown together so that each numerical or graphical result can be connected to the command that produced it. Some source examples require optional packages or external data. Those setup-dependent chunks remain visible for reference but are marked `eval: false` when they cannot be reproduced safely in a clean website build.
+
+## Reproducible Learning Check
+
+This short R chunk confirms the scope of the lesson and always produces a visible output.
+
+```{r}
+#| label: learning-overview
+learning_overview <- data.frame(
+  section = "Biostatistics",
+  category = "Statistical Principles & Estimands",
+  topic = "Simulations and Bootstrapping"
+)
+learning_overview
+```
+
+## Learning Material
+
+The following material develops **Simulations and Bootstrapping** from core ideas to practical implementation. Definitions and assumptions come first; worked code then shows how the ideas are represented computationally.
+
+### Conceptual Foundation
+
+The material below closely follows the original R Markdown source, with its examples retained for study and reuse.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#### Simulations and Bootstrapping
+
+<!-- generated-learning-note -->
+This subsection explains **Simulations and Bootstrapping** and shows how it contributes to the overall Simulations and Bootstrapping workflow.
+
+
+The bootstrapping approach will always work because it doesn't assume any underlying distribution of the data. 
+
+- Test the robust of t test what if violation of the normality assumption 
+
+`How sensitive is the two-sample t-test to violations of the normality assumption? Test this by using the rpois() function, and try different lambda values`
+
+### R Workflow and Examples
+
+Run the examples in order because later blocks may reuse objects created earlier. Each block includes a short purpose statement and guidance for reading its output.
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block generates controlled example data. Simulation makes the data-generating assumptions explicit and provides a known setting in which to study the method.
+
+```{r}
+set.seed(123)
+hist(rpois(100, 10))
+hist(rpois(100, 5))
+hist(rpois(100, 2)) #not normality intuition
+
+psum=c()
+r=1
+while (r<=20) {
+  r=r+1
+  count=1
+  pval=c()
+while ( count<=1000) {
+  sample1=rpois(100,r) #re sample
+  sample2=rpois(100,r)
+  pval=c(pval,t.test(sample1,sample2)$p.value)
+  count=count+1
+}
+  psum=c(psum,sum(pval<0.05)/1000)
+}
+psum
+
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the generated sample with the parameters used to create it. Differences reflect random variation unless the code intentionally introduces bias or structure.
+
+
+
+`two-sample t-test is robust even violation of the normality assumption but it will be not applicable under some extrem conditions.  `
+
+
+`The purpose of the t-test is to compare certain characteristics representing groups, and the mean values become representative when the population has a normal distribution. This is the reason why satisfaction of the normality assumption is essential in the t-test.`
+
+- ANOVA by bootstrapping
+
+
+`Consider what null hypothesis (Sample with replacement to create empirical sampling distributions); After creating bootstrap samples, run statistical test; p-value= proportion of times bootstrap data show statistics more extreme than the observed statistic (and CI); `
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block generates controlled example data. Simulation makes the data-generating assumptions explicit and provides a known setting in which to study the method.
+
+```{r}
+# example 1
+hist(iris$Petal.Width) #violation of normal distribution
+one.way <- aov(Petal.Width ~ Species, data = iris)
+anov=summary(one.way)[[1]]$`F value`[1]
+summary(one.way)
+
+set.seed(123)
+count=1
+boot=c()
+while ( count<=1000) {
+  sample1=iris[sample(1:nrow(iris),replace=T,size =  table(iris$Species)[1]),]
+  sample1$group=1
+  sample2=iris[sample(1:nrow(iris),replace=T,size =  table(iris$Species)[2]),]
+  sample2$group=2
+  sample3=iris[sample(1:nrow(iris),replace=T,size =  table(iris$Species)[3]),]
+  sample3$group=3
+  sample=rbind(sample1,sample2,sample3)
+  
+  test=aov(Petal.Width ~ as.factor(group), data = sample)
+  boot =c(boot,summary(test)[[1]]$`F value`[1]) 
+  
+  count=count+1
+}
+(sum(abs(boot)>abs(anov))/1000) # Equivalent to p value
+
+hist(boot)
+
+quantile(boot,.025)
+quantile(boot,.975)
+
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the generated sample with the parameters used to create it. Differences reflect random variation unless the code intentionally introduces bias or structure.
+
+
+- The Central Limit Theorem
+
+`sampling distribution of means from a population will be approximately normally distributed regardless of the underlying population distribution.`
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block generates controlled example data. Simulation makes the data-generating assumptions explicit and provides a known setting in which to study the method.
+
+```{r}
+set.seed(123)
+hist(rpois(1000, 2))
+
+r=1
+while (r<=10) {
+  r=r+1
+  count=1
+  pval=c()
+  while ( count<=100) {
+    sample1=rpois(30,r)
+    pval=c(pval,mean(sample1))
+    count=count+1
+  }
+  hist(pval, prob = TRUE)
+  lines(density(pval), col = 4, lwd = 2)
+}
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the generated sample with the parameters used to create it. Differences reflect random variation unless the code intentionally introduces bias or structure.
+
+
+`the means (not other statistics, like median) follow the normal distribution but it also depends on the sample size and the original distribution. `
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block generates controlled example data. Simulation makes the data-generating assumptions explicit and provides a known setting in which to study the method.
+
+```{r}
+# if median
+r=1
+while (r<=10) {
+  r=r+1
+  count=1
+  pval=c()
+  while ( count<=1000) {
+    sample1=rpois(30,r)
+    pval=c(pval,median(sample1))
+    count=count+1
+  }
+  hist(pval, prob = TRUE)
+  lines(density(pval), col = 4, lwd = 2)
+}
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Compare the generated sample with the parameters used to create it. Differences reflect random variation unless the code intentionally introduces bias or structure.
+
+
+
+
+- Test of Normality
+
+`The critical assumption for this type of test concerns the normality of residuals, not the dependent variable. Also, with a large sample size the null of the Shapiro-Wilk test will often be rejected.` 
+
+
+
+<!-- generated-learning-note -->
+**Purpose.** This block extracts inferential or predictive results from fitted objects. Match each estimate, interval, contrast, or diagnostic to the quantity it represents.
+
+```{r}
+hist(residuals(one.way)) 
+#Create a Normal Q-Q Plot of the residuals for "model_job_loss".
+qqnorm(residuals(one.way), main = "Normal Q-Q Plot of Residuals")
+qqline(residuals(one.way))
+
+shapiro.test(residuals(one.way))
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Interpret estimates on the scale reported by the function, and use intervals or other uncertainty measures when drawing conclusions.
+
+
+
+- Kruskal-Wallis Rank Sum Test (nonparametric)
+
+<!-- generated-learning-note -->
+**Purpose.** This block carries out the next computational step in the workflow. Track the objects it creates and how they are used by later steps.
+
+```{r}
+kruskal.test(iris$Petal.Width ,iris$Species)
+```
+
+<!-- generated-learning-note -->
+**How to read the output.** Read the printed object, table, or scalar in the context of the preceding definitions. Confirm its units and expected range before continuing.
+
+## Interpreting the Results
+
+Link every numerical result to its target quantity, assumptions, and sampling interpretation. Treat the output as evidence generated under the stated data, coding choices, and assumptions. Before using the workflow in practice, replace example inputs with validated data and confirm that the method targets the intended scientific question.
+
+## Key Takeaways
+
+- **Connect method to purpose.** Identify the question and target quantity before choosing code or a model.
+- **Read code and output together.** Confirm what each object, estimate, interval, table, or plot represents.
+- **Check assumptions and diagnostics.** A successful computation is not by itself evidence that the result is reliable.
+- **Adapt deliberately.** When applying the example elsewhere, document changes to data definitions, parameters, and analytical choices.
