@@ -23,6 +23,14 @@ jobs:
         with:
           r-version: '4.4'
           use-public-rspm: true
+      - name: Install R system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libcurl4-openssl-dev libssl-dev libxml2-dev libglpk-dev \
+            libfontconfig1-dev libfreetype6-dev libharfbuzz-dev \
+            libfribidi-dev libpng-dev libtiff-dev libjpeg-dev \
+            libcairo2-dev libxt-dev libgit2-dev
       - uses: r-lib/actions/setup-renv@v2
       - uses: quarto-dev/quarto-actions/setup@v2
       - name: Generate and validate
