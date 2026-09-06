@@ -41,20 +41,6 @@ The original material is organized around the following topics:
 
 Read the explanation before each workflow, then run the R chunks in sequence. Code and output are shown together so that each numerical or graphical result can be connected to the command that produced it. Some source examples require optional packages or external data. Those setup-dependent chunks remain visible for reference but are marked `eval: false` when they cannot be reproduced safely in a clean website build.
 
-## Reproducible Learning Check
-
-This short R chunk confirms the scope of the lesson and always produces a visible output.
-
-```{r}
-#| label: learning-overview
-learning_overview <- data.frame(
-  section = "Biostatistics",
-  category = "Statistical Principles & Estimands",
-  topic = "Expectation maximum"
-)
-learning_overview
-```
-
 ## Learning Material
 
 The following material develops **Expectation maximum** from core ideas to practical implementation. Definitions and assumptions come first; worked code then shows how the ideas are represented computationally.

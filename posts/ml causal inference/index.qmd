@@ -14,7 +14,6 @@ pdf: []
 downloads: []
 validate-yaml: false
 execute:
-  enabled: false
   echo: true
   warning: false
   error: true
@@ -44,20 +43,6 @@ The original material is organized around the following topics:
 ## How to Use This Lesson
 
 Read the explanation before each workflow, then run the R chunks in sequence. Code and output are shown together so that each numerical or graphical result can be connected to the command that produced it. Some source examples require optional packages or external data. Those setup-dependent chunks remain visible for reference but are marked `eval: false` when they cannot be reproduced safely in a clean website build.
-
-## Reproducible Learning Check
-
-This short R chunk confirms the scope of the lesson and always produces a visible output.
-
-```{r}
-#| label: learning-overview
-learning_overview <- data.frame(
-  section = "Epidemiology & Real-World Evidence",
-  category = "Causal Methods",
-  topic = "Machine learning in Causal inference"
-)
-learning_overview
-```
 
 ## Learning Material
 
